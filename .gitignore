@@ -1,19 +1,18 @@
-# Gradle
-coupon/.gradle/
-coupon/build/
-coupon/out/
+# Spring Build
+**/spring/build/
+**/spring/.gradle/
+**/spring/logs/
 
-# IntelliJ
-.idea/
-coupon/.idea/
-*.iml
+# MySQL / Redis logs & data
+**/mysql/logs/
+**/mysql/data/
 
 # macOS
 .DS_Store
 
-# Spring Boot
-coupon/src/main/resources/application-local.yml
+# IntelliJ
+**/.idea/
+**/*.iml
 
-# Logs
-spring/logs/
-mysql/logs/
+# k6 결과
+*.json

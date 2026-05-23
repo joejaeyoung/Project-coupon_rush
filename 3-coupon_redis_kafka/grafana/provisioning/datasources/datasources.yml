@@ -1,0 +1,13 @@
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB (k6)
+    type: influxdb
+    url: http://influxdb:8086
+    database: k6
+    isDefault: false
+
+  - name: Prometheus (Spring)
+    type: prometheus
+    url: http://prometheus:9090
+    isDefault: true
