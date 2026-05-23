@@ -1,0 +1,19 @@
+# Gradle
+coupon/.gradle/
+coupon/build/
+coupon/out/
+
+# IntelliJ
+.idea/
+coupon/.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# Spring Boot
+coupon/src/main/resources/application-local.yml
+
+# Logs
+spring/logs/
+mysql/logs/
