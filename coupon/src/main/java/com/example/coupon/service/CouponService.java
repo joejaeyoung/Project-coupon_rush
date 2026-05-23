@@ -10,6 +10,7 @@ import com.example.coupon.repository.IssuedCouponRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,9 @@ public class CouponService {
 
     private final CouponRepository couponRepository;
     private final IssuedCouponRepository issuedCouponRepository;
+    private final CouponRedisService couponRedisService;
+    private final TransactionTemplate transactionTemplate;
+
 
     // ─────────────────────────────────────────────────────────
     // 발급 가능한 쿠폰 목록 조회
@@ -32,58 +36,66 @@ public class CouponService {
     }
 
     // ─────────────────────────────────────────────────────────
-    // 선착순 쿠폰 발급 (핵심 로직 — 동시성 제어 여기서 발생)
+    // 선착순 쿠폰 발급
+    //
+    // Phase 2 흐름:
+    //   Step 1. 쿠폰 존재/기간 체크 — DB 조회 후 커넥션 즉시 반납
+    //   Step 2. 중복 체크 + 재고 차감 — Redis 원자적 연산 (900개는 여기서 탈락)
+    //   Step 3. DB 쓰기 — TransactionTemplate으로 범위 최소화 (성공 100개만 도달)
+    //
+    // @Transactional을 메서드 전체에 걸지 않는 이유:
+    //   전체에 걸면 1000개 요청 모두 Step 1에서 DB 커넥션을 잡고
+    //   Step 2(Redis)가 끝날 때까지 커넥션을 점유 → 커넥션 풀 고갈
     // ─────────────────────────────────────────────────────────
-    @Transactional
     public void issueCoupon(Long couponId, Long userId) {
-        Optional<Coupon> coupon = couponRepository.findByIdWithLock(couponId);
+        // Step 1. 기간 체크 (Redis — DB 커넥션 없음, 1000개 전부 여기서 처리)
+        couponRedisService.validatePeriod(couponId);
 
-        // 1. 없으면 에러 처리
-        if (coupon.isPresent()) {
-            throw new CouponException(CouponErrorCode.NOT_FOUND);
+        // Step 2. 중복 체크 + 재고 차감 (Redis 원자적, 900개 여기서 탈락)
+        couponRedisService.checkAndIssue(couponId, userId);
+
+        // Step 3. DB 쓰기 — 성공한 100개만 도달
+        final LocalDateTime now = LocalDateTime.now();
+        try {
+            transactionTemplate.execute(status -> {
+                Coupon coupon = couponRepository.findById(couponId)
+                        .orElseThrow(() -> new CouponException(CouponErrorCode.NOT_FOUND));
+                couponRepository.incrementIssuedQuantity(couponId);
+                IssuedCoupon issuedCoupon = new IssuedCoupon();
+                issuedCoupon.setCoupon(coupon);
+                issuedCoupon.setUserId(userId);
+                issuedCoupon.setStatus(com.example.coupon.domain.issuedCoupon.Status.ISSUED);
+                issuedCoupon.setIssuedAt(now);
+                issuedCoupon.setExpiredAt(now.plusDays(coupon.getValidDays()));
+                issuedCouponRepository.save(issuedCoupon);
+                return null;
+            });
+        } catch (Exception e) {
+            couponRedisService.rollback(couponId, userId);
+            throw e;
         }
-
-        // 2. 발급 기간 체크
-        LocalDateTime now = LocalDateTime.now();
-        if (coupon.get().getStartDate().isAfter(now) || coupon.get().getEndDate().isBefore(now)) {
-            throw new CouponException(CouponErrorCode.NOT_AVAILABLE);
-        }
-
-        // 3. 재고 체크
-        if (coupon.get().getIssuedQuantity() > coupon.get().getTotalQuantity()) {
-            throw new CouponException(CouponErrorCode.EXHAUSTED);
-        }
-
-        // 4. 중복 발급
-        if (issuedCouponRepository.existsByCoupon_IdAndUserId(couponId, userId)) {
-            throw new CouponException(CouponErrorCode.DUPLICATED);
-        }
-
-        // 5. 발급 수량 증가
-        // Transactional로 저장 처리
-        coupon.get().setIssuedQuantity(coupon.get().getIssuedQuantity() + 1);
-
-        // 6. issuedCoupon 생성
-        IssuedCoupon issuedCoupon = new IssuedCoupon();
-        issuedCoupon.setCoupon(coupon.get());
-        issuedCoupon.setUserId(userId);
-        issuedCoupon.setStatus(com.example.coupon.domain.issuedCoupon.Status.ISSUED);
-        issuedCoupon.setIssuedAt(now);
-        issuedCoupon.setExpiredAt(now.plusDays(coupon.get().getValidDays()));
-        issuedCouponRepository.save(issuedCoupon);
     }
 
     // ─────────────────────────────────────────────────────────
     // 잔여 수량 조회
+    //
+    // Phase 2: Cache-aside 패턴으로 변경
+    //   1. couponRedisService.getStock() 호출
+    //   2. -1이면 Redis에 키 없음 → DB 조회 → Redis 초기화 후 반환
+    //   3. 0 이상이면 Redis 값 바로 반환
     // ─────────────────────────────────────────────────────────
     @Transactional(readOnly = true)
     public Object getStock(Long couponId) {
-        Optional<Coupon> coupon = couponRepository.findById(couponId);
-        if (coupon.isEmpty()) {
-            throw new CouponException(CouponErrorCode.NOT_FOUND);
-        }
+        int stock = couponRedisService.getStock(couponId);
 
-        return coupon.get().getTotalQuantity() - coupon.get().getIssuedQuantity();
+        if (stock == -1) {
+            Optional<Coupon> coupon = couponRepository.findById(couponId);
+            if (coupon.isEmpty()) {
+                throw new CouponException(CouponErrorCode.NOT_FOUND);
+            }
+            return coupon.get().getTotalQuantity() - coupon.get().getIssuedQuantity();
+        }
+        return stock;
     }
 
     // ─────────────────────────────────────────────────────────
@@ -100,6 +112,17 @@ public class CouponService {
     @Transactional(readOnly = true)
     public Object getUserUsableCoupons(Long userId) {
         return issuedCouponRepository.findByUserIdAndStatus(userId, com.example.coupon.domain.issuedCoupon.Status.ISSUED);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // Redis 재고 초기화
+    //   DB의 totalQuantity로 Redis stock 키를 세팅한다.
+    //   테스트 리셋 또는 쿠폰 생성 후 최초 초기화 시 사용.
+    // ─────────────────────────────────────────────────────────
+    public void initStock(Long couponId) {
+        Coupon coupon = couponRepository.findById(couponId)
+                .orElseThrow(() -> new CouponException(CouponErrorCode.NOT_FOUND));
+        couponRedisService.initStock(couponId, coupon.getTotalQuantity(), coupon.getStartDate(), coupon.getEndDate());
     }
 
     // ─────────────────────────────────────────────────────────

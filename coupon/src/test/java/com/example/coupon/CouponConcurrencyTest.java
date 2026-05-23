@@ -1,5 +1,8 @@
 package com.example.coupon;
 
+import com.example.coupon.domain.coupon.Coupon;
+import com.example.coupon.domain.coupon.Status;
+import com.example.coupon.repository.CouponRepository;
 import com.example.coupon.repository.IssuedCouponRepository;
 import com.example.coupon.service.CouponService;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,22 +28,25 @@ class CouponConcurrencyTest {
     @Autowired
     private IssuedCouponRepository issuedCouponRepository;
 
-    // ─────────────────────────────────────────────────────────
-    // TODO: @BeforeEach에서 테스트용 쿠폰 데이터를 DB에 미리 넣어두세요
-    //   - totalQuantity: 100
-    //   - status: ACTIVE
-    //   - startDate: 과거 시간
-    //   - endDate: 미래 시간
-    //   테스트마다 데이터가 초기화되어야 하므로 @BeforeEach에서 저장합니다
-    // ─────────────────────────────────────────────────────────
+    @Autowired
+    private CouponRepository couponRepository;
+
     private Long couponId;
 
     @BeforeEach
     void setUp() {
         issuedCouponRepository.deleteAll();
-        // TODO: 테스트용 Coupon 생성 후 저장, couponId 저장
-        //   Coupon coupon = new Coupon(...);
-        //   couponId = couponRepository.save(coupon).getId();
+        Coupon coupon = new Coupon();
+        coupon.setName("test");
+        coupon.setDescription("test_coupon");
+        coupon.setStartDate(LocalDateTime.now().minusDays(1));
+        coupon.setEndDate(LocalDateTime.now().plusDays(1));
+        coupon.setStatus(Status.ACTIVE);
+        coupon.setTotalQuantity(100);
+        coupon.setIssuedQuantity(0);
+        coupon.setValidDays(30);
+
+        couponId = couponRepository.save(coupon).getId();
     }
 
     // ─────────────────────────────────────────────────────────
@@ -67,11 +74,11 @@ class CouponConcurrencyTest {
                 try {
                     startLatch.await(); // 신호 올 때까지 대기
 
-                    // TODO: couponService.issueCoupon(couponId, userId) 호출
-                    //       성공 시 successCount.incrementAndGet()
-                    //       CouponException 발생 시 failCount.incrementAndGet()
+                    couponService.issueCoupon(couponId, userId);
+                    successCount.incrementAndGet();
 
                 } catch (InterruptedException e) {
+                    failCount.incrementAndGet();
                     Thread.currentThread().interrupt();
                 } finally {
                     doneLatch.countDown(); // 완료 신호
@@ -86,8 +93,8 @@ class CouponConcurrencyTest {
         System.out.println("성공: " + successCount.get());
         System.out.println("실패: " + failCount.get());
 
-        // TODO: assertThat(successCount.get()).isEqualTo(100);
-        // TODO: assertThat(issuedCouponRepository.count()).isEqualTo(100);
+        assertThat(successCount.get()).isEqualTo(100);
+        assertThat(issuedCouponRepository.count()).isEqualTo(100);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -109,10 +116,8 @@ class CouponConcurrencyTest {
                 try {
                     startLatch.await();
 
-                    // TODO: couponService.issueCoupon(couponId, sameUserId) 호출
-                    //       성공 시 successCount.incrementAndGet()
-                    //       CouponException은 무시 (중복/소진 예외)
-
+                    couponService.issueCoupon(couponId, sameUserId);
+                    successCount.incrementAndGet();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } finally {
@@ -127,6 +132,6 @@ class CouponConcurrencyTest {
 
         System.out.println("성공 횟수: " + successCount.get());
 
-        // TODO: assertThat(successCount.get()).isEqualTo(1);
+        assertThat(successCount.get()).isEqualTo(1);
     }
 }

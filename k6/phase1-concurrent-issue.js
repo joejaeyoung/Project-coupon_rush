@@ -17,9 +17,9 @@ const failCount    = new Counter('coupon_issue_fail');
 export const options = {
   scenarios: {
     concurrent_users: {
-      executor: 'shared-iterations',  // 전체 요청 수를 VU들이 나눠서 처리
-      vus: 1000,
-      iterations: 1000,
+      executor: 'shared-iterations',
+      vus: USERS,
+      iterations: USERS,
       maxDuration: '30s',
     },
   },
@@ -29,15 +29,16 @@ export const options = {
   },
 };
 
-const COUPON_ID = 1;
-const BASE_URL  = 'http://localhost:8080';
+const COUPON_ID   = __ENV.COUPON_ID   || 1;
+const USERS       = parseInt(__ENV.USERS || 1000);
+const BASE_URL    = 'http://localhost:8080';
 
 export default function () {
   const userId = __VU;  // VU 번호를 userId로 사용 (1~1000)
 
   const res = http.post(
     `${BASE_URL}/api/coupons/${COUPON_ID}/issue`,
-    JSON.stringify({ userId: userId }),
+    JSON.stringify({ userId }),
     { headers: { 'Content-Type': 'application/json' } }
   );
 

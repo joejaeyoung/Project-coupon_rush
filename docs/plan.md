@@ -147,9 +147,9 @@ public class ApiControllerGlobalAdvice {
 - 시나리오 2: 스레드 100개, 동일 userId → 성공 1개 확인
 
 ### 체크포인트
-- [ ] 모든 API가 정상 응답
-- [ ] 동시성 테스트 시나리오 1, 2 모두 통과
-- [ ] 예외 발생 시 공통 응답 포맷(`success: false, message: ...`) 반환
+- [x] 모든 API가 정상 응답 ✅ 2026-05-23
+- [x] 동시성 테스트 시나리오 1, 2 모두 통과 ✅ 2026-05-23
+- [x] 예외 발생 시 공통 응답 포맷(`success: false, message: ...`) 반환 ✅ 2026-05-23
 
 ---
 

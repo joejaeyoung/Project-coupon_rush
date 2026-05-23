@@ -52,3 +52,5 @@ management:
     export:
       prometheus:
         enabled: true
+    tags:
+      application: ${spring.application.name}  # Grafana 대시보드 4701의 application 변수에 매핑

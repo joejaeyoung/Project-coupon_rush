@@ -5,6 +5,7 @@ import com.example.coupon.domain.coupon.Status;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -29,4 +30,8 @@ public interface CouponRepository extends JpaRepository<Coupon, Long> {
     // 잔여 수량 조회: totalQuantity - issuedQuantity
     @Query("SELECT c.totalQuantity - c.issuedQuantity FROM Coupon c WHERE c.id = :id")
     Integer getRemainingQuantity(@Param("id") Long id);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Coupon c SET c.issuedQuantity = c.issuedQuantity + 1 WHERE c.id = :id")
+    void incrementIssuedQuantity(@Param("id") Long id);
 }

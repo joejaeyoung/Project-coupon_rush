@@ -24,8 +24,8 @@ export const options = {
   },
 };
 
-const COUPON_ID = 1;
-const USER_ID   = 9999;  // 고정된 동일 사용자
+const COUPON_ID = __ENV.COUPON_ID || 1;
+const USER_ID   = 9999;
 const BASE_URL  = 'http://localhost:8080';
 
 export default function () {

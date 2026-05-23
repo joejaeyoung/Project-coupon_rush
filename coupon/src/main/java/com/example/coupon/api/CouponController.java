@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/coupons")
 @RequiredArgsConstructor
@@ -28,8 +29,10 @@ public class CouponController {
     @PostMapping("/{couponId}/issue")
     public ResponseEntity<ApiResponse<?>> issueCoupon(
             @PathVariable Long couponId,
-            @RequestParam Long userId
+            @RequestParam(required = false) Long userId,
+            @RequestBody(required = false) java.util.Map<String, Long> body
     ) {
+        if (userId == null && body != null) userId = body.get("userId");
         couponService.issueCoupon(couponId, userId);
         return ResponseEntity.ok(ApiResponse.ok(""));
     }
@@ -65,12 +68,22 @@ public class CouponController {
     }
 
     // ─────────────────────────────────────────────────────────
+    // POST /api/coupons/{couponId}/stock/init
+    // Redis 재고 초기화 (DB totalQuantity 기준)
+    // ─────────────────────────────────────────────────────────
+    @PostMapping("/{couponId}/stock/init")
+    public ResponseEntity<ApiResponse<?>> initStock(@PathVariable Long couponId) {
+        couponService.initStock(couponId);
+        return ResponseEntity.ok(ApiResponse.ok("재고가 초기화되었습니다."));
+    }
+
+    // ─────────────────────────────────────────────────────────
     // POST /api/coupons/{issuedCouponId}/use
     // 쿠폰 사용 처리
     // ─────────────────────────────────────────────────────────
     @PostMapping("/{issuedCouponId}/use")
     public ResponseEntity<ApiResponse<?>> useCoupon(@PathVariable Long issuedCouponId) {
         couponService.useCoupon(issuedCouponId);
-        return null;
+        return ResponseEntity.ok(ApiResponse.ok("쿠폰이 사용되었습니다."));
     }
 }

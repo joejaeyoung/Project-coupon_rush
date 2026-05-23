@@ -357,8 +357,159 @@ Redis INCR (원자적 연산)으로 수량 제어
 
 ---
 
+## 9. k6 결과 해석 — checks 66.66%가 실패인가?
+
+k6를 처음 돌리면 아래 결과가 헷갈린다.
+
+```
+checks_succeeded...: 66.66% 2000 out of 3000
+checks_failed......: 33.33% 1000 out of 3000
+
+✗ status 200 (발급 성공) ↳ 10%  — ✓ 100 / ✗ 900
+✗ status 409 (소진/중복) ↳ 90%  — ✓ 900 / ✗ 100
+✓ status is not 500
+```
+
+"실패 33%"처럼 보이지만 **정상 결과**다.
+
+**이유:** check는 "하나의 요청이 모든 조건을 동시에 만족해야 성공"으로 계산된다.
+
+- 200 받은 요청 → `status 200` ✓, `status 409` **✗** → 1개 실패로 계산
+- 409 받은 요청 → `status 200` **✗**, `status 409` ✓ → 1개 실패로 계산
+
+모든 요청이 둘 중 하나는 반드시 실패한다. 수학적으로:
+```
+총 3000번 체크 = 1000요청 × 3개 조건
+성공: (100 + 900) + 1000 = 2000 → 66.67%
+```
+
+**핵심:** 비즈니스 정합성은 `coupon_issue_success = 100`으로 확인한다. checks 비율은 부수적 지표일 뿐이다.
+
+---
+
+## 10. CORS — 브라우저와 k6의 차이
+
+같은 API를 호출하는데 k6는 성공하고 브라우저(HTML)는 `Failed to fetch`가 뜨는 이유가 있다.
+
+**CORS(Cross-Origin Resource Sharing)** 는 브라우저가 사용자 보호를 위해 강제하는 정책이다.
+
+```
+브라우저에서 file://index.html → localhost:8080 요청
+→ 브라우저: "출처가 다르다. 서버가 허용했는지 확인"
+→ 서버가 Access-Control-Allow-Origin 헤더 없음
+→ 브라우저가 응답을 차단 → Failed to fetch
+```
+
+k6, curl, Postman은 **브라우저가 아니기 때문에** CORS 정책 자체가 없다. HTTP 클라이언트로 직접 요청한다.
+
+**Spring에서 CORS 허용:**
+
+```java
+@CrossOrigin(origins = "*")  // 모든 출처 허용 (개발 환경)
+@RestController
+public class CouponController { ... }
+```
+
+`origins = "*"`는 개발 환경에서만 쓴다. 실서비스에서는 허용할 도메인을 명시해야 한다.
+
+---
+
+## 11. 엔티티 필드 초기값 — 테스트에서 자주 만나는 NPE
+
+JPA 엔티티에서 `Integer`, `Long` 같은 래퍼 타입은 명시적으로 초기화하지 않으면 `null`이다.
+
+```java
+@Entity
+public class Coupon {
+    private Integer issuedQuantity;  // 초기화 안 하면 null
+    private Integer validDays;       // 초기화 안 하면 null
+}
+```
+
+서비스 코드에서 null인 채로 연산하면 NPE가 발생한다.
+
+```java
+// issuedQuantity가 null이면 자동 언박싱 → NullPointerException
+if (coupon.getIssuedQuantity() >= coupon.getTotalQuantity()) { ... }
+
+// validDays가 null이면 → NullPointerException
+issuedCoupon.setExpiredAt(now.plusDays(coupon.getValidDays()));
+```
+
+**해결 방법 두 가지:**
+
+```java
+// 방법 1: 엔티티에 기본값 지정
+private Integer issuedQuantity = 0;
+private Integer validDays = 30;
+
+// 방법 2: 테스트 setUp에서 반드시 명시
+coupon.setIssuedQuantity(0);
+coupon.setValidDays(30);
+```
+
+실서비스에서는 방법 1이 안전하다. DB에 `DEFAULT 0`을 설정해두고, 엔티티 필드에도 기본값을 주면 어디서 생성해도 null이 안 생긴다.
+
+---
+
 ## 다음 글 예고
 
 Phase 2에서는 Redis의 원자적 연산으로 DB Lock 없이도 동시성을 제어하고, Grafana로 Phase 1 vs Phase 2 응답 시간을 직접 비교한다.
 
 > 다음: Phase 2. Redis 분산 락 — 선착순 쿠폰 시스템 구축기 (3)
+
+![[Pasted image 20260523152336.png]]
+
+```sh
+  █ THRESHOLDS
+
+    http_req_duration
+    ✗ 'p(95)<2000' p(95)=2.32s
+
+    http_req_failed
+    ✓ 'rate<0.95' rate=90.00%
+
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 3000   1228.409676/s
+    checks_succeeded...: 66.66% 2000 out of 3000
+    checks_failed......: 33.33% 1000 out of 3000
+
+    ✗ status 200 (발급 성공)
+      ↳  10% — ✓ 100 / ✗ 900
+    ✗ status 409 (소진/중복)
+      ↳  90% — ✓ 900 / ✗ 100
+    ✓ status is not 500
+
+    CUSTOM
+    coupon_issue_fail..............: 900    368.522903/s
+    coupon_issue_success...........: 100    40.946989/s
+
+    HTTP
+    http_req_duration..............: avg=1.2s     min=303.38ms med=1.11s    max=2.38s    p(90)=2.29s    p(95)=2.32s
+      { expected_response:true }...: avg=522.36ms min=303.38ms med=509.12ms max=836.45ms p(90)=678.21ms p(95)=693.57ms
+    http_req_failed................: 90.00% 900 out of 1000
+    http_reqs......................: 1000   409.469892/s
+
+    EXECUTION
+    iteration_duration.............: avg=1.25s    min=313.81ms med=1.17s    max=2.43s    p(90)=2.32s    p(95)=2.38s
+    iterations.....................: 1000   409.469892/s
+    vus............................: 162    min=162         max=767
+    vus_max........................: 1000   min=1000        max=1000
+
+    NETWORK
+    data_received..................: 179 kB 73 kB/s
+    data_sent......................: 152 kB 62 kB/s
+
+
+
+
+running (0m02.4s), 0000/1000 VUs, 1000 complete and 0 interrupted iterations
+concurrent_users ✓ [==========================] 1000 VUs  02.4s/30s  1000/1000 shared iters
+ERRO[0002] thresholds on metrics 'http_req_duration' have been crossed
+```
+
+![[Pasted image 20260523155813.png]]
+
+![[Pasted image 20260523160028.png]]
