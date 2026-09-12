@@ -4,6 +4,8 @@ import com.example.coupon.domain.coupon.Coupon;
 import com.example.coupon.domain.coupon.Status;
 import com.example.coupon.repository.CouponRepository;
 import com.example.coupon.repository.IssuedCouponRepository;
+import com.example.coupon.exception.CouponException;
+import com.example.coupon.service.CouponRedisService;
 import com.example.coupon.service.CouponService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +33,9 @@ class CouponConcurrencyTest {
     @Autowired
     private CouponRepository couponRepository;
 
+    @Autowired
+    private CouponRedisService couponRedisService;
+
     private Long couponId;
 
     @BeforeEach
@@ -47,6 +52,15 @@ class CouponConcurrencyTest {
         coupon.setValidDays(30);
 
         couponId = couponRepository.save(coupon).getId();
+
+        // Phase 2 핵심: 재고·기간을 Redis에 올린다.
+        // issueCoupon의 핫패스가 DB를 보지 않고 Redis만으로 판정하므로
+        // 이 초기화가 없으면 validatePeriod가 NOT_FOUND로 전부 탈락한다.
+        couponRedisService.initStock(
+                couponId,
+                coupon.getTotalQuantity(),
+                coupon.getStartDate(),
+                coupon.getEndDate());
     }
 
     // ─────────────────────────────────────────────────────────
@@ -77,6 +91,9 @@ class CouponConcurrencyTest {
                     couponService.issueCoupon(couponId, userId);
                     successCount.incrementAndGet();
 
+                } catch (CouponException e) {
+                    // 재고 소진(EXHAUSTED) · 중복 발급(DUPLICATED) — 정상적인 탈락
+                    failCount.incrementAndGet();
                 } catch (InterruptedException e) {
                     failCount.incrementAndGet();
                     Thread.currentThread().interrupt();
@@ -95,6 +112,8 @@ class CouponConcurrencyTest {
 
         assertThat(successCount.get()).isEqualTo(100);
         assertThat(issuedCouponRepository.count()).isEqualTo(100);
+        // 1000건이 전부 성공 또는 정상 탈락으로 집계되어야 한다 (삼켜진 예외가 없어야 함)
+        assertThat(successCount.get() + failCount.get()).isEqualTo(totalUsers);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -118,6 +137,8 @@ class CouponConcurrencyTest {
 
                     couponService.issueCoupon(couponId, sameUserId);
                     successCount.incrementAndGet();
+                } catch (CouponException e) {
+                    // 두 번째 이후 요청은 DUPLICATED — 기대한 동작이므로 무시
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } finally {

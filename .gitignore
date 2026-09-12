@@ -1,18 +1,29 @@
-# Spring Build
+# ── Gradle / Spring 빌드 산출물 ──────────────────────────────
 **/spring/build/
+**/spring/bin/
 **/spring/.gradle/
 **/spring/logs/
 
-# MySQL / Redis logs & data
+# ── 컨테이너 데이터 · 로그 ──────────────────────────────────
 **/mysql/logs/
 **/mysql/data/
+**/redis/data/
 
-# macOS
+# ── k6 실행 결과(원본 JSON) ─────────────────────────────────
+**/k6/out/
+*.summary.json
+
+# ── 에디터 · OS ─────────────────────────────────────────────
 .DS_Store
-
-# IntelliJ
 **/.idea/
 **/*.iml
+.claude/
 
-# k6 결과
-*.json
+# ── 공개하지 않는 것 ────────────────────────────────────────
+# 멘토 강의 내용을 받아적은 개인 필기 · 면접 대비 메모
+필기 - 풀이 과제.md
+# 작업용 내부 계획 문서
+docs/superpowers/
+# Finder 중복 사본
+* 2.md
+* 2.html

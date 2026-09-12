@@ -25,6 +25,14 @@ public class CouponController {
     // ─────────────────────────────────────────────────────────
     // POST /api/coupons/{couponId}/issue
     // 선착순 쿠폰 발급 요청 (핵심 API)
+    //
+    //   Phase 2: DB INSERT까지 완료한 후 200 OK 반환
+    //   Phase 3: Kafka에 이벤트 발행만 하고 즉시 202 Accepted 반환
+    //            DB INSERT는 Consumer가 백그라운드에서 처리
+    //
+    //   202 Accepted의 의미:
+    //     "요청은 받았고 유효하지만, 처리가 아직 완료되지 않았다"는 HTTP 표준 상태 코드.
+    //     쿠폰 발급이 확정된 건 아니고, Kafka Consumer가 성공적으로 INSERT해야 최종 확정.
     // ─────────────────────────────────────────────────────────
     @PostMapping("/{couponId}/issue")
     public ResponseEntity<ApiResponse<?>> issueCoupon(
@@ -34,7 +42,7 @@ public class CouponController {
     ) {
         if (userId == null && body != null) userId = body.get("userId");
         couponService.issueCoupon(couponId, userId);
-        return ResponseEntity.ok(ApiResponse.ok(""));
+        return ResponseEntity.accepted().body(ApiResponse.ok("쿠폰 발급 요청이 접수되었습니다."));
     }
 
     // ─────────────────────────────────────────────────────────

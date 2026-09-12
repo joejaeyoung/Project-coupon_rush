@@ -1,8 +1,20 @@
 #!/bin/bash
 COUPON_ID=${1:-1}
+TOTAL_QTY=${2:-100}
 
-docker exec mysql mysql -u jajo -pjajo coupon_db \
-  -e "DELETE FROM issued_coupon WHERE coupon_id=${COUPON_ID};
-      UPDATE coupon SET issued_quantity=0 WHERE id=${COUPON_ID};"
+docker exec mysql mysql -u coupon -pcoupon coupon_db -e "
+  INSERT INTO coupon (id, name, description, coupon_type, discount_value,
+                      max_discount_amount, min_order_amount, total_quantity,
+                      issued_quantity, valid_days, status, start_date, end_date)
+  VALUES (${COUPON_ID}, '테스트 쿠폰 ${COUPON_ID}', '선착순 쿠폰 테스트용', 'FIXED_AMOUNT', 1000,
+          10000, 5000, ${TOTAL_QTY},
+          0, 30, 'ACTIVE', NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY))
+  ON DUPLICATE KEY UPDATE
+    total_quantity = ${TOTAL_QTY},
+    issued_quantity = 0,
+    status = 'ACTIVE';
 
-echo "✅ 쿠폰 ${COUPON_ID} 초기화 완료 (DB)"
+  DELETE FROM issued_coupon WHERE coupon_id=${COUPON_ID};
+"
+
+echo "✅ 쿠폰 ${COUPON_ID} 초기화 완료 (total_quantity=${TOTAL_QTY})"

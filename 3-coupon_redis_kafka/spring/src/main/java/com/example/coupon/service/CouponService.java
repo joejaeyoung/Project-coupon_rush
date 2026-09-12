@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+// TODO: CouponKafkaProducer를 import 하세요.
+
 @Service
 @RequiredArgsConstructor
 public class CouponService {
@@ -24,7 +26,7 @@ public class CouponService {
     private final IssuedCouponRepository issuedCouponRepository;
     private final CouponRedisService couponRedisService;
     private final TransactionTemplate transactionTemplate;
-
+    private final CouponKafkaProducer couponKafkaProducer;
 
     // ─────────────────────────────────────────────────────────
     // 발급 가능한 쿠폰 목록 조회
@@ -38,42 +40,34 @@ public class CouponService {
     // ─────────────────────────────────────────────────────────
     // 선착순 쿠폰 발급
     //
-    // Phase 2 흐름:
-    //   Step 1. 쿠폰 존재/기간 체크 — DB 조회 후 커넥션 즉시 반납
-    //   Step 2. 중복 체크 + 재고 차감 — Redis 원자적 연산 (900개는 여기서 탈락)
-    //   Step 3. DB 쓰기 — TransactionTemplate으로 범위 최소화 (성공 100개만 도달)
+    // Phase 3 흐름:
+    //   Step 1. 기간 체크 — Redis (DB 커넥션 없음, 1000개 전부 처리)
+    //   Step 2. 중복 체크 + 재고 차감 — Redis 원자적 연산 (900개 여기서 탈락)
+    //   Step 3. Kafka 이벤트 발행 — 성공한 100개만 도달, 즉시 반환
+    //           DB INSERT는 CouponKafkaConsumer가 비동기로 처리
     //
-    // @Transactional을 메서드 전체에 걸지 않는 이유:
-    //   전체에 걸면 1000개 요청 모두 Step 1에서 DB 커넥션을 잡고
-    //   Step 2(Redis)가 끝날 때까지 커넥션을 점유 → 커넥션 풀 고갈
+    // Phase 2와의 차이:
+    //   Phase 2 Step 3 → TransactionTemplate으로 MySQL INSERT (동기)
+    //   Phase 3 Step 3 → Kafka 발행 후 즉시 반환 (비동기)
+    //   덕분에 Controller에서 200 대신 202 Accepted를 반환할 수 있다.
+    //
+    // TransactionTemplate을 제거해도 되는가?
+    //   DB 쓰기가 Consumer로 이동했으므로 이 메서드에는 트랜잭션이 필요 없다.
+    //   TransactionTemplate 필드는 제거하거나 unused 상태로 둬도 된다.
     // ─────────────────────────────────────────────────────────
     public void issueCoupon(Long couponId, Long userId) {
-        // Step 1. 기간 체크 (Redis — DB 커넥션 없음, 1000개 전부 여기서 처리)
+        // Step 1. 기간 체크 (Redis) — Phase 2와 동일, 변경 없음
         couponRedisService.validatePeriod(couponId);
 
-        // Step 2. 중복 체크 + 재고 차감 (Redis 원자적, 900개 여기서 탈락)
+        // Step 2. 중복 체크 + 재고 차감 (Redis) — Phase 2와 동일, 변경 없음
         couponRedisService.checkAndIssue(couponId, userId);
 
-        // Step 3. DB 쓰기 — 성공한 100개만 도달
-        final LocalDateTime now = LocalDateTime.now();
-        try {
-            transactionTemplate.execute(status -> {
-                Coupon coupon = couponRepository.findById(couponId)
-                        .orElseThrow(() -> new CouponException(CouponErrorCode.NOT_FOUND));
-                couponRepository.incrementIssuedQuantity(couponId);
-                IssuedCoupon issuedCoupon = new IssuedCoupon();
-                issuedCoupon.setCoupon(coupon);
-                issuedCoupon.setUserId(userId);
-                issuedCoupon.setStatus(com.example.coupon.domain.issuedCoupon.Status.ISSUED);
-                issuedCoupon.setIssuedAt(now);
-                issuedCoupon.setExpiredAt(now.plusDays(coupon.getValidDays()));
-                issuedCouponRepository.save(issuedCoupon);
-                return null;
-            });
-        } catch (Exception e) {
-            couponRedisService.rollback(couponId, userId);
-            throw e;
-        }
+        //   Phase 2에서는 DB INSERT 실패 시 Redis를 수동으로 롤백했지만,
+        //   Phase 3에서는 Kafka 발행 실패 시 rollback()이 의미 없습니다.
+        //   (Kafka 발행 자체가 실패하면 유저에게 예외가 전파되므로 Redis에 이미 차감된
+        //    재고가 남게 됩니다. 이 문제는 Outbox Pattern으로 해결하지만 이 프로젝트에서는
+        //    학습 목적으로 허용합니다. phase3-study.md 7장 참고)
+        couponKafkaProducer.publish(couponId, userId);
     }
 
     // ─────────────────────────────────────────────────────────

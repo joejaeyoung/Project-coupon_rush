@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>쿠폰 부하 테스트</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --np-green:       #03C75A;
+      --np-green2:      #02b350;
+      --np-green-light: #e8f9ef;
+      --np-dark:        #191919;
+      --np-gray1:       #666;
+      --np-gray2:       #999;
+      --np-gray3:       #d9d9d9;
+      --np-gray4:       #f5f6f8;
+      --np-red:         #ff4040;
+      --radius:         12px;
+    }
+    * { font-family: 'Noto Sans KR', sans-serif; box-sizing: border-box; }
+    body { background: var(--np-gray4); color: var(--np-dark); margin: 0; }
+
+    .np-header {
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .np-logo {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 18px; font-weight: 700; color: var(--np-dark); text-decoration: none;
+    }
+    .np-logo .logo-n {
+      width: 30px; height: 30px;
+      background: var(--np-green);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 16px; font-weight: 900;
+    }
+    .np-header-sub { font-size: 12px; color: var(--np-gray2); margin-left: 4px; }
+
+    .np-wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
+
+    .np-card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: 0 1px 6px rgba(0,0,0,.06);
+    }
+
+    /* 탭 */
+    .np-tabs {
+      display: flex;
+      border-bottom: 1px solid #f0f0f0;
+      padding: 0 24px;
+    }
+    .np-tab {
+      padding: 16px 0;
+      margin-right: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--np-gray2);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color .15s, border-color .15s;
+      white-space: nowrap;
+    }
+    .np-tab:hover { color: var(--np-dark); }
+    .np-tab.active { color: var(--np-green); border-bottom-color: var(--np-green); }
+
+    .np-tab-pane { display: none; }
+    .np-tab-pane.active { display: block; }
+
+    .np-card-body { padding: 20px 24px; }
+
+    .np-label { font-size: 12px; font-weight: 600; color: var(--np-gray1); margin-bottom: 5px; display: block; }
+    .np-input {
+      width: 100%;
+      border: 1px solid var(--np-gray3);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: var(--np-dark);
+      background: #fff;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .np-input:focus { border-color: var(--np-green); box-shadow: 0 0 0 3px rgba(3,199,90,.08); }
+
+    .btn-np {
+      background: var(--np-green);
+      color: #fff; border: none; border-radius: 6px;
+      font-size: 13px; font-weight: 600; padding: 7px 16px;
+      cursor: pointer; transition: background .15s; white-space: nowrap;
+    }
+    .btn-np:hover { background: var(--np-green2); color: #fff; }
+    .btn-np:disabled { background: var(--np-gray3); cursor: default; }
+
+    .btn-np-ghost {
+      background: #fff; color: var(--np-gray1);
+      border: 1px solid var(--np-gray3); border-radius: 6px;
+      font-size: 13px; font-weight: 500; padding: 6px 14px;
+      cursor: pointer; transition: all .15s; white-space: nowrap;
+    }
+    .btn-np-ghost:hover { border-color: #aaa; color: var(--np-dark); }
+
+    .stat-box {
+      background: var(--np-gray4); border-radius: 10px;
+      padding: 18px 20px; text-align: center;
+    }
+    .stat-num   { font-size: 28px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+    .stat-label { font-size: 12px; color: var(--np-gray1); font-weight: 500; }
+
+    .log-box {
+      height: 300px; overflow-y: auto;
+      background: #111827; color: #d1d5db;
+      font-family: 'Menlo', 'Consolas', monospace;
+      font-size: 12px; padding: 14px 16px;
+      border-radius: 8px; line-height: 1.7;
+    }
+    .log-box::-webkit-scrollbar { width: 4px; }
+    .log-box::-webkit-scrollbar-thumb { background: #374151; border-radius: 2px; }
+    .log-success { color: #34d399; }
+    .log-error   { color: #f87171; }
+    .log-info    { color: #60a5fa; }
+
+    .divider { border: none; border-top: 1px solid #f0f0f0; margin: 20px 0; }
+
+    @media (max-width: 640px) {
+      .np-wrap { padding: 16px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="np-header">
+  <a class="np-logo" href="#">
+    <div class="logo-n">N</div>
+    <span>Pay 쿠폰</span>
+  </a>
+  <span class="np-header-sub">쿠폰 발급 테스트</span>
+</header>
+
+<div class="np-wrap">
+  <div class="np-card">
+
+    <!-- 탭 헤더 -->
+    <div class="np-tabs">
+      <div class="np-tab active" onclick="switchTab('load')">동시 발급 테스트</div>
+      <div class="np-tab" onclick="switchTab('single')">단일 유저 중복 요청</div>
+    </div>
+
+    <div class="np-card-body">
+
+      <!-- 서버 URL / API 경로 (공통) -->
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-md-5">
+          <label class="np-label">서버 URL</label>
+          <input type="text" id="serverUrl" class="np-input" placeholder="http://localhost:8080">
+        </div>
+        <div class="col-12 col-md-7">
+          <label class="np-label">API 경로 <span style="font-weight:400;color:var(--np-gray2);">(미입력 시 기본값 사용, {id} 자리에 쿠폰 ID 대입)</span></label>
+          <input type="text" id="apiPath" class="np-input" placeholder="/api/coupons/{id}/issue">
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- ── Tab 1: 동시 발급 테스트 ── -->
+      <div id="pane-load" class="np-tab-pane active">
+        <p style="font-size:12px;color:var(--np-gray2);margin:0 0 16px;">N명이 동시에 요청할 때 선착순 처리 정합성을 확인합니다.</p>
+
+        <div class="row g-3 mb-4">
+          <div class="col-6">
+            <label class="np-label">쿠폰 ID</label>
+            <input type="number" id="loadCouponId" class="np-input" value="1" min="1">
+          </div>
+          <div class="col-6">
+            <label class="np-label">동시 요청 수</label>
+            <input type="number" id="loadConcurrency" class="np-input" value="100" min="1" max="1000">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+          <button class="btn-np" id="loadTestBtn" onclick="runLoadTest()" style="min-width:110px;">
+            <i class="bi bi-play-fill me-1"></i>테스트 시작
+          </button>
+          <button class="btn-np-ghost" onclick="clearLog()">
+            <i class="bi bi-trash me-1"></i>초기화
+          </button>
+          <button class="btn-np-ghost" onclick="initStock()">
+            <i class="bi bi-arrow-clockwise me-1"></i>재고 초기화
+          </button>
+          <button class="btn-np-ghost" onclick="checkStock()">
+            <i class="bi bi-box-seam me-1"></i>재고 확인
+          </button>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-4">
+            <div class="stat-box" style="border-top:3px solid var(--np-green);">
+              <div class="stat-num" id="successCount" style="color:var(--np-green);">0</div>
+              <div class="stat-label">발급 성공</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="stat-box" style="border-top:3px solid var(--np-red);">
+              <div class="stat-num" id="failCount" style="color:var(--np-red);">0</div>
+              <div class="stat-label">발급 실패</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="stat-box" style="border-top:3px solid #888;">
+              <div class="stat-num" id="stockAfter" style="color:var(--np-dark);">-</div>
+              <div class="stat-label">남은 재고</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="log-box" id="loadLog">
+          <span class="log-info">[INFO] 서버 URL을 입력하고 테스트를 시작하세요.</span>
+        </div>
+      </div>
+
+      <!-- ── Tab 2: 단일 유저 중복 요청 ── -->
+      <div id="pane-single" class="np-tab-pane">
+        <p style="font-size:12px;color:var(--np-gray2);margin:0 0 16px;">1명이 동시에 N번 요청할 때 중복 발급 방지 정합성을 확인합니다.</p>
+
+        <div class="row g-3 mb-4">
+          <div class="col-4">
+            <label class="np-label">쿠폰 ID</label>
+            <input type="number" id="singleCouponId" class="np-input" value="1" min="1">
+          </div>
+          <div class="col-4">
+            <label class="np-label">User ID</label>
+            <input type="number" id="singleUserId" class="np-input" value="1" min="1">
+          </div>
+          <div class="col-4">
+            <label class="np-label">요청 횟수</label>
+            <input type="number" id="singleRequests" class="np-input" value="10" min="1" max="100">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+          <button class="btn-np" id="singleTestBtn" onclick="runSingleUserTest()" style="min-width:110px;">
+            <i class="bi bi-play-fill me-1"></i>테스트 시작
+          </button>
+          <button class="btn-np-ghost" onclick="clearSingleLog()">
+            <i class="bi bi-trash me-1"></i>초기화
+          </button>
+          <button class="btn-np-ghost" onclick="initStockSingle()">
+            <i class="bi bi-arrow-clockwise me-1"></i>재고 초기화
+          </button>
+          <button class="btn-np-ghost" onclick="checkStockSingle()">
+            <i class="bi bi-box-seam me-1"></i>재고 확인
+          </button>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-4">
+            <div class="stat-box" style="border-top:3px solid var(--np-green);">
+              <div class="stat-num" id="singleSuccessCount" style="color:var(--np-green);">0</div>
+              <div class="stat-label">발급 성공</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="stat-box" style="border-top:3px solid var(--np-red);">
+              <div class="stat-num" id="singleFailCount" style="color:var(--np-red);">0</div>
+              <div class="stat-label">발급 실패</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="stat-box" style="border-top:3px solid #888;">
+              <div class="stat-num" id="singleStockAfter" style="color:var(--np-dark);">-</div>
+              <div class="stat-label">남은 재고</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="log-box" id="singleLog">
+          <span class="log-info">[INFO] 성공 1건, 나머지 중복 실패가 기대값입니다.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+function switchTab(tab) {
+  document.querySelectorAll('.np-tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && tab === 'load') || (i === 1 && tab === 'single'));
+  });
+  document.getElementById('pane-load').classList.toggle('active', tab === 'load');
+  document.getElementById('pane-single').classList.toggle('active', tab === 'single');
+}
+
+function getBase() {
+  return (document.getElementById('serverUrl').value || 'http://localhost:8080').trim().replace(/\/$/, '');
+}
+
+function getIssueUrl(couponId) {
+  const path = (document.getElementById('apiPath').value || '/api/coupons/{id}/issue').trim();
+  return getBase() + path.replace('{id}', couponId);
+}
+
+// ── 동시 발급 테스트 ──────────────────────────────────────
+
+let isRunning = false;
+
+async function runLoadTest() {
+  if (isRunning) return;
+  const couponId    = parseInt(document.getElementById('loadCouponId').value);
+  const concurrency = parseInt(document.getElementById('loadConcurrency').value);
+  const base        = getBase();
+  if (!couponId || concurrency < 1) { alert('쿠폰 ID와 동시 요청 수를 입력하세요.'); return; }
+
+  isRunning = true;
+  const btn = document.getElementById('loadTestBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>실행 중...';
+  document.getElementById('successCount').textContent = '0';
+  document.getElementById('failCount').textContent    = '0';
+  document.getElementById('stockAfter').textContent   = '-';
+  document.getElementById('loadLog').innerHTML        = '';
+
+  addLog(`[시작] 쿠폰 ID=${couponId} | 동시 요청=${concurrency}명 | User ID=랜덤`, 'info');
+
+  const startTime = performance.now();
+
+  const usedIds = new Set();
+  function randomUserId() {
+    let id;
+    do { id = Math.floor(Math.random() * 1_000_000) + 1; } while (usedIds.has(id));
+    usedIds.add(id);
+    return id;
+  }
+
+  let successCount = 0, failCount = 0;
+  const requests = Array.from({ length: concurrency }, () => {
+    const userId = randomUserId();
+    return fetch(getIssueUrl(couponId), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    }).then(async res => {
+      const data = await res.json();
+      if (res.ok) {
+        successCount++;
+        document.getElementById('successCount').textContent = successCount;
+        if (successCount <= 20) addLog(`[성공] userId=${userId}`, 'success');
+        else if (successCount === 21) addLog(`... (성공 로그 이후 생략)`, 'info');
+      } else {
+        failCount++;
+        document.getElementById('failCount').textContent = failCount;
+        if (failCount <= 10) addLog(`[실패] userId=${userId} → ${data.message || res.statusText}`, 'error');
+        else if (failCount === 11) addLog(`... (실패 로그 이후 생략)`, 'info');
+      }
+    }).catch(e => {
+      failCount++;
+      document.getElementById('failCount').textContent = failCount;
+      addLog(`[오류] userId=${userId} → ${e.message}`, 'error');
+    });
+  });
+
+  await Promise.all(requests);
+
+  const endTime = performance.now();
+  const duration = (endTime - startTime).toFixed(2); 
+  addLog(`[총 소요 시간] ${duration} ms`, 'info');
+
+  addLog(`━━━ 완료 ━━━  성공=${successCount}  실패=${failCount}  총=${concurrency}`, 'info');
+  await checkStock();
+
+  isRunning = false;
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-play-fill me-1"></i>테스트 시작';
+}
+
+async function initStock() {
+  const couponId = parseInt(document.getElementById('loadCouponId').value);
+  if (!couponId) { alert('쿠폰 ID를 입력하세요.'); return; }
+  try {
+    const res  = await fetch(`${getBase()}/api/coupons/${couponId}/stock/init`, { method: 'POST' });
+    const data = await res.json();
+    document.getElementById('stockAfter').textContent = data.data ?? '-';
+    addLog(`[초기화] 쿠폰 ID=${couponId} → 완전 초기화 완료: ${data.data}개`, 'info');
+  } catch (e) {
+    addLog(`[초기화 실패] ${e.message}`, 'error');
+  }
+}
+
+async function checkStock() {
+  const couponId = parseInt(document.getElementById('loadCouponId').value);
+  if (!couponId) return;
+  try {
+    const res  = await fetch(`${getBase()}/api/coupons/${couponId}/stock`);
+    const data = await res.json();
+    document.getElementById('stockAfter').textContent = data.data ?? '-';
+    addLog(`[재고] 쿠폰 ID=${couponId} → 남은 재고: ${data.data}`, 'info');
+  } catch (e) {
+    addLog(`[재고 조회 실패] ${e.message}`, 'error');
+  }
+}
+
+function addLog(msg, type = '') {
+  const log = document.getElementById('loadLog');
+  const now = new Date().toLocaleTimeString('ko-KR', { hour12: false });
+  const div = document.createElement('div');
+  div.className   = `log-${type}`;
+  div.textContent = `[${now}] ${msg}`;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function clearLog() {
+  document.getElementById('loadLog').innerHTML        = '';
+  document.getElementById('successCount').textContent = '0';
+  document.getElementById('failCount').textContent    = '0';
+  document.getElementById('stockAfter').textContent   = '-';
+}
+
+// ── 단일 유저 중복 요청 테스트 ─────────────────────────────
+
+let isSingleRunning = false;
+
+async function runSingleUserTest() {
+  if (isSingleRunning) return;
+  const couponId = parseInt(document.getElementById('singleCouponId').value);
+  const userId   = parseInt(document.getElementById('singleUserId').value);
+  const count    = parseInt(document.getElementById('singleRequests').value);
+  const base     = getBase();
+  if (!couponId || !userId || count < 1) { alert('쿠폰 ID, User ID, 요청 횟수를 입력하세요.'); return; }
+
+  isSingleRunning = true;
+  const btn = document.getElementById('singleTestBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>실행 중...';
+  document.getElementById('singleSuccessCount').textContent = '0';
+  document.getElementById('singleFailCount').textContent    = '0';
+  document.getElementById('singleStockAfter').textContent   = '-';
+  document.getElementById('singleLog').innerHTML            = '';
+
+  addSingleLog(`[시작] userId=${userId} | 쿠폰 ID=${couponId} | 동시 요청=${count}번`, 'info');
+
+  let successCount = 0, failCount = 0;
+  const requests = Array.from({ length: count }, () =>
+    fetch(getIssueUrl(couponId), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    }).then(async res => {
+      const data = await res.json();
+      if (res.ok) {
+        successCount++;
+        document.getElementById('singleSuccessCount').textContent = successCount;
+        addSingleLog(`[성공] userId=${userId}`, 'success');
+      } else {
+        failCount++;
+        document.getElementById('singleFailCount').textContent = failCount;
+        addSingleLog(`[실패] ${data.message || res.statusText}`, 'error');
+      }
+    }).catch(e => {
+      failCount++;
+      document.getElementById('singleFailCount').textContent = failCount;
+      addSingleLog(`[오류] ${e.message}`, 'error');
+    })
+  );
+
+  await Promise.all(requests);
+  addSingleLog(`━━━ 완료 ━━━  성공=${successCount}  실패=${failCount}  총=${count}`, 'info');
+  await checkStockSingle();
+
+  isSingleRunning = false;
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-play-fill me-1"></i>테스트 시작';
+}
+
+async function initStockSingle() {
+  const couponId = parseInt(document.getElementById('singleCouponId').value);
+  if (!couponId) { alert('쿠폰 ID를 입력하세요.'); return; }
+  try {
+    const res  = await fetch(`${getBase()}/api/coupons/${couponId}/stock/init`, { method: 'POST' });
+    const data = await res.json();
+    document.getElementById('singleStockAfter').textContent = data.data ?? '-';
+    addSingleLog(`[초기화] 쿠폰 ID=${couponId} → 완전 초기화 완료: ${data.data}개`, 'info');
+  } catch (e) {
+    addSingleLog(`[초기화 실패] ${e.message}`, 'error');
+  }
+}
+
+async function checkStockSingle() {
+  const couponId = parseInt(document.getElementById('singleCouponId').value);
+  if (!couponId) return;
+  try {
+    const res  = await fetch(`${getBase()}/api/coupons/${couponId}/stock`);
+    const data = await res.json();
+    document.getElementById('singleStockAfter').textContent = data.data ?? '-';
+    addSingleLog(`[재고] 쿠폰 ID=${couponId} → 남은 재고: ${data.data}`, 'info');
+  } catch (e) {
+    addSingleLog(`[재고 조회 실패] ${e.message}`, 'error');
+  }
+}
+
+function addSingleLog(msg, type = '') {
+  const log = document.getElementById('singleLog');
+  const now = new Date().toLocaleTimeString('ko-KR', { hour12: false });
+  const div = document.createElement('div');
+  div.className   = `log-${type}`;
+  div.textContent = `[${now}] ${msg}`;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function clearSingleLog() {
+  document.getElementById('singleLog').innerHTML            = '';
+  document.getElementById('singleSuccessCount').textContent = '0';
+  document.getElementById('singleFailCount').textContent    = '0';
+  document.getElementById('singleStockAfter').textContent   = '-';
+}
+
+</script>
+</body>
+</html>

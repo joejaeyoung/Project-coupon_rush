@@ -181,6 +181,91 @@ SET lock:coupon:1 "locked" NX PX 3000
 
 `PX 3000` (만료 시간)이 없으면 서버 A가 락을 획득한 채로 죽었을 때 락이 영원히 풀리지 않는 **데드락**이 생긴다.
 
+### Lua Script — 명령어 조합의 원자성
+
+개별 명령어의 원자성과 여러 명령어 조합의 원자성은 다르다.
+
+`SADD`, `DECR` 각각은 원자적이다. 하지만 두 명령어 사이에는 **네트워크 왕복**이 있고, 그 사이에 다른 클라이언트가 끼어들 수 있다.
+
+```
+Java에서 두 명령어를 순서대로 호출할 때:
+
+Spring A:  SADD users A  →  Redis 실행  →  1 반환
+                              ↑ 다른 클라이언트 명령어가 여기 끼어들 수 있음
+Spring A:  DECR stock    →  Redis 실행  →  결과 반환
+```
+
+**가장 흔한 문제 — "읽고 조건 판단 후 쓰기"**
+
+```java
+// Java 코드
+String stock = redisTemplate.opsForValue().get(stockKey);  // GET → "1"
+// ← 다른 클라이언트가 이 사이에 DECR → stock이 실제로는 이미 0
+redisTemplate.opsForValue().decrement(stockKey);           // DECR → -1 (재고 없는데 차감!)
+```
+
+`GET`으로 읽은 값(1)과 실제 `DECR` 시점의 값(0)이 다르다. 읽기와 쓰기 사이에 다른 클라이언트가 바꿔버린 것이다.
+
+**Lua Script로 해결:**
+
+```lua
+-- 재고가 있을 때만 차감하는 스크립트
+local stock = redis.call('GET', KEYS[1])
+if tonumber(stock) > 0 then
+    return redis.call('DECR', KEYS[1])  -- GET과 DECR이 원자적으로 묶임
+end
+return -1  -- 재고 없으면 차감 자체를 안 함
+```
+
+Lua 스크립트는 **Redis 서버 안에서** 실행된다. 스크립트 전체가 싱글 스레드 이벤트 루프 안에서 끊기지 않고 돌아가므로 다른 클라이언트가 끼어들 물리적 공간이 없다.
+
+**Lua가 필요한 경우 vs 아닌 경우:**
+
+| 상황 | Lua 필요 여부 | 이유 |
+|------|-------------|------|
+| 단순 INCR/DECR | ❌ | 명령어 자체가 Read-Modify-Write를 원자적으로 처리 |
+| SADD → 중복 체크 → DECR (Phase 2) | ❌ (허용 가능) | DECR이 음수면 롤백하는 패턴으로 커버 가능 |
+| GET → 조건 판단 → SET/DECR | ✅ | GET과 SET 사이에 값이 바뀔 수 있음 |
+| 여러 키를 읽고 조건부로 여러 키를 수정 | ✅ | 중간 상태가 다른 클라이언트에 노출됨 |
+| 복잡한 비즈니스 조건 (등급 체크 + 재고 + 중복) | ✅ | 3번 왕복 → 각 사이에 개입 가능 |
+
+**Spring에서 Lua Script 실행:**
+
+```java
+// Lua 스크립트 정의
+DefaultRedisScript<Long> script = new DefaultRedisScript<>();
+script.setScriptText(
+    "local stock = redis.call('GET', KEYS[1])\n" +
+    "if tonumber(stock) > 0 then\n" +
+    "  return redis.call('DECR', KEYS[1])\n" +
+    "end\n" +
+    "return -1"
+);
+script.setResultType(Long.class);
+
+// 실행
+Long result = redisTemplate.execute(script,
+    List.of(stockKey),  // KEYS
+    // ARGV 없음
+);
+```
+
+**Phase 2에서 Lua 없이 된 이유:**
+
+```java
+// SADD: 반환값 0이면 이미 추가된 것 → check-and-add가 원자적으로 해결됨
+Long cnt = redisTemplate.opsForSet().add(usersKey, userId);
+if (cnt == 0) throw DUPLICATED;
+
+// DECR: 차감 후 음수이면 롤백 → DECR 자체가 원자적이라 -1이 정확하게 반환됨
+Long left = redisTemplate.opsForValue().decrement(stockKey);
+if (left < 0) { INCR; SREM; throw EXHAUSTED; }
+```
+
+`DECR`이 Read-Modify-Write를 한 번에 처리하므로 "재고 확인 후 차감" 패턴을 따로 구현하지 않아도 된다. 단, SADD 직후 DECR 전 순간에 `users` 셋에는 userId가 있는데 stock은 아직 안 차감된 짧은 불일치 윈도우가 존재한다. 이 불일치가 허용 가능한 수준이면 Lua 없이도 되고, 완전히 없애야 한다면 두 연산을 Lua로 묶어야 한다.
+
+한 줄 요약: **명령어 하나**의 원자성은 Redis가 보장하지만, **"읽고 → 판단하고 → 쓰는" 조합**의 원자성은 Lua Script가 보장한다.
+
 ---
 
 ## 4. Redisson — Java에서 분산 락 구현

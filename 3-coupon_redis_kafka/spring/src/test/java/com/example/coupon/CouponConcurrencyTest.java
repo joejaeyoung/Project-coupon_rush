@@ -4,6 +4,8 @@ import com.example.coupon.domain.coupon.Coupon;
 import com.example.coupon.domain.coupon.Status;
 import com.example.coupon.repository.CouponRepository;
 import com.example.coupon.repository.IssuedCouponRepository;
+import com.example.coupon.exception.CouponException;
+import com.example.coupon.service.CouponRedisService;
 import com.example.coupon.service.CouponService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -18,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @SpringBootTest
 class CouponConcurrencyTest {
@@ -30,6 +34,9 @@ class CouponConcurrencyTest {
 
     @Autowired
     private CouponRepository couponRepository;
+
+    @Autowired
+    private CouponRedisService couponRedisService;
 
     private Long couponId;
 
@@ -47,6 +54,14 @@ class CouponConcurrencyTest {
         coupon.setValidDays(30);
 
         couponId = couponRepository.save(coupon).getId();
+
+        // Phase 2와 동일하게 재고·기간을 Redis에 올린다.
+        // Phase 3에서도 발급 판정은 여전히 Redis가 한다. 달라지는 건 그 뒤 DB 쓰기 경로뿐이다.
+        couponRedisService.initStock(
+                couponId,
+                coupon.getTotalQuantity(),
+                coupon.getStartDate(),
+                coupon.getEndDate());
     }
 
     // ─────────────────────────────────────────────────────────
@@ -77,6 +92,9 @@ class CouponConcurrencyTest {
                     couponService.issueCoupon(couponId, userId);
                     successCount.incrementAndGet();
 
+                } catch (CouponException e) {
+                    // 재고 소진(EXHAUSTED) · 중복 발급(DUPLICATED) — 정상적인 탈락
+                    failCount.incrementAndGet();
                 } catch (InterruptedException e) {
                     failCount.incrementAndGet();
                     Thread.currentThread().interrupt();
@@ -93,8 +111,17 @@ class CouponConcurrencyTest {
         System.out.println("성공: " + successCount.get());
         System.out.println("실패: " + failCount.get());
 
+        // Redis 판정 결과는 동기 — 응답 시점에 이미 확정되어 있다
         assertThat(successCount.get()).isEqualTo(100);
-        assertThat(issuedCouponRepository.count()).isEqualTo(100);
+        assertThat(successCount.get() + failCount.get()).isEqualTo(totalUsers);
+
+        // DB 쓰기는 Kafka Consumer가 비동기로 처리한다.
+        // 발급 API가 202를 돌려준 시점에는 아직 INSERT 전일 수 있으므로 즉시 단언하면 실패한다.
+        // Consumer가 1000건을 소비해 100건을 INSERT할 때까지 기다린다.
+        await().atMost(Duration.ofSeconds(30))
+               .pollInterval(Duration.ofMillis(200))
+               .untilAsserted(() ->
+                       assertThat(issuedCouponRepository.count()).isEqualTo(100));
     }
 
     // ─────────────────────────────────────────────────────────
@@ -118,6 +145,8 @@ class CouponConcurrencyTest {
 
                     couponService.issueCoupon(couponId, sameUserId);
                     successCount.incrementAndGet();
+                } catch (CouponException e) {
+                    // 두 번째 이후 요청은 DUPLICATED — 기대한 동작이므로 무시
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } finally {
@@ -133,5 +162,11 @@ class CouponConcurrencyTest {
         System.out.println("성공 횟수: " + successCount.get());
 
         assertThat(successCount.get()).isEqualTo(1);
+
+        // 같은 사용자 이벤트가 한 건만 DB에 남아야 한다 (Consumer 멱등성 포함 검증)
+        await().atMost(Duration.ofSeconds(30))
+               .pollInterval(Duration.ofMillis(200))
+               .untilAsserted(() ->
+                       assertThat(issuedCouponRepository.count()).isEqualTo(1));
     }
 }
