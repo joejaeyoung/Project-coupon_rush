@@ -1,0 +1,1 @@
+2026-09-12T16:04:03.763Z  WARN 4216 --- [coupon] [on-issuer-0-C-1] c.e.coupon.service.CouponKafkaConsumer   : 916 쿠폰 : 200000 유저가 중복 시도

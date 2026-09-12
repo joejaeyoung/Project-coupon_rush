@@ -1,0 +1,1 @@
+{"dbRowsForEvent":1,"committedOffset":1,"dbTransactionActive":false,"completion":{"couponId":914,"userId":200000,"topic":"lab-20260912t154925z-recovery-r1","partition":0,"offset":1,"completedAtMs":1789228997742,"thread":"coupon-issuer-0-C-1"}}

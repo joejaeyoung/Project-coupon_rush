@@ -1,0 +1,8 @@
+{
+  "regression_tests": 2,
+  "regression_failures": 0,
+  "regression_errors": 0,
+  "normal_jar_has_lab_classes": false,
+  "normal_jar_sha256": "643ef8ab6934826dfe7f7e603e3969c9735b26877a57938899268dd7db675cea",
+  "junit_excerpt": "Only suite counters and testcase attributes retained; environment and stdout omitted."
+}

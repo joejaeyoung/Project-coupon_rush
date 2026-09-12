@@ -1,0 +1,105 @@
+{
+  "case": "20260912t154925z-recovery-r3",
+  "repeat": 3,
+  "topic": "lab-20260912t154925z-recovery-r3",
+  "group": "lab-20260912t154925z-recovery-r3-group",
+  "seed_offsets": {
+    "offsets": [
+      {
+        "end": 1,
+        "partition": 0,
+        "committed": 1
+      }
+    ],
+    "lag": 0,
+    "failures": 0,
+    "atMs": 1789229033690,
+    "completed": 1
+  },
+  "paused_backlog": {
+    "offsets": [
+      {
+        "end": 51,
+        "partition": 0,
+        "committed": 1
+      }
+    ],
+    "lag": 50,
+    "failures": 0,
+    "atMs": 1789229033932,
+    "completed": 1
+  },
+  "before_resume_db": {
+    "issued_quantity": 1,
+    "db_rows": 1,
+    "distinct_users": 1
+  },
+  "checkpoint": {
+    "committedOffset": 1,
+    "dbTransactionActive": false,
+    "completion": {
+      "couponId": 916,
+      "userId": 200000,
+      "topic": "lab-20260912t154925z-recovery-r3",
+      "partition": 0,
+      "offset": 1,
+      "completedAtMs": 1789229034202,
+      "thread": "coupon-issuer-0-C-1"
+    },
+    "dbRowsForEvent": 1
+  },
+  "before_kill_db": {
+    "issued_quantity": 2,
+    "db_rows": 2,
+    "distinct_users": 2
+  },
+  "before_kill_offsets": {
+    "rows": [
+      {
+        "partition": 0,
+        "committed": 1,
+        "end": 51,
+        "lag": 50
+      }
+    ],
+    "cli_stdout": "\nGROUP                                  TOPIC                            PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                                            HOST            CLIENT-ID\nlab-20260912t154925z-recovery-r3-group lab-20260912t154925z-recovery-r3 0          1               51              50              consumer-lab-20260912t154925z-recovery-r3-group-1-7a0e96a3-03d9-458f-8b41-e51e4ca00c08 /172.26.0.1     consumer-lab-20260912t154925z-recovery-r3-group-1\n"
+  },
+  "exit_code": -9,
+  "killed_db": {
+    "issued_quantity": 2,
+    "db_rows": 2,
+    "distinct_users": 2
+  },
+  "killed_offsets": {
+    "rows": [
+      {
+        "partition": 0,
+        "committed": 1,
+        "end": 51,
+        "lag": 50
+      }
+    ],
+    "cli_stdout": "\nGROUP                                  TOPIC                            PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                                            HOST            CLIENT-ID\nlab-20260912t154925z-recovery-r3-group lab-20260912t154925z-recovery-r3 0          1               51              50              consumer-lab-20260912t154925z-recovery-r3-group-1-7a0e96a3-03d9-458f-8b41-e51e4ca00c08 /172.26.0.1     consumer-lab-20260912t154925z-recovery-r3-group-1\n"
+  },
+  "replayed_same_offset": {
+    "couponId": 916,
+    "userId": 200000,
+    "topic": "lab-20260912t154925z-recovery-r3",
+    "partition": 0,
+    "offset": 1,
+    "completedAtMs": 1789229043765,
+    "thread": "coupon-issuer-0-C-1"
+  },
+  "recovered_deliveries": 50,
+  "final_db_rows": 51,
+  "final_issued_quantity": 51,
+  "duplicate_groups": 0,
+  "final_offsets": [
+    {
+      "end": 51,
+      "partition": 0,
+      "committed": 51
+    }
+  ],
+  "kill_to_recovered_ms": 8689.694091796875
+}

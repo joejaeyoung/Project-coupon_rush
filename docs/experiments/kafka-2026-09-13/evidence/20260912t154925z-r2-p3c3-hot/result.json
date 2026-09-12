@@ -1,0 +1,56 @@
+{
+  "case": "20260912t154925z-r2-p3c3-hot",
+  "repeat": 2,
+  "partitions": 3,
+  "consumers": 3,
+  "workload": "hot",
+  "requests": 6000,
+  "accepted": 6000,
+  "db_rows": 6000,
+  "duplicate_groups": 0,
+  "oversold": 0,
+  "http_p95_ms": 20.499169921875,
+  "request_to_db_p50_ms": 16880.08251953125,
+  "request_to_db_p95_ms": 29447.488635253907,
+  "request_to_db_p99_ms": 30622.571313476565,
+  "request_to_db_max_ms": 30940.5419921875,
+  "db_completion_rate_per_s": 187.3335776587207,
+  "observed_max_lag": 5990,
+  "lag_clear_after_last_http_ms": 31022.12890625,
+  "partition_records": {
+    "2": 6000
+  },
+  "thread_records": {
+    "coupon-issuer-2-C-1": 6000
+  },
+  "assignments": {
+    "consumer-lab-20260912t154925z-r2-p3c3-hot-group-1": [
+      0
+    ],
+    "consumer-lab-20260912t154925z-r2-p3c3-hot-group-2": [
+      1
+    ],
+    "consumer-lab-20260912t154925z-r2-p3c3-hot-group-3": [
+      2
+    ]
+  },
+  "final_offsets": [
+    {
+      "partition": 0,
+      "end": 650,
+      "committed": 650
+    },
+    {
+      "partition": 2,
+      "end": 6450,
+      "committed": 6450
+    },
+    {
+      "partition": 1,
+      "end": 400,
+      "committed": 400
+    }
+  ],
+  "topic": "lab-20260912t154925z-r2-p3c3-hot",
+  "group": "lab-20260912t154925z-r2-p3c3-hot-group"
+}

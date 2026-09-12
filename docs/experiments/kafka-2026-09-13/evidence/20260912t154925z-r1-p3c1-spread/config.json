@@ -1,0 +1,16 @@
+{
+  "consumer": {
+    "enable.auto.commit": false,
+    "max.poll.records": 500,
+    "max.poll.interval.ms": 300000,
+    "session.timeout.ms": 10000,
+    "heartbeat.interval.ms": 3000,
+    "auto.offset.reset": "earliest"
+  },
+  "group": "lab-20260912t154925z-r1-p3c1-spread-group",
+  "kafkaClientVersion": "3.8.1",
+  "ackMode": "BATCH",
+  "topic": "lab-20260912t154925z-r1-p3c1-spread",
+  "partitions": 3,
+  "javaVersion": "17.0.10"
+}

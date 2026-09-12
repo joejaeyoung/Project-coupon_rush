@@ -112,8 +112,9 @@ Phase 2의 Redis 판정을 유지하고, 판정 이후 DB 쓰기를 Consumer로 
 | 결정 | 구현 | 범위 |
 | --- | --- | --- |
 | 쿠폰별 이벤트를 같은 파티션으로 | 메시지 키에 `couponId` 사용 | 파티션에 기록된 순서 기준. HTTP 요청 도착 순서 전체를 보장하지 않음 |
-| 이미 저장한 발급 건 건너뛰기 | `(couponId, userId)` 존재 조회 | DB 유일 제약과 중복 이벤트 재전달 테스트는 추가 과제 |
-| Kafka 자동 오프셋 커밋 끄기 | `enable-auto-commit: false` | Spring 리스너 컨테이너가 커밋 관리. 직접 `acknowledge()`하는 수동 ACK 구현은 없음 |
+| 이미 저장한 발급 건 건너뛰기 | `(couponId, userId)` 존재 조회 | DB 커밋 후 SIGKILL·같은 offset 재전달 3회 검증. DB 유일 제약은 추가 과제 |
+| Kafka 자동 오프셋 커밋 끄기 | `enable-auto-commit: false`, `ack-mode: batch` | Spring 리스너 컨테이너가 poll 단위 커밋 관리. 직접 수동 ACK를 호출하지 않음 |
+| 토픽·소비 병렬도 명시 | `NewTopic`, 파티션 수·listener concurrency 설정 | P1/C1·P3/C1·P3/C3 비교. 같은 키의 이벤트는 한 파티션에 집중 |
 | 접수 응답 먼저 반환하기 | `KafkaTemplate.send()`의 Future를 기다리지 않음 | `202` 응답 시점에 브로커 전송 성공·DB 저장을 보장하지 않음 |
 
 [발급 서비스](3-coupon_redis_kafka/spring/src/main/java/com/example/coupon/service/CouponService.java) · [Producer](3-coupon_redis_kafka/spring/src/main/java/com/example/coupon/service/CouponKafkaProducer.java) · [Consumer](3-coupon_redis_kafka/spring/src/main/java/com/example/coupon/service/CouponKafkaConsumer.java) · [Kafka 설정](3-coupon_redis_kafka/spring/src/main/resources/application.yml)
@@ -220,6 +221,16 @@ JUnit은 `CountDownLatch`로 작업 시작을 맞추고, Phase 3은 Awaitility�
 
 **k6 결과를 읽을 때:** 재고 소진·중복의 `409`도 `http_req_failed`에 포함됩니다. `coupon_issue_fail` 역시 모든 비성공 응답을 세므로, 이 카운터만으로 모든 탈락이 정상 `409`라고 판정하지 않습니다. 현재 `p95 < 300ms` 임계값은 기록상 Phase 1·2가 넘었습니다. 또 `shared-iterations`는 VU별 정확히 한 번의 실행을 보장하지 않아, 1,000 iterations를 서로 다른 사용자 1,000명으로 단정하지 않습니다.
 
+## Kafka 확장·복구 실험 · 2026-09-13
+
+단일 호스트에서 **6,000건 전량 유효 요청·HTTP 작업자 64개**로 키 분포와 파티션·Consumer 수를 비교했습니다. 구성별 3회, 총 18회·108,000건에서 DB·Redis 수량 불일치와 중복 그룹은 0이었습니다. 아래 지연은 요청 시작부터 DB 커밋 후 관측까지의 p95이며, 세 번의 중앙값입니다.
+
+- **쿠폰 30개 분산:** P1/C1 → P3/C3에서 **29.30초 → 14.10초, 51.9% 감소**. 세 Consumer의 파티션별 처리 기록을 확인했습니다.
+- **쿠폰 1개 집중:** **28.65초 → 29.45초**. Consumer를 늘려도 6,000건이 한 파티션·한 스레드에서 처리됐습니다.
+- **SIGKILL·재시작 3회:** DB 2건·커밋 오프셋 1에서 강제 종료하고 같은 offset 1의 재전달을 확인했습니다. 재처리 후 DB 발급 행 51·발급 수량 51·중복 그룹 0·Lag 0이었습니다.
+
+[전체 결과·그래프·원본 데이터](docs/experiments/kafka-2026-09-13/README.md) · [재현 방법과 실험 코드](experiments/kafka/README.md)
+
 ## API
 
 | Method | Endpoint | 동작 |
@@ -236,15 +247,15 @@ JUnit은 `CountDownLatch`로 작업 시작을 맞추고, Phase 3은 Awaitility�
 
 ## 남은 과제
 
-현재 확인한 범위는 정상 실행 중의 수량·중복 제어와 한 머신에서의 HTTP 비교입니다. 장애 상황은 다음 검증이 필요합니다.
+정상 수량·중복 제어, 파티션·Consumer 비교, DB 커밋 후 재시작·재전달을 검증했습니다. 다음 경계는 추가 구현·검증이 필요합니다.
 
 | 경계 | 현재 상태 | 다음에 확인할 것 |
 | --- | --- | --- |
 | Redis 판정 도중 중단 | 여러 명령을 순서대로 실행 | Lua 등으로 판정을 묶고 명령 사이 실패 주입 |
 | Redis 차감 → Kafka 발행 | 전송 결과 처리·실패 보상 없음 | 발행 성공 확인, 재시도·대사, 영속적인 이벤트 전달 설계 |
-| Consumer 재처리 | 기존 발급 조회, DB 유일 제약 없음 | 중복 이벤트·재시작 테스트, 유일 제약, 명시적인 재시도·DLQ 정책 |
+| Consumer 재처리 | 같은 그룹의 SIGKILL·재전달 3회 통과, DB 유일 제약 없음 | 유일 제약, 독립 그룹의 동시 중복, 명시적인 재시도·DLQ 정책 |
 | Redis 장애 | 단일 노드, **AOF `everysec` 설정 있음** | 복구 시 데이터 손실·DB 대사, 이중화 |
-| 성능 비교 | 전체 응답 기준, 짧은 부하 기록 | 성공·탈락 분리, 반복·지속 부하, 접수→DB 저장 지연 |
+| 성능 비교 | 혼합 HTTP 비교와 전량 유효 요청→DB 지연 18회 측정 | 지속 부하·자원 격리, 실패 이벤트, 접수량 제한과 적체 관리 |
 | 취소·철회 | 발급 재고를 되돌리는 업무 흐름 없음 | 취소 상태 전이와 재고 보정 |
 
 특히 **`202` 접수 이후에도 Kafka 전송 실패로 발급이 저장되지 않을 수 있습니다.** Redis 재고 차감과 이벤트 전달을 함께 복구하는 설계까지 구현한 시스템은 아닙니다.
@@ -254,6 +265,8 @@ JUnit은 `CountDownLatch`로 작업 시작을 맞추고, Phase 3은 Awaitility�
 | 문서 | 내용 |
 | --- | --- |
 | [측정 기록](docs/benchmark-2026-09-12.md) | 원래 수치 · 측정 조건 · 해석 범위 |
+| [Kafka 실증](docs/experiments/kafka-2026-09-13/README.md) | 18회 확장 비교 · SIGKILL 복구 3회 · 요청·완료·Lag 원본 |
+| [Kafka 실험 실행](experiments/kafka/README.md) | 전용 인프라 · 실험용 JAR · 실행기 · 원본 대조 |
 | [DB 락](docs/phase1-study.md) / [Redis](docs/phase2-study.md) / [Kafka](docs/phase3-study.md) | 단계별 학습·구현 기록 |
 | [Redis 학습](docs/redis_study.md) / [Kafka 학습](docs/kafka_study.md) | 사용한 기술의 학습 메모 |
 | [모니터링](docs/monitoring.md) | Prometheus · Grafana · k6 연결 기록 |

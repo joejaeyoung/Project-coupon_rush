@@ -1,0 +1,52 @@
+{
+  "case": "20260912t154925z-r1-p3c1-hot",
+  "repeat": 1,
+  "partitions": 3,
+  "consumers": 1,
+  "workload": "hot",
+  "requests": 6000,
+  "accepted": 6000,
+  "db_rows": 6000,
+  "duplicate_groups": 0,
+  "oversold": 0,
+  "http_p95_ms": 17.456896972656253,
+  "request_to_db_p50_ms": 16652.033081054688,
+  "request_to_db_p95_ms": 32296.73288574219,
+  "request_to_db_p99_ms": 33687.495617675784,
+  "request_to_db_max_ms": 34005.131103515625,
+  "db_completion_rate_per_s": 171.7470390303113,
+  "observed_max_lag": 5996,
+  "lag_clear_after_last_http_ms": 34006.8369140625,
+  "partition_records": {
+    "1": 6000
+  },
+  "thread_records": {
+    "coupon-issuer-0-C-1": 6000
+  },
+  "assignments": {
+    "consumer-lab-20260912t154925z-r1-p3c1-hot-group-1": [
+      0,
+      1,
+      2
+    ]
+  },
+  "final_offsets": [
+    {
+      "end": 6500,
+      "partition": 1,
+      "committed": 6500
+    },
+    {
+      "end": 700,
+      "partition": 0,
+      "committed": 700
+    },
+    {
+      "end": 300,
+      "partition": 2,
+      "committed": 300
+    }
+  ],
+  "topic": "lab-20260912t154925z-r1-p3c1-hot",
+  "group": "lab-20260912t154925z-r1-p3c1-hot-group"
+}

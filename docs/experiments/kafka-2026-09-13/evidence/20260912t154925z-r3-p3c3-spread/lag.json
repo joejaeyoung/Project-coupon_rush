@@ -1,0 +1,3639 @@
+{
+  "samples": [
+    {
+      "atMs": 1789228973294,
+      "failures": 0,
+      "lag": 0,
+      "offsets": [
+        {
+          "end": 500,
+          "committed": 500,
+          "partition": 2
+        },
+        {
+          "end": 350,
+          "committed": 350,
+          "partition": 0
+        },
+        {
+          "end": 650,
+          "committed": 650,
+          "partition": 1
+        }
+      ],
+      "completed": 0
+    },
+    {
+      "atMs": 1789228973424,
+      "failures": 0,
+      "lag": 572,
+      "offsets": [
+        {
+          "end": 691,
+          "committed": 505,
+          "partition": 2
+        },
+        {
+          "end": 484,
+          "committed": 354,
+          "partition": 0
+        },
+        {
+          "end": 908,
+          "committed": 652,
+          "partition": 1
+        }
+      ],
+      "completed": 24
+    },
+    {
+      "atMs": 1789228973537,
+      "failures": 0,
+      "lag": 1174,
+      "offsets": [
+        {
+          "end": 897,
+          "committed": 505,
+          "partition": 2
+        },
+        {
+          "end": 633,
+          "committed": 363,
+          "partition": 0
+        },
+        {
+          "end": 1171,
+          "committed": 659,
+          "partition": 1
+        }
+      ],
+      "completed": 46
+    },
+    {
+      "atMs": 1789228973663,
+      "failures": 0,
+      "lag": 1884,
+      "offsets": [
+        {
+          "end": 1138,
+          "committed": 521,
+          "partition": 2
+        },
+        {
+          "end": 798,
+          "committed": 363,
+          "partition": 0
+        },
+        {
+          "end": 1491,
+          "committed": 659,
+          "partition": 1
+        }
+      ],
+      "completed": 73
+    },
+    {
+      "atMs": 1789228973785,
+      "failures": 0,
+      "lag": 2606,
+      "offsets": [
+        {
+          "end": 1395,
+          "committed": 521,
+          "partition": 2
+        },
+        {
+          "end": 956,
+          "committed": 363,
+          "partition": 0
+        },
+        {
+          "end": 1798,
+          "committed": 659,
+          "partition": 1
+        }
+      ],
+      "completed": 100
+    },
+    {
+      "atMs": 1789228973897,
+      "failures": 0,
+      "lag": 3252,
+      "offsets": [
+        {
+          "end": 1595,
+          "committed": 521,
+          "partition": 2
+        },
+        {
+          "end": 1123,
+          "committed": 363,
+          "partition": 0
+        },
+        {
+          "end": 2107,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 119
+    },
+    {
+      "atMs": 1789228974014,
+      "failures": 0,
+      "lag": 3949,
+      "offsets": [
+        {
+          "end": 1841,
+          "committed": 521,
+          "partition": 2
+        },
+        {
+          "end": 1285,
+          "committed": 363,
+          "partition": 0
+        },
+        {
+          "end": 2396,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 142
+    },
+    {
+      "atMs": 1789228974127,
+      "failures": 0,
+      "lag": 4655,
+      "offsets": [
+        {
+          "end": 2088,
+          "committed": 521,
+          "partition": 2
+        },
+        {
+          "end": 1462,
+          "committed": 400,
+          "partition": 0
+        },
+        {
+          "end": 2715,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 164
+    },
+    {
+      "atMs": 1789228974248,
+      "failures": 0,
+      "lag": 5406,
+      "offsets": [
+        {
+          "end": 2342,
+          "committed": 521,
+          "partition": 2
+        },
+        {
+          "end": 1628,
+          "committed": 400,
+          "partition": 0
+        },
+        {
+          "end": 3046,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 187
+    },
+    {
+      "atMs": 1789228974358,
+      "failures": 0,
+      "lag": 5890,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 521,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 400,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 213
+    },
+    {
+      "atMs": 1789228974465,
+      "failures": 0,
+      "lag": 5827,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 400,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 259
+    },
+    {
+      "atMs": 1789228974572,
+      "failures": 0,
+      "lag": 5827,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 400,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 304
+    },
+    {
+      "atMs": 1789228974680,
+      "failures": 0,
+      "lag": 5827,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 400,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 357
+    },
+    {
+      "atMs": 1789228974787,
+      "failures": 0,
+      "lag": 5827,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 400,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 412
+    },
+    {
+      "atMs": 1789228974897,
+      "failures": 0,
+      "lag": 5827,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 400,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 466
+    },
+    {
+      "atMs": 1789228975001,
+      "failures": 0,
+      "lag": 5827,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 400,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 510
+    },
+    {
+      "atMs": 1789228975107,
+      "failures": 0,
+      "lag": 5827,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 400,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 559
+    },
+    {
+      "atMs": 1789228975212,
+      "failures": 0,
+      "lag": 5827,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 400,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 604
+    },
+    {
+      "atMs": 1789228975319,
+      "failures": 0,
+      "lag": 5827,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 400,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 652
+    },
+    {
+      "atMs": 1789228975428,
+      "failures": 0,
+      "lag": 5827,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 400,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 685
+    },
+    {
+      "atMs": 1789228975537,
+      "failures": 0,
+      "lag": 5643,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 710
+    },
+    {
+      "atMs": 1789228975642,
+      "failures": 0,
+      "lag": 5643,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 756
+    },
+    {
+      "atMs": 1789228975748,
+      "failures": 0,
+      "lag": 5643,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 792
+    },
+    {
+      "atMs": 1789228975856,
+      "failures": 0,
+      "lag": 5643,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 810
+    },
+    {
+      "atMs": 1789228975966,
+      "failures": 0,
+      "lag": 5643,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 689,
+          "partition": 1
+        }
+      ],
+      "completed": 863
+    },
+    {
+      "atMs": 1789228976073,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 905
+    },
+    {
+      "atMs": 1789228976182,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 957
+    },
+    {
+      "atMs": 1789228976290,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1005
+    },
+    {
+      "atMs": 1789228976401,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1049
+    },
+    {
+      "atMs": 1789228976510,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1089
+    },
+    {
+      "atMs": 1789228976617,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1131
+    },
+    {
+      "atMs": 1789228976721,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1174
+    },
+    {
+      "atMs": 1789228976830,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1221
+    },
+    {
+      "atMs": 1789228976938,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1252
+    },
+    {
+      "atMs": 1789228977046,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1302
+    },
+    {
+      "atMs": 1789228977151,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1350
+    },
+    {
+      "atMs": 1789228977256,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1394
+    },
+    {
+      "atMs": 1789228977363,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1439
+    },
+    {
+      "atMs": 1789228977468,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1489
+    },
+    {
+      "atMs": 1789228977573,
+      "failures": 0,
+      "lag": 5395,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 584,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1536
+    },
+    {
+      "atMs": 1789228977681,
+      "failures": 0,
+      "lag": 4952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1590
+    },
+    {
+      "atMs": 1789228977789,
+      "failures": 0,
+      "lag": 4952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1643
+    },
+    {
+      "atMs": 1789228977896,
+      "failures": 0,
+      "lag": 4952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1698
+    },
+    {
+      "atMs": 1789228978004,
+      "failures": 0,
+      "lag": 4952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1750
+    },
+    {
+      "atMs": 1789228978108,
+      "failures": 0,
+      "lag": 4952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1803
+    },
+    {
+      "atMs": 1789228978215,
+      "failures": 0,
+      "lag": 4952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1850
+    },
+    {
+      "atMs": 1789228978323,
+      "failures": 0,
+      "lag": 4952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1898
+    },
+    {
+      "atMs": 1789228978431,
+      "failures": 0,
+      "lag": 4952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1947
+    },
+    {
+      "atMs": 1789228978540,
+      "failures": 0,
+      "lag": 4952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 1996
+    },
+    {
+      "atMs": 1789228978649,
+      "failures": 0,
+      "lag": 4952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 2043
+    },
+    {
+      "atMs": 1789228978754,
+      "failures": 0,
+      "lag": 4952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 2076
+    },
+    {
+      "atMs": 1789228978859,
+      "failures": 0,
+      "lag": 4952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 2131
+    },
+    {
+      "atMs": 1789228978965,
+      "failures": 0,
+      "lag": 4952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 584,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 2187
+    },
+    {
+      "atMs": 1789228979073,
+      "failures": 0,
+      "lag": 4452,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 2237
+    },
+    {
+      "atMs": 1789228979181,
+      "failures": 0,
+      "lag": 4452,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 2284
+    },
+    {
+      "atMs": 1789228979288,
+      "failures": 0,
+      "lag": 4452,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 937,
+          "partition": 1
+        }
+      ],
+      "completed": 2335
+    },
+    {
+      "atMs": 1789228979392,
+      "failures": 0,
+      "lag": 3952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 2383
+    },
+    {
+      "atMs": 1789228979496,
+      "failures": 0,
+      "lag": 3952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 2436
+    },
+    {
+      "atMs": 1789228979601,
+      "failures": 0,
+      "lag": 3952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 2478
+    },
+    {
+      "atMs": 1789228979707,
+      "failures": 0,
+      "lag": 3952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 2524
+    },
+    {
+      "atMs": 1789228979813,
+      "failures": 0,
+      "lag": 3952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 2559
+    },
+    {
+      "atMs": 1789228979922,
+      "failures": 0,
+      "lag": 3952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 2622
+    },
+    {
+      "atMs": 1789228980030,
+      "failures": 0,
+      "lag": 3952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 2686
+    },
+    {
+      "atMs": 1789228980137,
+      "failures": 0,
+      "lag": 3952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 2741
+    },
+    {
+      "atMs": 1789228980241,
+      "failures": 0,
+      "lag": 3952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 2785
+    },
+    {
+      "atMs": 1789228980346,
+      "failures": 0,
+      "lag": 3952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 2836
+    },
+    {
+      "atMs": 1789228980455,
+      "failures": 0,
+      "lag": 3952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 2887
+    },
+    {
+      "atMs": 1789228980563,
+      "failures": 0,
+      "lag": 3952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 2940
+    },
+    {
+      "atMs": 1789228980672,
+      "failures": 0,
+      "lag": 3952,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1084,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 2993
+    },
+    {
+      "atMs": 1789228980779,
+      "failures": 0,
+      "lag": 3677,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3035
+    },
+    {
+      "atMs": 1789228980882,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3084
+    },
+    {
+      "atMs": 1789228980988,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3139
+    },
+    {
+      "atMs": 1789228981095,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3193
+    },
+    {
+      "atMs": 1789228981199,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3253
+    },
+    {
+      "atMs": 1789228981307,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3302
+    },
+    {
+      "atMs": 1789228981412,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3353
+    },
+    {
+      "atMs": 1789228981515,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3399
+    },
+    {
+      "atMs": 1789228981623,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3451
+    },
+    {
+      "atMs": 1789228981730,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3505
+    },
+    {
+      "atMs": 1789228981837,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3548
+    },
+    {
+      "atMs": 1789228981944,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3601
+    },
+    {
+      "atMs": 1789228982048,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3646
+    },
+    {
+      "atMs": 1789228982153,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3698
+    },
+    {
+      "atMs": 1789228982262,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3741
+    },
+    {
+      "atMs": 1789228982371,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3784
+    },
+    {
+      "atMs": 1789228982480,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3820
+    },
+    {
+      "atMs": 1789228982587,
+      "failures": 0,
+      "lag": 3177,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1437,
+          "partition": 1
+        }
+      ],
+      "completed": 3865
+    },
+    {
+      "atMs": 1789228982690,
+      "failures": 0,
+      "lag": 2677,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1937,
+          "partition": 1
+        }
+      ],
+      "completed": 3915
+    },
+    {
+      "atMs": 1789228982798,
+      "failures": 0,
+      "lag": 2677,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1937,
+          "partition": 1
+        }
+      ],
+      "completed": 3962
+    },
+    {
+      "atMs": 1789228982906,
+      "failures": 0,
+      "lag": 2677,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1937,
+          "partition": 1
+        }
+      ],
+      "completed": 4014
+    },
+    {
+      "atMs": 1789228983011,
+      "failures": 0,
+      "lag": 2677,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1937,
+          "partition": 1
+        }
+      ],
+      "completed": 4062
+    },
+    {
+      "atMs": 1789228983115,
+      "failures": 0,
+      "lag": 2677,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1937,
+          "partition": 1
+        }
+      ],
+      "completed": 4115
+    },
+    {
+      "atMs": 1789228983219,
+      "failures": 0,
+      "lag": 2677,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1359,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1937,
+          "partition": 1
+        }
+      ],
+      "completed": 4162
+    },
+    {
+      "atMs": 1789228983325,
+      "failures": 0,
+      "lag": 2286,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1937,
+          "partition": 1
+        }
+      ],
+      "completed": 4213
+    },
+    {
+      "atMs": 1789228983432,
+      "failures": 0,
+      "lag": 2286,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1937,
+          "partition": 1
+        }
+      ],
+      "completed": 4246
+    },
+    {
+      "atMs": 1789228983538,
+      "failures": 0,
+      "lag": 2286,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 1937,
+          "partition": 1
+        }
+      ],
+      "completed": 4278
+    },
+    {
+      "atMs": 1789228983645,
+      "failures": 0,
+      "lag": 2133,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4320
+    },
+    {
+      "atMs": 1789228983749,
+      "failures": 0,
+      "lag": 2133,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4356
+    },
+    {
+      "atMs": 1789228983856,
+      "failures": 0,
+      "lag": 2133,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4391
+    },
+    {
+      "atMs": 1789228983962,
+      "failures": 0,
+      "lag": 2133,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 1527,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4429
+    },
+    {
+      "atMs": 1789228984065,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4469
+    },
+    {
+      "atMs": 1789228984173,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4510
+    },
+    {
+      "atMs": 1789228984282,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4546
+    },
+    {
+      "atMs": 1789228984388,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4583
+    },
+    {
+      "atMs": 1789228984493,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4622
+    },
+    {
+      "atMs": 1789228984596,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4658
+    },
+    {
+      "atMs": 1789228984701,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4690
+    },
+    {
+      "atMs": 1789228984808,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4721
+    },
+    {
+      "atMs": 1789228984914,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4754
+    },
+    {
+      "atMs": 1789228985021,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4791
+    },
+    {
+      "atMs": 1789228985128,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4829
+    },
+    {
+      "atMs": 1789228985235,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4868
+    },
+    {
+      "atMs": 1789228985341,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4898
+    },
+    {
+      "atMs": 1789228985447,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4940
+    },
+    {
+      "atMs": 1789228985555,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 4978
+    },
+    {
+      "atMs": 1789228985663,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 5016
+    },
+    {
+      "atMs": 1789228985771,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 5047
+    },
+    {
+      "atMs": 1789228985879,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 5084
+    },
+    {
+      "atMs": 1789228985988,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 5124
+    },
+    {
+      "atMs": 1789228986093,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 5160
+    },
+    {
+      "atMs": 1789228986200,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 5198
+    },
+    {
+      "atMs": 1789228986304,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 5235
+    },
+    {
+      "atMs": 1789228986410,
+      "failures": 0,
+      "lag": 1633,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2090,
+          "partition": 1
+        }
+      ],
+      "completed": 5270
+    },
+    {
+      "atMs": 1789228986514,
+      "failures": 0,
+      "lag": 1133,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5301
+    },
+    {
+      "atMs": 1789228986622,
+      "failures": 0,
+      "lag": 1133,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5345
+    },
+    {
+      "atMs": 1789228986726,
+      "failures": 0,
+      "lag": 1133,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2027,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5379
+    },
+    {
+      "atMs": 1789228986831,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5405
+    },
+    {
+      "atMs": 1789228986936,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5426
+    },
+    {
+      "atMs": 1789228987043,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5447
+    },
+    {
+      "atMs": 1789228987150,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5468
+    },
+    {
+      "atMs": 1789228987255,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5489
+    },
+    {
+      "atMs": 1789228987363,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5509
+    },
+    {
+      "atMs": 1789228987468,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5527
+    },
+    {
+      "atMs": 1789228987572,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5549
+    },
+    {
+      "atMs": 1789228987680,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5569
+    },
+    {
+      "atMs": 1789228987783,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5588
+    },
+    {
+      "atMs": 1789228987889,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5610
+    },
+    {
+      "atMs": 1789228987997,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5630
+    },
+    {
+      "atMs": 1789228988106,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5647
+    },
+    {
+      "atMs": 1789228988214,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5663
+    },
+    {
+      "atMs": 1789228988321,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5681
+    },
+    {
+      "atMs": 1789228988427,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5702
+    },
+    {
+      "atMs": 1789228988531,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5722
+    },
+    {
+      "atMs": 1789228988638,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5744
+    },
+    {
+      "atMs": 1789228988743,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5764
+    },
+    {
+      "atMs": 1789228988850,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5784
+    },
+    {
+      "atMs": 1789228988954,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5804
+    },
+    {
+      "atMs": 1789228989058,
+      "failures": 0,
+      "lag": 660,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 2590,
+          "partition": 1
+        }
+      ],
+      "completed": 5822
+    },
+    {
+      "atMs": 1789228989164,
+      "failures": 0,
+      "lag": 160,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 3090,
+          "partition": 1
+        }
+      ],
+      "completed": 5842
+    },
+    {
+      "atMs": 1789228989271,
+      "failures": 0,
+      "lag": 160,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 3090,
+          "partition": 1
+        }
+      ],
+      "completed": 5862
+    },
+    {
+      "atMs": 1789228989380,
+      "failures": 0,
+      "lag": 160,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 3090,
+          "partition": 1
+        }
+      ],
+      "completed": 5882
+    },
+    {
+      "atMs": 1789228989483,
+      "failures": 0,
+      "lag": 160,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 3090,
+          "partition": 1
+        }
+      ],
+      "completed": 5902
+    },
+    {
+      "atMs": 1789228989587,
+      "failures": 0,
+      "lag": 160,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 3090,
+          "partition": 1
+        }
+      ],
+      "completed": 5920
+    },
+    {
+      "atMs": 1789228989692,
+      "failures": 0,
+      "lag": 160,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 3090,
+          "partition": 1
+        }
+      ],
+      "completed": 5941
+    },
+    {
+      "atMs": 1789228989797,
+      "failures": 0,
+      "lag": 160,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 3090,
+          "partition": 1
+        }
+      ],
+      "completed": 5961
+    },
+    {
+      "atMs": 1789228989905,
+      "failures": 0,
+      "lag": 160,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 3090,
+          "partition": 1
+        }
+      ],
+      "completed": 5982
+    },
+    {
+      "atMs": 1789228990013,
+      "failures": 0,
+      "lag": 0,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 3250,
+          "partition": 1
+        }
+      ],
+      "completed": 6000
+    },
+    {
+      "atMs": 1789228990070,
+      "failures": 0,
+      "lag": 0,
+      "offsets": [
+        {
+          "end": 2500,
+          "committed": 2500,
+          "partition": 2
+        },
+        {
+          "end": 1750,
+          "committed": 1750,
+          "partition": 0
+        },
+        {
+          "end": 3250,
+          "committed": 3250,
+          "partition": 1
+        }
+      ],
+      "completed": 6000
+    }
+  ],
+  "errors": []
+}

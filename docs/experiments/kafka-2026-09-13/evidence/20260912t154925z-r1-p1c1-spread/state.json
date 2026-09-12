@@ -1,0 +1,337 @@
+{
+  "redis": [
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 156
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 157
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 158
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 159
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 160
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 161
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 162
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 163
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 164
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 165
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 166
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 167
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 168
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 169
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 170
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 171
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 172
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 173
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 174
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 175
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 176
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 177
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 178
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 179
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 180
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 181
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 182
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 183
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 184
+    },
+    {
+      "users": 200,
+      "stock": "0",
+      "id": 185
+    }
+  ],
+  "duplicateGroups": [],
+  "coupons": [
+    {
+      "id": 156,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 157,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 158,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 159,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 160,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 161,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 162,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 163,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 164,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 165,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 166,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 167,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 168,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 169,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 170,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 171,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 172,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 173,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 174,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 175,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 176,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 177,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 178,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 179,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 180,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 181,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 182,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 183,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 184,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    },
+    {
+      "id": 185,
+      "total_quantity": 200,
+      "issued_quantity": 200,
+      "db_rows": 200
+    }
+  ]
+}

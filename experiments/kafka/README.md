@@ -70,3 +70,10 @@ Kafka Lag는 Admin API에서 커밋 오프셋을 먼저, 로그 끝 오프셋을
 - 실패하면 `failure.json`과 이미 수집한 증거를 남기고 종료한다. 본 실행은 `completion.json`의 `passed: true`와 각 검증식을 모두 통과해야 완료다.
 
 같은 머신의 MySQL·Redis·Kafka와 JVM·부하 발생기가 자원을 공유한다. 단일 호스트, 닫힌 루프 HTTP 부하, 워밍업과 표본 수의 범위를 결과와 함께 읽어야 한다.
+
+전체 실행이 끝나면 선택적으로 원본 대조와 그래프 생성을 실행할 수 있다. `summarize.py`는 NumPy로 요청→DB p95를 다시 계산해 보고값과 대조하고, 세 번의 관측값과 범위를 그래프에 표시한다.
+
+```bash
+python3 -m pip install -r experiments/kafka/requirements-plot.txt
+python3 experiments/kafka/summarize.py experiments/kafka/out/<실행시각> docs/experiments/kafka-<날짜>
+```

@@ -1,0 +1,18 @@
+{
+  "redis": [
+    {
+      "users": 6000,
+      "stock": "0",
+      "id": 762
+    }
+  ],
+  "duplicateGroups": [],
+  "coupons": [
+    {
+      "id": 762,
+      "total_quantity": 6000,
+      "issued_quantity": 6000,
+      "db_rows": 6000
+    }
+  ]
+}

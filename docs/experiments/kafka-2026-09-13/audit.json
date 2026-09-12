@@ -1,0 +1,9 @@
+{
+  "benchmark_cases": 18,
+  "raw_requests_audited": 108000,
+  "numpy_percentiles_match": true,
+  "recovery_cases": 3,
+  "all_recovery_offsets_replayed": true,
+  "same_coupon_single_partition": true,
+  "partition_offsets_contiguous_in_order": true
+}

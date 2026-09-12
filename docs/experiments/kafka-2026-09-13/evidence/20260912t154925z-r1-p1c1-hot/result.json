@@ -1,0 +1,40 @@
+{
+  "case": "20260912t154925z-r1-p1c1-hot",
+  "repeat": 1,
+  "partitions": 1,
+  "consumers": 1,
+  "workload": "hot",
+  "requests": 6000,
+  "accepted": 6000,
+  "db_rows": 6000,
+  "duplicate_groups": 0,
+  "oversold": 0,
+  "http_p95_ms": 16.99453125,
+  "request_to_db_p50_ms": 14527.305908203125,
+  "request_to_db_p95_ms": 28649.998681640627,
+  "request_to_db_p99_ms": 30214.560620117187,
+  "request_to_db_max_ms": 30654.675048828125,
+  "db_completion_rate_per_s": 189.84581801975935,
+  "observed_max_lag": 5992,
+  "lag_clear_after_last_http_ms": 30680.110107421875,
+  "partition_records": {
+    "0": 6000
+  },
+  "thread_records": {
+    "coupon-issuer-0-C-1": 6000
+  },
+  "assignments": {
+    "consumer-lab-20260912t154925z-r1-p1c1-hot-group-1": [
+      0
+    ]
+  },
+  "final_offsets": [
+    {
+      "end": 7500,
+      "committed": 7500,
+      "partition": 0
+    }
+  ],
+  "topic": "lab-20260912t154925z-r1-p1c1-hot",
+  "group": "lab-20260912t154925z-r1-p1c1-hot-group"
+}

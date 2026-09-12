@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuite name="com.example.coupon.CouponConcurrencyTest" tests="2" skipped="0" failures="0" errors="0" time="4.001" timestamp="2026-09-12T15:46:51.006Z"><testcase name="동일 사용자가 100번 동시 요청해도 1번만 발급된다" classname="com.example.coupon.CouponConcurrencyTest" time="3.119" /><testcase name="1000명 동시 요청 시 정확히 100개만 발급된다" classname="com.example.coupon.CouponConcurrencyTest" time="0.876" /></testsuite>

@@ -1,0 +1,30 @@
+{
+  "host_model": "Mac17,9",
+  "host_logical_cpus": 15,
+  "host_memory_bytes": 51539607552,
+  "python_version": "3.14.4 (v3.14.4:23116f998f6, Apr  7 2026, 09:45:22) [Clang 17.0.0 (clang-1700.6.4.2)]",
+  "mysql_version": "8.0.46",
+  "innodb_flush_log_at_trx_commit": 1,
+  "sync_binlog": 1,
+  "redis_version": "7.4.9",
+  "images": [
+    {
+      "ID": "sha256:6ab0b6e7381779332f97b8ca76193e45b0756f38d4c0dcda72dbb3c32061ab99",
+      "Repository": "redis",
+      "Tag": "7-alpine",
+      "Platform": "linux/arm64/v8"
+    },
+    {
+      "ID": "sha256:ed74d7d115968d5e8b00ba6822ac6a384cbaaf54ca38991828647000d7089b68",
+      "Repository": "apache/kafka",
+      "Tag": "3.7.1",
+      "Platform": "linux/arm64"
+    },
+    {
+      "ID": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+      "Repository": "mysql",
+      "Tag": "8.0",
+      "Platform": "linux/arm64/v8"
+    }
+  ]
+}

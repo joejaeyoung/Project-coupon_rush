@@ -1,0 +1,20 @@
+{
+  "db": {
+    "issued_quantity": 2,
+    "db_rows": 2,
+    "distinct_users": 2
+  },
+  "offsets": {
+    "rows": [
+      {
+        "partition": 0,
+        "committed": 1,
+        "end": 51,
+        "lag": 50
+      }
+    ],
+    "cli_stdout": "\nGROUP                                  TOPIC                            PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                                            HOST            CLIENT-ID\nlab-20260912t154925z-recovery-r2-group lab-20260912t154925z-recovery-r2 0          1               51              50              consumer-lab-20260912t154925z-recovery-r2-group-1-f9346615-dfce-4482-80c1-3aa5af080088 /172.26.0.1     consumer-lab-20260912t154925z-recovery-r2-group-1\n"
+  },
+  "exit_code": -9,
+  "kill_at_ms": 1789229016775.702
+}
