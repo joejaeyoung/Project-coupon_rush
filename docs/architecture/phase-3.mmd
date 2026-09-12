@@ -1,0 +1,35 @@
+flowchart LR
+    Client["요청 · 부하 생성<br/>curl / k6"]
+
+    subgraph App["Spring Boot · 하나의 애플리케이션"]
+        direction TB
+        API["Controller<br/>발급 API"]
+        Service["Service<br/>발급 판정"]
+        Producer["Producer<br/>send() · 대기 없음"]
+        Consumer["Consumer<br/>기존 발급 확인"]
+        API --> Service
+        Service -->|"판정 통과"| Producer
+    end
+
+    Redis[("Redis 7<br/>기간 · 재고 · 사용자 집합")]
+    Kafka["Kafka · KRaft<br/>coupon-issue"]
+    DB[("MySQL 8.0<br/>coupon · issued_coupon")]
+
+    Client -->|"① HTTP 요청"| API
+    Service <-->|"② GET · SADD · DECR"| Redis
+    Producer -.->|"③ 비동기 전송<br/>key = couponId"| Kafka
+    API -->|"④ 202 Accepted"| Client
+    Kafka -->|"⑤ 이벤트 소비"| Consumer
+    Consumer -->|"⑥ 수량 증가 · 발급 저장"| DB
+
+    classDef app fill:#eff6ff,stroke:#3b82f6,color:#172554,stroke-width:1.5px
+    classDef redis fill:#ccfbf1,stroke:#0d9488,color:#134e4a,stroke-width:1.5px
+    classDef queue fill:#e0e7ff,stroke:#6366f1,color:#312e81,stroke-width:1.5px
+    classDef storage fill:#f1f5f9,stroke:#64748b,color:#0f172a,stroke-width:1.5px
+    classDef client fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:1.5px
+    class API,Service,Producer,Consumer app
+    class Redis redis
+    class Kafka queue
+    class DB storage
+    class Client client
+    style App fill:#f8fafc,stroke:#94a3b8,stroke-width:1px
