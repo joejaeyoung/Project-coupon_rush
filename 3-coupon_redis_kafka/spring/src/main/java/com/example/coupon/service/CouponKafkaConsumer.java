@@ -27,8 +27,9 @@ import java.time.LocalDateTime;
  *
  * [enable-auto-commit: false 의 의미]
  *   Kafka는 Consumer가 메시지를 처리했다는 신호로 "Offset 커밋"을 보낸다.
- *   auto-commit이 true이면 메시지를 받는 즉시 커밋 → DB INSERT 실패해도 재처리 안 됨.
- *   false로 설정하면 @KafkaListener가 메서드 정상 종료 후에 커밋 → DB 실패 시 재전송 가능.
+ *   false로 설정하면 Spring 컨테이너가 AckMode에 따라 커밋을 관리한다.
+ *   BATCH 모드는 poll에서 받은 레코드를 처리한 뒤 커밋한다.
+ *   DB 커밋 후 오프셋 커밋 전에 종료되면 이미 저장한 이벤트도 재전달될 수 있다.
  *
  * [멱등성(Idempotency)이란]
  *   Kafka는 At-least-once 전달을 보장한다.
@@ -48,8 +49,10 @@ public class CouponKafkaConsumer {
     /**
      * "coupon-issue" Topic 이벤트 소비 → MySQL issued_coupon 테이블에 INSERT
      */
-    @Transactional  // DB INSERT 실패 시 롤백. enable-auto-commit=false 이므로 실패 시 Kafka도 재전송.
-    @KafkaListener(topics = CouponKafkaProducer.TOPIC, groupId = "coupon-group")    
+    @Transactional
+    @KafkaListener(id = "coupon-issuer", topics = "${coupon.kafka.topic:coupon-issue}",
+            groupId = "${spring.kafka.consumer.group-id:coupon-group}",
+            concurrency = "${coupon.kafka.concurrency:1}")
     public void consume(CouponIssueEvent event) {
 
         // 멱등성 체크

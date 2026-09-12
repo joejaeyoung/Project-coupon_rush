@@ -42,3 +42,23 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// Instrumentation and fault injection are packaged only by this separate task.
+sourceSets {
+	lab {
+		compileClasspath += sourceSets.main.output
+		runtimeClasspath += sourceSets.main.output
+	}
+}
+configurations {
+	labImplementation.extendsFrom implementation
+	labRuntimeOnly.extendsFrom runtimeOnly
+}
+tasks.register('labBootJar', org.springframework.boot.gradle.tasks.bundling.BootJar) {
+	group = 'verification'
+	description = 'Build the local Kafka experiment app, including measurement and fault hooks.'
+	archiveClassifier = 'kafka-lab'
+	mainClass = 'com.example.coupon.CouponApplication'
+	targetJavaVersion = JavaVersion.VERSION_17
+	classpath = sourceSets.lab.runtimeClasspath
+}

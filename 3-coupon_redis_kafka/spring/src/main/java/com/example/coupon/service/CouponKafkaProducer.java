@@ -2,6 +2,7 @@ package com.example.coupon.service;
 
 import com.example.coupon.event.CouponIssueEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -16,17 +17,15 @@ import java.time.LocalDateTime;
  *            MySQL INSERT는 CouponKafkaConsumer가 별도로 처리
  *
  * [왜 couponId를 Kafka Key로 쓰는가]
- *   Kafka는 같은 Key를 가진 메시지를 항상 같은 Partition에 넣는다.
- *   couponId를 Key로 쓰면 "쿠폰 1번의 발급 이벤트"는 모두 Partition 0에 순서대로 쌓인다.
- *   → Consumer가 Partition을 순서대로 읽으면 발급 순서가 보장된다.
- *   → "50번째 발급자에게 특별 이벤트" 같은 순서 기반 비즈니스 로직이 가능해진다.
+ *   파티션 구성을 유지하는 동안 같은 couponId는 같은 파티션으로 라우팅된다.
+ *   파티션 번호는 키 해시로 결정되며, HTTP 요청의 도착 순서 전체를 보장하지 않는다.
  */
 @Service
 @RequiredArgsConstructor
 public class CouponKafkaProducer {
 
-    // Kafka 토픽 이름. Consumer의 @KafkaListener(topics = ...) 와 반드시 일치해야 한다.
-    static final String TOPIC = "coupon-issue";
+    @Value("${coupon.kafka.topic:coupon-issue}")
+    private String topic;
     private final KafkaTemplate<String, CouponIssueEvent> kafkaTemplate;
 
     /**
@@ -39,6 +38,6 @@ public class CouponKafkaProducer {
         CouponIssueEvent couponIssueEvent = new CouponIssueEvent(couponId, userId, LocalDateTime.now().toString());
 
         // 이벤트 발행
-        kafkaTemplate.send(TOPIC, couponId.toString(), couponIssueEvent);
+        kafkaTemplate.send(topic, couponId.toString(), couponIssueEvent);
     }
 }

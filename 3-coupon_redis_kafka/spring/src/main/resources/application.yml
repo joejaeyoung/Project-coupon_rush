@@ -31,10 +31,7 @@ spring:
     consumer:
       group-id: coupon-group
       auto-offset-reset: earliest
-      #   true (기본값): 메시지를 받는 즉시 Offset 커밋
-      #     → DB INSERT 실패해도 Kafka는 "처리 완료"로 간주 → 재전송 없음 → 데이터 유실
-      #   false: @KafkaListener 메서드가 정상 종료된 후에 Offset 커밋
-      #     → DB INSERT 실패 시 롤백 → Kafka가 재전송 → 안전한 At-least-once 보장
+      # Spring 컨테이너가 아래의 BATCH 정책으로 오프셋 커밋을 관리한다.
       enable-auto-commit: false
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
@@ -43,6 +40,14 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    listener:
+      ack-mode: batch
+
+coupon:
+  kafka:
+    topic: ${COUPON_KAFKA_TOPIC:coupon-issue}
+    partitions: ${COUPON_KAFKA_PARTITIONS:1}
+    concurrency: ${COUPON_KAFKA_CONCURRENCY:1}
 
 # ── Actuator (Prometheus 메트릭 노출) ──────────────────────────
 management:

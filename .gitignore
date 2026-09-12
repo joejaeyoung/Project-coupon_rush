@@ -27,3 +27,7 @@ docs/superpowers/
 # Finder 중복 사본
 * 2.md
 * 2.html
+
+# Local Kafka experiment output. Curated evidence is committed under docs/experiments/.
+experiments/kafka/out/
+**/__pycache__/

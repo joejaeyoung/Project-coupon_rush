@@ -117,7 +117,7 @@ class CouponConcurrencyTest {
 
         // DB 쓰기는 Kafka Consumer가 비동기로 처리한다.
         // 발급 API가 202를 돌려준 시점에는 아직 INSERT 전일 수 있으므로 즉시 단언하면 실패한다.
-        // Consumer가 1000건을 소비해 100건을 INSERT할 때까지 기다린다.
+        // Redis 판정을 통과한 100건을 Consumer가 저장할 때까지 기다린다.
         await().atMost(Duration.ofSeconds(30))
                .pollInterval(Duration.ofMillis(200))
                .untilAsserted(() ->
@@ -163,7 +163,7 @@ class CouponConcurrencyTest {
 
         assertThat(successCount.get()).isEqualTo(1);
 
-        // 같은 사용자 이벤트가 한 건만 DB에 남아야 한다 (Consumer 멱등성 포함 검증)
+        // Redis에서 중복 요청을 차단한 결과다. Kafka 직접 재전달은 experiments/kafka에서 검증한다.
         await().atMost(Duration.ofSeconds(30))
                .pollInterval(Duration.ofMillis(200))
                .untilAsserted(() ->
