@@ -1,0 +1,1695 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-22T09:48:47.087171+00:00",
+  "finishedAt": "2026-10-22T09:49:18.904853+00:00",
+  "environment": {
+    "python": "3.14.4 (v3.14.4:23116f998f6, Apr  7 2026, 09:45:22) [Clang 17.0.0 (clang-1700.6.4.2)]",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "cpuCount": 15,
+    "baseUrl": "http://localhost:28080",
+    "suiteSha256": "6d545718bbf5a2982a46671390153e9b1b579e2f553b6f5cea5eff87f77b051a",
+    "backendJarFilesSha256": {
+      "coupon-lab-0.0.1-SNAPSHOT.jar": "f71c55b931ffa0c411651fd3caabdac7304c00ef92f74375a89f1d8b3727e912"
+    }
+  },
+  "parameters": {
+    "base_url": "http://localhost:28080",
+    "output": "4-coupon_experiments/results/faults-v2",
+    "gzip_cases": false,
+    "scenario": "faults",
+    "case_filter": null,
+    "strategies": [
+      "SPLIT_REDIS",
+      "LUA_REDIS",
+      "KAFKA_FIRST",
+      "DB_OUTBOX",
+      "REDIS_STREAM"
+    ],
+    "users": 1000,
+    "concurrency": 32,
+    "distribution_requests": 300,
+    "rebalance_requests": 300,
+    "partitions": [
+      1,
+      3,
+      6
+    ],
+    "workers": [
+      1,
+      3,
+      6
+    ],
+    "seed": 20261022,
+    "http_timeout": 30.0,
+    "settle_timeout": 60.0
+  },
+  "cases": [
+    {
+      "name": "fault-split-after-sadd",
+      "file": "001-fault-split-after-sadd.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 29.567292,
+          "mean": 47.067042,
+          "p50": 29.567292,
+          "p95": 64.566792,
+          "p99": 64.566792,
+          "max": 64.566792
+        },
+        "httpStatusCounts": {
+          "503": 1,
+          "409": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 0,
+          "min": null,
+          "mean": null,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 19.0,
+          "mean": 19.0,
+          "p50": 19.0,
+          "p95": 19.0,
+          "p99": 19.0,
+          "max": 19.0
+        },
+        "partitionRequestCounts": {},
+        "issued": 0,
+        "totalRunIssuedIncludingWarmup": 0
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-cdec148d-18f8-4746-8605-52a5d2fc1db9",
+        "runId": "cdec148d-18f8-4746-8605-52a5d2fc1db9",
+        "strategy": "SPLIT_REDIS"
+      },
+      "parameters": {
+        "strategy": "SPLIT_REDIS",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-reserve-SPLIT_REDIS",
+      "file": "002-fault-after-reserve-split_redis.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 14.00475,
+          "mean": 18.057396,
+          "p50": 14.00475,
+          "p95": 22.110042,
+          "p99": 22.110042,
+          "max": 22.110042
+        },
+        "httpStatusCounts": {
+          "503": 1,
+          "202": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 551.0,
+          "mean": 551.0,
+          "p50": 551.0,
+          "p95": 551.0,
+          "p99": 551.0,
+          "max": 551.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 551.0,
+          "mean": 551.0,
+          "p50": 551.0,
+          "p95": 551.0,
+          "p99": 551.0,
+          "max": 551.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1,
+        "settledWaitMs": 168.1475001387298
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-32f69a37-59b6-44de-90a5-62fc572abf62",
+        "runId": "32f69a37-59b6-44de-90a5-62fc572abf62",
+        "strategy": "SPLIT_REDIS"
+      },
+      "parameters": {
+        "strategy": "SPLIT_REDIS",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-send-and-redelivery-SPLIT_REDIS",
+      "file": "003-fault-after-send-and-redelivery-split_redis.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 167.46554104611278,
+        "duplicate_delivery_handledWaitMs": 9.716208092868328,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 6.015542,
+          "mean": 73.683521,
+          "p50": 6.015542,
+          "p95": 141.3515,
+          "p99": 141.3515,
+          "max": 141.3515
+        },
+        "httpStatusCounts": {
+          "503": 1,
+          "200": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 142.0,
+          "mean": 142.0,
+          "p50": 142.0,
+          "p95": 142.0,
+          "p99": 142.0,
+          "max": 142.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 142.0,
+          "mean": 142.0,
+          "p50": 142.0,
+          "p95": 142.0,
+          "p99": 142.0,
+          "max": 142.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-9b87b035-42e1-4b89-bc00-bb818b127191",
+        "runId": "9b87b035-42e1-4b89-bc00-bb818b127191",
+        "strategy": "SPLIT_REDIS"
+      },
+      "parameters": {
+        "strategy": "SPLIT_REDIS",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-db-before-offset-commit-SPLIT_REDIS",
+      "file": "004-fault-after-db-before-offset-commit-split_redis.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "database_commit_redeliveryWaitMs": 342.9912910796702,
+        "apiLatencyMs": {
+          "samples": 1,
+          "min": 1036.095834,
+          "mean": 1036.095834,
+          "p50": 1036.095834,
+          "p95": 1036.095834,
+          "p99": 1036.095834,
+          "max": 1036.095834
+        },
+        "httpStatusCounts": {
+          "202": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 1038.0,
+          "mean": 1038.0,
+          "p50": 1038.0,
+          "p95": 1038.0,
+          "p99": 1038.0,
+          "max": 1038.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 1038.0,
+          "mean": 1038.0,
+          "p50": 1038.0,
+          "p95": 1038.0,
+          "p99": 1038.0,
+          "max": 1038.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-e2dc275c-ea03-43a2-9d1a-78b56373f913",
+        "runId": "e2dc275c-ea03-43a2-9d1a-78b56373f913",
+        "strategy": "SPLIT_REDIS"
+      },
+      "parameters": {
+        "strategy": "SPLIT_REDIS",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-pause-poll-resume-SPLIT_REDIS",
+      "file": "005-fault-pause-poll-resume-split_redis.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "submissionWallMs": 466.367291752249,
+        "settledWaitMs": 160.7742919586599,
+        "apiLatencyMs": {
+          "samples": 20,
+          "min": 451.260292,
+          "mean": 457.0271835,
+          "p50": 456.692709,
+          "p95": 460.184792,
+          "p99": 460.484917,
+          "max": 460.484917
+        },
+        "httpStatusCounts": {
+          "202": 20
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 20,
+          "min": 498.0,
+          "mean": 547.4,
+          "p50": 546.0,
+          "p95": 584.0,
+          "p99": 590.0,
+          "max": 590.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 20,
+          "min": 498.0,
+          "mean": 547.4,
+          "p50": 546.0,
+          "p95": 584.0,
+          "p99": 590.0,
+          "max": 590.0
+        },
+        "partitionRequestCounts": {
+          "0": 20
+        },
+        "issued": 20,
+        "totalRunIssuedIncludingWarmup": 20
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-5a9604d6-58f4-4648-82d5-d3179df6b15a",
+        "runId": "5a9604d6-58f4-4648-82d5-d3179df6b15a",
+        "strategy": "SPLIT_REDIS"
+      },
+      "parameters": {
+        "strategy": "SPLIT_REDIS",
+        "stock": 20,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-metadata-lookup-before-handler-SPLIT_REDIS",
+      "file": "006-fault-metadata-lookup-before-handler-split_redis.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 329.66458424925804,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 14.726208,
+          "mean": 185.5094995,
+          "p50": 14.726208,
+          "p95": 356.292791,
+          "p99": 356.292791,
+          "max": 356.292791
+        },
+        "httpStatusCounts": {
+          "202": 2
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 284.0,
+          "mean": 457.5,
+          "p50": 284.0,
+          "p95": 631.0,
+          "p99": 631.0,
+          "max": 631.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 284.0,
+          "mean": 457.5,
+          "p50": 284.0,
+          "p95": 631.0,
+          "p99": 631.0,
+          "max": 631.0
+        },
+        "partitionRequestCounts": {
+          "0": 2
+        },
+        "issued": 2,
+        "totalRunIssuedIncludingWarmup": 2
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-8c470f03-44d2-4db3-94c8-2fc68c782d2b",
+        "runId": "8c470f03-44d2-4db3-94c8-2fc68c782d2b",
+        "strategy": "SPLIT_REDIS"
+      },
+      "parameters": {
+        "strategy": "SPLIT_REDIS",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 1,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-reserve-LUA_REDIS",
+      "file": "007-fault-after-reserve-lua_redis.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 14.402625,
+          "mean": 15.605229,
+          "p50": 14.402625,
+          "p95": 16.807833,
+          "p99": 16.807833,
+          "max": 16.807833
+        },
+        "httpStatusCounts": {
+          "503": 1,
+          "202": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 543.0,
+          "mean": 543.0,
+          "p50": 543.0,
+          "p95": 543.0,
+          "p99": 543.0,
+          "max": 543.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 543.0,
+          "mean": 543.0,
+          "p50": 543.0,
+          "p95": 543.0,
+          "p99": 543.0,
+          "max": 543.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1,
+        "settledWaitMs": 164.70124991610646
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-27561c31-f692-4084-bc3e-88873fe8f459",
+        "runId": "27561c31-f692-4084-bc3e-88873fe8f459",
+        "strategy": "LUA_REDIS"
+      },
+      "parameters": {
+        "strategy": "LUA_REDIS",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-send-and-redelivery-LUA_REDIS",
+      "file": "008-fault-after-send-and-redelivery-lua_redis.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 172.0147500745952,
+        "duplicate_delivery_handledWaitMs": 8.954416960477829,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 3.317791,
+          "mean": 243.879416,
+          "p50": 3.317791,
+          "p95": 484.441041,
+          "p99": 484.441041,
+          "max": 484.441041
+        },
+        "httpStatusCounts": {
+          "503": 1,
+          "200": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 491.0,
+          "mean": 491.0,
+          "p50": 491.0,
+          "p95": 491.0,
+          "p99": 491.0,
+          "max": 491.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 491.0,
+          "mean": 491.0,
+          "p50": 491.0,
+          "p95": 491.0,
+          "p99": 491.0,
+          "max": 491.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-c89c23d4-eabc-4247-ae13-3f5d4eb32311",
+        "runId": "c89c23d4-eabc-4247-ae13-3f5d4eb32311",
+        "strategy": "LUA_REDIS"
+      },
+      "parameters": {
+        "strategy": "LUA_REDIS",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-db-before-offset-commit-LUA_REDIS",
+      "file": "009-fault-after-db-before-offset-commit-lua_redis.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "database_commit_redeliveryWaitMs": 1132.4017499573529,
+        "apiLatencyMs": {
+          "samples": 1,
+          "min": 1136.964,
+          "mean": 1136.964,
+          "p50": 1136.964,
+          "p95": 1136.964,
+          "p99": 1136.964,
+          "max": 1136.964
+        },
+        "httpStatusCounts": {
+          "202": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 2025.0,
+          "mean": 2025.0,
+          "p50": 2025.0,
+          "p95": 2025.0,
+          "p99": 2025.0,
+          "max": 2025.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 2025.0,
+          "mean": 2025.0,
+          "p50": 2025.0,
+          "p95": 2025.0,
+          "p99": 2025.0,
+          "max": 2025.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-ca3a1f75-5b36-43e0-8099-bcb13465ca1a",
+        "runId": "ca3a1f75-5b36-43e0-8099-bcb13465ca1a",
+        "strategy": "LUA_REDIS"
+      },
+      "parameters": {
+        "strategy": "LUA_REDIS",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-pause-poll-resume-LUA_REDIS",
+      "file": "010-fault-pause-poll-resume-lua_redis.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "submissionWallMs": 181.9793339818716,
+        "settledWaitMs": 161.6440829820931,
+        "apiLatencyMs": {
+          "samples": 20,
+          "min": 158.852709,
+          "mean": 166.43511675,
+          "p50": 164.880042,
+          "p95": 172.176458,
+          "p99": 177.109458,
+          "max": 177.109458
+        },
+        "httpStatusCounts": {
+          "202": 20
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 20,
+          "min": 253.0,
+          "mean": 294.1,
+          "p50": 291.0,
+          "p95": 329.0,
+          "p99": 336.0,
+          "max": 336.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 20,
+          "min": 253.0,
+          "mean": 294.1,
+          "p50": 291.0,
+          "p95": 329.0,
+          "p99": 336.0,
+          "max": 336.0
+        },
+        "partitionRequestCounts": {
+          "0": 20
+        },
+        "issued": 20,
+        "totalRunIssuedIncludingWarmup": 20
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-29c43750-a50a-4401-a3e8-35c9558ece1b",
+        "runId": "29c43750-a50a-4401-a3e8-35c9558ece1b",
+        "strategy": "LUA_REDIS"
+      },
+      "parameters": {
+        "strategy": "LUA_REDIS",
+        "stock": 20,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-metadata-lookup-before-handler-LUA_REDIS",
+      "file": "011-fault-metadata-lookup-before-handler-lua_redis.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 338.023291900754,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 14.153875,
+          "mean": 244.3295415,
+          "p50": 14.153875,
+          "p95": 474.505208,
+          "p99": 474.505208,
+          "max": 474.505208
+        },
+        "httpStatusCounts": {
+          "202": 2
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 261.0,
+          "mean": 492.5,
+          "p50": 261.0,
+          "p95": 724.0,
+          "p99": 724.0,
+          "max": 724.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 261.0,
+          "mean": 492.5,
+          "p50": 261.0,
+          "p95": 724.0,
+          "p99": 724.0,
+          "max": 724.0
+        },
+        "partitionRequestCounts": {
+          "0": 2
+        },
+        "issued": 2,
+        "totalRunIssuedIncludingWarmup": 2
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-9a0cede6-8c5e-4a86-a21e-bbefd0d3d4c1",
+        "runId": "9a0cede6-8c5e-4a86-a21e-bbefd0d3d4c1",
+        "strategy": "LUA_REDIS"
+      },
+      "parameters": {
+        "strategy": "LUA_REDIS",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 1,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-reserve-KAFKA_FIRST",
+      "file": "012-fault-after-reserve-kafka_first.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 1948.3661660924554,
+        "apiLatencyMs": {
+          "samples": 1,
+          "min": 470.492416,
+          "mean": 470.492416,
+          "p50": 470.492416,
+          "p95": 470.492416,
+          "p99": 470.492416,
+          "max": 470.492416
+        },
+        "httpStatusCounts": {
+          "202": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 2358.0,
+          "mean": 2358.0,
+          "p50": 2358.0,
+          "p95": 2358.0,
+          "p99": 2358.0,
+          "max": 2358.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 2358.0,
+          "mean": 2358.0,
+          "p50": 2358.0,
+          "p95": 2358.0,
+          "p99": 2358.0,
+          "max": 2358.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-21f5a49c-4aff-450e-8bea-76a7189a6776",
+        "runId": "21f5a49c-4aff-450e-8bea-76a7189a6776",
+        "strategy": "KAFKA_FIRST"
+      },
+      "parameters": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-send-and-redelivery-KAFKA_FIRST",
+      "file": "013-fault-after-send-and-redelivery-kafka_first.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 671.8422500416636,
+        "duplicate_delivery_handledWaitMs": 7.83629110082984,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 3.395042,
+          "mean": 779.861521,
+          "p50": 3.395042,
+          "p95": 1556.328,
+          "p99": 1556.328,
+          "max": 1556.328
+        },
+        "httpStatusCounts": {
+          "503": 1,
+          "200": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 2048.0,
+          "mean": 2048.0,
+          "p50": 2048.0,
+          "p95": 2048.0,
+          "p99": 2048.0,
+          "max": 2048.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 2048.0,
+          "mean": 2048.0,
+          "p50": 2048.0,
+          "p95": 2048.0,
+          "p99": 2048.0,
+          "max": 2048.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-a28a6e2f-ec87-4bee-a609-3b2b6ca1e018",
+        "runId": "a28a6e2f-ec87-4bee-a609-3b2b6ca1e018",
+        "strategy": "KAFKA_FIRST"
+      },
+      "parameters": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-db-before-offset-commit-KAFKA_FIRST",
+      "file": "014-fault-after-db-before-offset-commit-kafka_first.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "database_commit_redeliveryWaitMs": 823.5926660709083,
+        "apiLatencyMs": {
+          "samples": 1,
+          "min": 1535.946666,
+          "mean": 1535.946666,
+          "p50": 1535.946666,
+          "p95": 1535.946666,
+          "p99": 1535.946666,
+          "max": 1535.946666
+        },
+        "httpStatusCounts": {
+          "202": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 2038.0,
+          "mean": 2038.0,
+          "p50": 2038.0,
+          "p95": 2038.0,
+          "p99": 2038.0,
+          "max": 2038.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 2038.0,
+          "mean": 2038.0,
+          "p50": 2038.0,
+          "p95": 2038.0,
+          "p99": 2038.0,
+          "max": 2038.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+        "runId": "3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+        "strategy": "KAFKA_FIRST"
+      },
+      "parameters": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-pause-poll-resume-KAFKA_FIRST",
+      "file": "015-fault-pause-poll-resume-kafka_first.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "submissionWallMs": 574.2039168253541,
+        "settledWaitMs": 318.208625074476,
+        "apiLatencyMs": {
+          "samples": 20,
+          "min": 566.910083,
+          "mean": 569.9534458,
+          "p50": 569.814709,
+          "p95": 572.258,
+          "p99": 572.82825,
+          "max": 572.82825
+        },
+        "httpStatusCounts": {
+          "202": 20
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 20,
+          "min": 608.0,
+          "mean": 674.4,
+          "p50": 674.0,
+          "p95": 731.0,
+          "p99": 741.0,
+          "max": 741.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 20,
+          "min": 608.0,
+          "mean": 674.4,
+          "p50": 674.0,
+          "p95": 731.0,
+          "p99": 741.0,
+          "max": 741.0
+        },
+        "partitionRequestCounts": {
+          "0": 20
+        },
+        "issued": 20,
+        "totalRunIssuedIncludingWarmup": 20
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-f281c3a5-fe41-4352-b31f-42d593e7baa6",
+        "runId": "f281c3a5-fe41-4352-b31f-42d593e7baa6",
+        "strategy": "KAFKA_FIRST"
+      },
+      "parameters": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 20,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-metadata-lookup-before-handler-KAFKA_FIRST",
+      "file": "016-fault-metadata-lookup-before-handler-kafka_first.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 490.0833750143647,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 7.11925,
+          "mean": 171.83995850000002,
+          "p50": 7.11925,
+          "p95": 336.560667,
+          "p99": 336.560667,
+          "max": 336.560667
+        },
+        "httpStatusCounts": {
+          "202": 2
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 332.0,
+          "mean": 495.5,
+          "p50": 332.0,
+          "p95": 659.0,
+          "p99": 659.0,
+          "max": 659.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 332.0,
+          "mean": 495.5,
+          "p50": 332.0,
+          "p95": 659.0,
+          "p99": 659.0,
+          "max": 659.0
+        },
+        "partitionRequestCounts": {
+          "0": 2
+        },
+        "issued": 2,
+        "totalRunIssuedIncludingWarmup": 2
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-00e466e2-5534-40ad-a7f3-19df61ad8750",
+        "runId": "00e466e2-5534-40ad-a7f3-19df61ad8750",
+        "strategy": "KAFKA_FIRST"
+      },
+      "parameters": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 1,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-reserve-DB_OUTBOX",
+      "file": "017-fault-after-reserve-db_outbox.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 1780.0176669843495,
+        "apiLatencyMs": {
+          "samples": 1,
+          "min": 16.302,
+          "mean": 16.302,
+          "p50": 16.302,
+          "p95": 16.302,
+          "p99": 16.302,
+          "max": 16.302
+        },
+        "httpStatusCounts": {
+          "503": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 1659.0,
+          "mean": 1659.0,
+          "p50": 1659.0,
+          "p95": 1659.0,
+          "p99": 1659.0,
+          "max": 1659.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 1659.0,
+          "mean": 1659.0,
+          "p50": 1659.0,
+          "p95": 1659.0,
+          "p99": 1659.0,
+          "max": 1659.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-b7c4917e-c4b6-4d17-b3e8-7d9c6d600328",
+        "runId": "b7c4917e-c4b6-4d17-b3e8-7d9c6d600328",
+        "strategy": "DB_OUTBOX"
+      },
+      "parameters": {
+        "strategy": "DB_OUTBOX",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-send-and-redelivery-DB_OUTBOX",
+      "file": "018-fault-after-send-and-redelivery-db_outbox.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 2078.3536657691,
+        "duplicate_delivery_handledWaitMs": 6.84841675683856,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 3.880667,
+          "mean": 12.5023545,
+          "p50": 3.880667,
+          "p95": 21.124042,
+          "p99": 21.124042,
+          "max": 21.124042
+        },
+        "httpStatusCounts": {
+          "202": 1,
+          "200": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 2038.0,
+          "mean": 2038.0,
+          "p50": 2038.0,
+          "p95": 2038.0,
+          "p99": 2038.0,
+          "max": 2038.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 2038.0,
+          "mean": 2038.0,
+          "p50": 2038.0,
+          "p95": 2038.0,
+          "p99": 2038.0,
+          "max": 2038.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-9d095036-246c-45cb-b2c8-041d834c90f3",
+        "runId": "9d095036-246c-45cb-b2c8-041d834c90f3",
+        "strategy": "DB_OUTBOX"
+      },
+      "parameters": {
+        "strategy": "DB_OUTBOX",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-db-before-offset-commit-DB_OUTBOX",
+      "file": "019-fault-after-db-before-offset-commit-db_outbox.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "database_commit_redeliveryWaitMs": 2276.152375154197,
+        "apiLatencyMs": {
+          "samples": 1,
+          "min": 17.483583,
+          "mean": 17.483583,
+          "p50": 17.483583,
+          "p95": 17.483583,
+          "p99": 17.483583,
+          "max": 17.483583
+        },
+        "httpStatusCounts": {
+          "202": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 2027.0,
+          "mean": 2027.0,
+          "p50": 2027.0,
+          "p95": 2027.0,
+          "p99": 2027.0,
+          "max": 2027.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 2027.0,
+          "mean": 2027.0,
+          "p50": 2027.0,
+          "p95": 2027.0,
+          "p99": 2027.0,
+          "max": 2027.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-9783e64a-76bf-4014-a809-c951dd2d9f1b",
+        "runId": "9783e64a-76bf-4014-a809-c951dd2d9f1b",
+        "strategy": "DB_OUTBOX"
+      },
+      "parameters": {
+        "strategy": "DB_OUTBOX",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-pause-poll-resume-DB_OUTBOX",
+      "file": "020-fault-pause-poll-resume-db_outbox.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "submissionWallMs": 96.65287518873811,
+        "settledWaitMs": 2093.344292137772,
+        "apiLatencyMs": {
+          "samples": 20,
+          "min": 20.615875,
+          "mean": 58.086037450000006,
+          "p50": 57.497,
+          "p95": 87.765125,
+          "p99": 93.359291,
+          "max": 93.359291
+        },
+        "httpStatusCounts": {
+          "202": 20
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 20,
+          "min": 2027.0,
+          "mean": 2075.4,
+          "p50": 2074.0,
+          "p95": 2114.0,
+          "p99": 2117.0,
+          "max": 2117.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 20,
+          "min": 2027.0,
+          "mean": 2075.4,
+          "p50": 2074.0,
+          "p95": 2114.0,
+          "p99": 2117.0,
+          "max": 2117.0
+        },
+        "partitionRequestCounts": {
+          "0": 20
+        },
+        "issued": 20,
+        "totalRunIssuedIncludingWarmup": 20
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-d30c6083-d71a-4d72-92cb-744ed6d6ce78",
+        "runId": "d30c6083-d71a-4d72-92cb-744ed6d6ce78",
+        "strategy": "DB_OUTBOX"
+      },
+      "parameters": {
+        "strategy": "DB_OUTBOX",
+        "stock": 20,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-metadata-lookup-before-handler-DB_OUTBOX",
+      "file": "021-fault-metadata-lookup-before-handler-db_outbox.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 485.04229122772813,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 7.606791,
+          "mean": 8.820791,
+          "p50": 7.606791,
+          "p95": 10.034791,
+          "p99": 10.034791,
+          "max": 10.034791
+        },
+        "httpStatusCounts": {
+          "202": 2
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 444.0,
+          "mean": 446.0,
+          "p50": 444.0,
+          "p95": 448.0,
+          "p99": 448.0,
+          "max": 448.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 444.0,
+          "mean": 446.0,
+          "p50": 444.0,
+          "p95": 448.0,
+          "p99": 448.0,
+          "max": 448.0
+        },
+        "partitionRequestCounts": {
+          "0": 2
+        },
+        "issued": 2,
+        "totalRunIssuedIncludingWarmup": 2
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-e7848fa6-c499-49b5-9641-7cb8259847fe",
+        "runId": "e7848fa6-c499-49b5-9641-7cb8259847fe",
+        "strategy": "DB_OUTBOX"
+      },
+      "parameters": {
+        "strategy": "DB_OUTBOX",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 1,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-reserve-REDIS_STREAM",
+      "file": "022-fault-after-reserve-redis_stream.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 475.5800003185868,
+        "apiLatencyMs": {
+          "samples": 1,
+          "min": 12.39275,
+          "mean": 12.39275,
+          "p50": 12.39275,
+          "p95": 12.39275,
+          "p99": 12.39275,
+          "max": 12.39275
+        },
+        "httpStatusCounts": {
+          "503": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 470.0,
+          "mean": 470.0,
+          "p50": 470.0,
+          "p95": 470.0,
+          "p99": 470.0,
+          "max": 470.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 470.0,
+          "mean": 470.0,
+          "p50": 470.0,
+          "p95": 470.0,
+          "p99": 470.0,
+          "max": 470.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-70b77cb7-21e3-4397-96c8-c5bb1ed1e873",
+        "runId": "70b77cb7-21e3-4397-96c8-c5bb1ed1e873",
+        "strategy": "REDIS_STREAM"
+      },
+      "parameters": {
+        "strategy": "REDIS_STREAM",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-send-and-redelivery-REDIS_STREAM",
+      "file": "023-fault-after-send-and-redelivery-redis_stream.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 326.8165420740843,
+        "duplicate_delivery_handledWaitMs": 165.266583673656,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 2.559584,
+          "mean": 7.778000499999999,
+          "p50": 2.559584,
+          "p95": 12.996417,
+          "p99": 12.996417,
+          "max": 12.996417
+        },
+        "httpStatusCounts": {
+          "202": 1,
+          "200": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 170.0,
+          "mean": 170.0,
+          "p50": 170.0,
+          "p95": 170.0,
+          "p99": 170.0,
+          "max": 170.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 170.0,
+          "mean": 170.0,
+          "p50": 170.0,
+          "p95": 170.0,
+          "p99": 170.0,
+          "max": 170.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-985356d0-250e-4b65-bd16-33d07f0fcaf4",
+        "runId": "985356d0-250e-4b65-bd16-33d07f0fcaf4",
+        "strategy": "REDIS_STREAM"
+      },
+      "parameters": {
+        "strategy": "REDIS_STREAM",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-after-db-before-offset-commit-REDIS_STREAM",
+      "file": "024-fault-after-db-before-offset-commit-redis_stream.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "database_commit_redeliveryWaitMs": 650.3297919407487,
+        "apiLatencyMs": {
+          "samples": 1,
+          "min": 9.74525,
+          "mean": 9.74525,
+          "p50": 9.74525,
+          "p95": 9.74525,
+          "p99": 9.74525,
+          "max": 9.74525
+        },
+        "httpStatusCounts": {
+          "202": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 415.0,
+          "mean": 415.0,
+          "p50": 415.0,
+          "p95": 415.0,
+          "p99": 415.0,
+          "max": 415.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 415.0,
+          "mean": 415.0,
+          "p50": 415.0,
+          "p95": 415.0,
+          "p99": 415.0,
+          "max": 415.0
+        },
+        "partitionRequestCounts": {
+          "0": 1
+        },
+        "issued": 1,
+        "totalRunIssuedIncludingWarmup": 1
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-d6b557a0-09df-4d29-b6aa-b80097e0d6c0",
+        "runId": "d6b557a0-09df-4d29-b6aa-b80097e0d6c0",
+        "strategy": "REDIS_STREAM"
+      },
+      "parameters": {
+        "strategy": "REDIS_STREAM",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-pause-poll-resume-REDIS_STREAM",
+      "file": "025-fault-pause-poll-resume-redis_stream.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "submissionWallMs": 22.253416944295168,
+        "settledWaitMs": 1126.7994167283177,
+        "apiLatencyMs": {
+          "samples": 20,
+          "min": 12.277333,
+          "mean": 15.6601,
+          "p50": 15.518416,
+          "p95": 18.89225,
+          "p99": 19.78475,
+          "max": 19.78475
+        },
+        "httpStatusCounts": {
+          "202": 20
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 20,
+          "min": 847.0,
+          "mean": 1025.5,
+          "p50": 1056.0,
+          "p95": 1102.0,
+          "p99": 1106.0,
+          "max": 1106.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 20,
+          "min": 847.0,
+          "mean": 1025.5,
+          "p50": 1056.0,
+          "p95": 1102.0,
+          "p99": 1106.0,
+          "max": 1106.0
+        },
+        "partitionRequestCounts": {
+          "0": 20
+        },
+        "issued": 20,
+        "totalRunIssuedIncludingWarmup": 20
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-70622879-3154-4158-9366-901c6fcc43d7",
+        "runId": "70622879-3154-4158-9366-901c6fcc43d7",
+        "strategy": "REDIS_STREAM"
+      },
+      "parameters": {
+        "strategy": "REDIS_STREAM",
+        "stock": 20,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-metadata-lookup-before-handler-REDIS_STREAM",
+      "file": "026-fault-metadata-lookup-before-handler-redis_stream.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 800.8646671660244,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 6.723959,
+          "mean": 8.3912295,
+          "p50": 6.723959,
+          "p95": 10.0585,
+          "p99": 10.0585,
+          "max": 10.0585
+        },
+        "httpStatusCounts": {
+          "202": 2
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 679.0,
+          "mean": 680.0,
+          "p50": 679.0,
+          "p95": 681.0,
+          "p99": 681.0,
+          "max": 681.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 679.0,
+          "mean": 680.0,
+          "p50": 679.0,
+          "p95": 681.0,
+          "p99": 681.0,
+          "max": 681.0
+        },
+        "partitionRequestCounts": {
+          "0": 2
+        },
+        "issued": 2,
+        "totalRunIssuedIncludingWarmup": 2
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-4cae99e6-a5c1-46b6-b693-b990fa4b843d",
+        "runId": "4cae99e6-a5c1-46b6-b693-b990fa4b843d",
+        "strategy": "REDIS_STREAM"
+      },
+      "parameters": {
+        "strategy": "REDIS_STREAM",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 1,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "fault-outbox-atomic-cancel",
+      "file": "027-fault-outbox-atomic-cancel.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "apiLatencyMs": {
+          "samples": 1,
+          "min": 10.666292,
+          "mean": 10.666292,
+          "p50": 10.666292,
+          "p95": 10.666292,
+          "p99": 10.666292,
+          "max": 10.666292
+        },
+        "httpStatusCounts": {
+          "202": 1
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 0,
+          "min": null,
+          "mean": null,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 1,
+          "min": 13.0,
+          "mean": 13.0,
+          "p50": 13.0,
+          "p95": 13.0,
+          "p99": 13.0,
+          "max": 13.0
+        },
+        "partitionRequestCounts": {},
+        "issued": 0,
+        "totalRunIssuedIncludingWarmup": 0
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-ff935fc8-37f1-4c35-93c7-11ce55cefbcf",
+        "runId": "ff935fc8-37f1-4c35-93c7-11ce55cefbcf",
+        "strategy": "DB_OUTBOX"
+      },
+      "parameters": {
+        "strategy": "DB_OUTBOX",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    }
+  ],
+  "measurementNotes": [
+    "Actual HTTP traffic to Spring, Kafka, Redis and MySQL; no simulated service responses.",
+    "All strategies share the lab's database unique constraint and conditional stock decrement as a final safety guard. These results do not prove the original examples safe.",
+    "API duration uses perf_counter_ns on the load generator and includes network and client work; one persistent HTTP connection per worker thread.",
+    "Final issuance duration is server completedAt minus receivedAt for ISSUED requests; API rejection time is not treated as issuance time.",
+    "Server receivedAt is the request-log insertion timestamp in the lab, not a globally ordered TCP/API gateway arrival timestamp; publishDelayMs demonstrates divergence from Kafka append order.",
+    "Percentiles use nearest rank ceil(q*N)-1 without interpolation; absent observations are null, never zero.",
+    "Localhost load, finite samples and one process are not production throughput or HA guarantees; no latency performance thresholds are asserted.",
+    "Fault hooks are explicitly named and enabled only in the isolated lab. Broker/Redis process failures are separate infrastructure experiments.",
+    "Consumers and relay are paused, and workers are stopped after each case. Topics and durable data are retained for inspection until infrastructure cleanup.",
+    "Each distribution case warms the new consumer group with 20 requests, one per coupon; measured latencies and partition counts exclude those requests."
+  ],
+  "passedCases": 27,
+  "failedCases": 0
+}

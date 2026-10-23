@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-22T10:19:20.719876+00:00",
+  "scope": "coupon-lab only; volumes retained",
+  "exitCode": 0,
+  "infra": {
+    "action": "down",
+    "project": "coupon-lab",
+    "at": "2026-10-22T10:19:18.830710+00:00",
+    "ok": true,
+    "logs": "results/infra/20261022T101918830892Z-before-down.log",
+    "volumes_preserved": true
+  },
+  "remainingContainers": "",
+  "appProcess": null,
+  "passed": true
+}

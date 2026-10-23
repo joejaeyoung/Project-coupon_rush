@@ -1,0 +1,8 @@
+{
+  "name": "lua_runtime_error_does_not_rollback_prior_write",
+  "script": "redis.call('SET', KEYS[1], 'written-before-error'); return redis.call('SADD', KEYS[1], 'user')",
+  "key": "lab:lua-error:158972e75c5d43df97792bd8d0c0776d",
+  "error": "error:\"WRONGTYPE Operation against a key holding the wrong kind of value script: b898eeb352598f1b2dae36dd5058167700ea47d9, on @user_script:1.\"",
+  "valueAfterError": "\"written-before-error\"",
+  "passed": true
+}
