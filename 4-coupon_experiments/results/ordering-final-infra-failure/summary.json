@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-22T10:12:03.605477+00:00",
+  "finishedAt": "2026-10-22T10:14:01.812330+00:00",
+  "environment": {
+    "python": "3.14.4 (v3.14.4:23116f998f6, Apr  7 2026, 09:45:22) [Clang 17.0.0 (clang-1700.6.4.2)]",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "cpuCount": 15,
+    "baseUrl": "http://localhost:28080",
+    "suiteSha256": "571609741c1d688ae79b7e6664da38e5760fff7a02583069dd70290be2d3fba2",
+    "backendJarFilesSha256": {
+      "coupon-lab-0.0.1-SNAPSHOT.jar": "76e2f4b281a27da2caa85d95e1487f1c078bfbb690c4a4e783bcf8ea34142c77"
+    }
+  },
+  "parameters": {
+    "base_url": "http://localhost:28080",
+    "output": "4-coupon_experiments/results/ordering-final",
+    "gzip_cases": false,
+    "scenario": "ordering",
+    "case_filter": null,
+    "strategies": [
+      "SPLIT_REDIS",
+      "LUA_REDIS",
+      "KAFKA_FIRST",
+      "DB_OUTBOX",
+      "REDIS_STREAM"
+    ],
+    "users": 1000,
+    "concurrency": 32,
+    "distribution_requests": 300,
+    "rebalance_requests": 300,
+    "partitions": [
+      1,
+      3,
+      6
+    ],
+    "workers": [
+      1,
+      3,
+      6
+    ],
+    "seed": 20261022,
+    "http_timeout": 30.0,
+    "settle_timeout": 60.0
+  },
+  "cases": [
+    {
+      "name": "ordering-arrival-versus-kafka-append",
+      "file": "001-ordering-arrival-versus-kafka-append.json",
+      "passed": false,
+      "failedChecks": [
+        {
+          "name": "settled_within_timeout",
+          "passed": false,
+          "actual": 2,
+          "expected": "predicate satisfied"
+        },
+        {
+          "name": "unexpected_exception",
+          "passed": false,
+          "actual": "'<' not supported between instances of 'NoneType' and 'NoneType'",
+          "expected": null
+        }
+      ],
+      "metrics": {
+        "first_request_receivedWaitMs": 190.20175002515316
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-399075ce-00e4-44ce-92ed-c2023ab8917f",
+        "runId": "399075ce-00e4-44ce-92ed-c2023ab8917f",
+        "strategy": "KAFKA_FIRST"
+      },
+      "parameters": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 1,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "ordering-delayed-first-BLOCKING",
+      "file": "002-ordering-delayed-first-blocking.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 2443.6837499961257,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 14.331375,
+          "mean": 429.029604,
+          "p50": 14.331375,
+          "p95": 843.727833,
+          "p99": 843.727833,
+          "max": 843.727833
+        },
+        "httpStatusCounts": {
+          "202": 2
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 2328.0,
+          "mean": 2744.0,
+          "p50": 2328.0,
+          "p95": 3160.0,
+          "p99": 3160.0,
+          "max": 3160.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 2328.0,
+          "mean": 2744.0,
+          "p50": 2328.0,
+          "p95": 3160.0,
+          "p99": 3160.0,
+          "max": 3160.0
+        },
+        "partitionRequestCounts": {
+          "0": 2
+        },
+        "issued": 2,
+        "totalRunIssuedIncludingWarmup": 2
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-27dc2525-9d4a-45b0-bf79-5427eb4cf0a9",
+        "runId": "27dc2525-9d4a-45b0-bf79-5427eb4cf0a9",
+        "strategy": "KAFKA_FIRST"
+      },
+      "parameters": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "ordering-delayed-first-RETRY_LATER",
+      "file": "003-ordering-delayed-first-retry_later.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 1312.0455001480877,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 13.541042,
+          "mean": 257.381125,
+          "p50": 13.541042,
+          "p95": 501.221208,
+          "p99": 501.221208,
+          "max": 501.221208
+        },
+        "httpStatusCounts": {
+          "202": 2
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 130.0,
+          "mean": 893.5,
+          "p50": 130.0,
+          "p95": 1657.0,
+          "p99": 1657.0,
+          "max": 1657.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 130.0,
+          "mean": 893.5,
+          "p50": 130.0,
+          "p95": 1657.0,
+          "p99": 1657.0,
+          "max": 1657.0
+        },
+        "partitionRequestCounts": {
+          "0": 2
+        },
+        "issued": 2,
+        "totalRunIssuedIncludingWarmup": 2
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-f657edc8-5d82-4c7c-a8b5-eea992557ccc",
+        "runId": "f657edc8-5d82-4c7c-a8b5-eea992557ccc",
+        "strategy": "KAFKA_FIRST"
+      },
+      "parameters": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 3,
+        "ordering": "RETRY_LATER"
+      }
+    },
+    {
+      "name": "ordering-rebalance-while-processing",
+      "file": "004-ordering-rebalance-while-processing.json",
+      "passed": false,
+      "failedChecks": [],
+      "metrics": {
+        "submissionWallMs": 829.5702082104981
+      },
+      "run": {
+        "couponIds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "topic": "coupon-lab-59f55641-4a04-42ec-89de-f7da3b572d5d",
+        "runId": "59f55641-4a04-42ec-89de-f7da3b572d5d",
+        "strategy": "KAFKA_FIRST"
+      },
+      "parameters": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 300,
+        "coupons": 6,
+        "partitions": 3,
+        "workers": 1,
+        "ordering": "BLOCKING"
+      }
+    }
+  ],
+  "measurementNotes": [
+    "Actual HTTP traffic to Spring, Kafka, Redis and MySQL; no simulated service responses.",
+    "All strategies share the lab's database unique constraint and conditional stock decrement as a final safety guard. These results do not prove the original examples safe.",
+    "API duration uses perf_counter_ns on the load generator and includes network and client work; one persistent HTTP connection per worker thread.",
+    "Final issuance duration is server completedAt minus receivedAt for ISSUED requests; API rejection time is not treated as issuance time.",
+    "Server receivedAt is the request-log insertion timestamp in the lab, not a globally ordered TCP/API gateway arrival timestamp; publishDelayMs demonstrates divergence from Kafka append order.",
+    "Percentiles use nearest rank ceil(q*N)-1 without interpolation; absent observations are null, never zero.",
+    "Localhost load, finite samples and one process are not production throughput or HA guarantees; no latency performance thresholds are asserted.",
+    "Fault hooks are explicitly named and enabled only in the isolated lab. Broker/Redis process failures are separate infrastructure experiments.",
+    "Consumers and relay are paused, and workers are stopped after each case. Topics and durable data are retained for inspection until infrastructure cleanup.",
+    "Each distribution case warms the new consumer group with 20 requests, one per coupon; measured latencies and partition counts exclude those requests.",
+    "Distribution case order is shuffled with the recorded seed to reduce systematic time-order bias; each combination is sampled once, with no statistical significance claim."
+  ],
+  "passedCases": 2,
+  "failedCases": 2,
+  "interrupted": true
+}

@@ -1,0 +1,491 @@
+{
+  "name": "fault-after-db-before-offset-commit-KAFKA_FIRST",
+  "startedAt": "2026-10-22T09:43:25.351206+00:00",
+  "parameters": {
+    "strategy": "KAFKA_FIRST",
+    "stock": 10,
+    "coupons": 1,
+    "partitions": 3,
+    "workers": 3,
+    "ordering": "BLOCKING"
+  },
+  "http": [
+    {
+      "method": "POST",
+      "path": "/lab/runs",
+      "payload": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      },
+      "startedAt": "2026-10-22T09:43:25.351224+00:00",
+      "status": 201,
+      "response": {
+        "strategy": "KAFKA_FIRST",
+        "runId": "fa057cb4-9255-4656-a9bf-0fc6c5404835",
+        "topic": "coupon-lab-fa057cb4-9255-4656-a9bf-0fc6c5404835",
+        "couponIds": [
+          1
+        ]
+      },
+      "durationMs": 42.016291,
+      "finishedAt": "2026-10-22T09:43:25.393247+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835/requests",
+      "payload": {
+        "requestId": "committed-before-ack",
+        "userId": "committed-before-ack",
+        "couponId": 1,
+        "fault": "AFTER_DB"
+      },
+      "startedAt": "2026-10-22T09:43:25.393261+00:00",
+      "status": 202,
+      "response": {
+        "requestId": "committed-before-ack",
+        "couponId": 1,
+        "userId": "committed-before-ack",
+        "status": "PENDING",
+        "reason": null,
+        "partition": 0,
+        "offset": 0,
+        "reservationSeq": null,
+        "completionSeq": null,
+        "receivedAt": 1792662205393,
+        "completedAt": null,
+        "reserved": false,
+        "published": true,
+        "fault": "AFTER_DB",
+        "faultConsumed": false,
+        "processingDelayMs": 0,
+        "dbReserved": false,
+        "stage": "PENDING"
+      },
+      "durationMs": 714.242584,
+      "finishedAt": "2026-10-22T09:43:26.107515+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:26.107530+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 6.086666,
+      "finishedAt": "2026-10-22T09:43:26.113621+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:26.265861+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 5.683916,
+      "finishedAt": "2026-10-22T09:43:26.271562+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:26.425984+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 11.521542,
+      "finishedAt": "2026-10-22T09:43:26.437532+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:26.588229+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 5.749625,
+      "finishedAt": "2026-10-22T09:43:26.594007+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:26.745648+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 11.63175,
+      "finishedAt": "2026-10-22T09:43:26.757399+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:26.909262+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 8.773417,
+      "finishedAt": "2026-10-22T09:43:26.918067+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:27.072091+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 4.577792,
+      "finishedAt": "2026-10-22T09:43:27.076683+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:27.227808+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 7.94375,
+      "finishedAt": "2026-10-22T09:43:27.235782+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:27.389235+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 5.911584,
+      "finishedAt": "2026-10-22T09:43:27.395172+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:27.548539+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 0,
+        "issued": 1
+      },
+      "durationMs": 4.652667,
+      "finishedAt": "2026-10-22T09:43:27.553208+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:27.707067+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 0,
+        "issued": 1
+      },
+      "durationMs": 6.956292,
+      "finishedAt": "2026-10-22T09:43:27.714041+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:27.864718+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 0,
+        "issued": 1
+      },
+      "durationMs": 8.915,
+      "finishedAt": "2026-10-22T09:43:27.873650+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/fa057cb4-9255-4656-a9bf-0fc6c5404835/control",
+      "payload": {
+        "paused": true,
+        "workers": 0
+      },
+      "startedAt": "2026-10-22T09:43:27.873735+00:00",
+      "status": 200,
+      "response": {
+        "workers": 0,
+        "runId": "fa057cb4-9255-4656-a9bf-0fc6c5404835",
+        "paused": true
+      },
+      "durationMs": 6.05725,
+      "finishedAt": "2026-10-22T09:43:27.879805+00:00"
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "database_commit_redelivery",
+      "observedAt": "2026-10-22T09:43:27.873666+00:00",
+      "value": {
+        "runId": "fa057cb4-9255-4656-a9bf-0fc6c5404835",
+        "strategy": "KAFKA_FIRST",
+        "topic": "coupon-lab-fa057cb4-9255-4656-a9bf-0fc6c5404835",
+        "ordering": "BLOCKING",
+        "paused": false,
+        "workers": 3,
+        "partitions": 3,
+        "received": 1,
+        "accepted": 1,
+        "reserved": 1,
+        "issued": 1,
+        "rejected": 0,
+        "cancelled": 0,
+        "pending": 0,
+        "activeDbReservations": 0,
+        "ledgerIssued": 1,
+        "ledgerDuplicateUsers": 0,
+        "outboxPending": 0,
+        "streamPending": 0,
+        "consumerErrors": 1,
+        "replays": 1,
+        "relayErrors": 0,
+        "perCoupon": [
+          {
+            "couponId": 1,
+            "total": 10,
+            "dbRemaining": 9,
+            "issued": 1,
+            "ledgerIssued": 1,
+            "redisStock": 9,
+            "redisUsers": 1
+          }
+        ],
+        "requests": [
+          {
+            "requestId": "committed-before-ack",
+            "couponId": 1,
+            "userId": "committed-before-ack",
+            "status": "ISSUED",
+            "reason": null,
+            "partition": 0,
+            "offset": 0,
+            "reservationSeq": 1,
+            "completionSeq": 1,
+            "receivedAt": 1792662205393,
+            "completedAt": 1792662207532,
+            "reserved": true,
+            "published": true,
+            "fault": "AFTER_DB",
+            "faultConsumed": true,
+            "processingDelayMs": 0,
+            "dbReserved": false
+          }
+        ]
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "consumer_fault_observed",
+      "passed": true,
+      "actual": 1,
+      "expected": ">=1"
+    },
+    {
+      "name": "coupon_snapshot_present",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "coupon_1_no_oversell",
+      "passed": true,
+      "actual": 1,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_db_counter_conservation",
+      "passed": true,
+      "actual": {
+        "dbRemaining": 9,
+        "issued": 1
+      },
+      "expected": 10
+    },
+    {
+      "name": "coupon_1_db_stock_within_bounds",
+      "passed": true,
+      "actual": 9,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_request_state_matches_final_ledger",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "coupon_1_redis_stock_within_bounds",
+      "passed": true,
+      "actual": 9,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_redis_users_within_bounds",
+      "passed": true,
+      "actual": 1,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_redis_counter_conservation",
+      "passed": true,
+      "actual": {
+        "redisStock": 9,
+        "redisUsers": 1
+      },
+      "expected": 10
+    },
+    {
+      "name": "no_duplicate_issued_user_per_coupon",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "request_ids_unique",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "issued_count_matches_requests",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "issued_count_matches_final_database_ledger",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "no_duplicate_users_in_final_database_ledger",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "name": "expected_issued",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "all_requests_terminal",
+      "passed": true,
+      "actual": [],
+      "expected": []
+    }
+  ],
+  "expectedObservations": [
+    {
+      "name": "db_commit_before_offset_ack_replayed",
+      "passed": true,
+      "actual": 1,
+      "expected": ">=1"
+    }
+  ],
+  "metrics": {
+    "database_commit_redeliveryWaitMs": 1766.125624999404,
+    "apiLatencyMs": {
+      "samples": 1,
+      "min": 714.242584,
+      "mean": 714.242584,
+      "p50": 714.242584,
+      "p95": 714.242584,
+      "p99": 714.242584,
+      "max": 714.242584
+    },
+    "httpStatusCounts": {
+      "202": 1
+    },
+    "issuedEndToEndLatencyMs": {
+      "samples": 1,
+      "min": 2139.0,
+      "mean": 2139.0,
+      "p50": 2139.0,
+      "p95": 2139.0,
+      "p99": 2139.0,
+      "max": 2139.0
+    },
+    "allTerminalEndToEndLatencyMs": {
+      "samples": 1,
+      "min": 2139.0,
+      "mean": 2139.0,
+      "p50": 2139.0,
+      "p95": 2139.0,
+      "p99": 2139.0,
+      "max": 2139.0
+    },
+    "partitionRequestCounts": {
+      "0": 1
+    },
+    "issued": 1,
+    "totalRunIssuedIncludingWarmup": 1
+  },
+  "run": {
+    "strategy": "KAFKA_FIRST",
+    "runId": "fa057cb4-9255-4656-a9bf-0fc6c5404835",
+    "topic": "coupon-lab-fa057cb4-9255-4656-a9bf-0fc6c5404835",
+    "couponIds": [
+      1
+    ]
+  },
+  "finishedAt": "2026-10-22T09:43:27.879815+00:00",
+  "passed": true
+}

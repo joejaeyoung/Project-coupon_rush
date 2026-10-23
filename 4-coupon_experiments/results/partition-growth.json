@@ -1,0 +1,73 @@
+{
+  "name": "key_mapping_after_partition_growth",
+  "topic": "coupon-lab-key-growth-0a20e84f69294e88958c0afdc9fb2109",
+  "oldPartitions": 1,
+  "newPartitions": 6,
+  "records": {
+    "coupon-1": {
+      "after": 3,
+      "before": 0
+    },
+    "coupon-5": {
+      "after": 3,
+      "before": 0
+    },
+    "coupon-9": {
+      "after": 2,
+      "before": 0
+    },
+    "coupon-3": {
+      "after": 5,
+      "before": 0
+    },
+    "coupon-8": {
+      "after": 5,
+      "before": 0
+    },
+    "coupon-0": {
+      "after": 4,
+      "before": 0
+    },
+    "coupon-2": {
+      "after": 4,
+      "before": 0
+    },
+    "coupon-4": {
+      "after": 4,
+      "before": 0
+    },
+    "coupon-6": {
+      "after": 4,
+      "before": 0
+    },
+    "coupon-10": {
+      "after": 4,
+      "before": 0
+    },
+    "coupon-11": {
+      "after": 4,
+      "before": 0
+    },
+    "coupon-7": {
+      "after": 1,
+      "before": 0
+    }
+  },
+  "remappedKeys": [
+    "coupon-1",
+    "coupon-5",
+    "coupon-9",
+    "coupon-3",
+    "coupon-8",
+    "coupon-0",
+    "coupon-2",
+    "coupon-4",
+    "coupon-6",
+    "coupon-10",
+    "coupon-11",
+    "coupon-7"
+  ],
+  "rawConsumerOutput": "Partition:3\tcoupon-1\tafter\nPartition:3\tcoupon-5\tafter\nPartition:2\tcoupon-9\tafter\nPartition:5\tcoupon-3\tafter\nPartition:5\tcoupon-8\tafter\nPartition:4\tcoupon-0\tafter\nPartition:4\tcoupon-2\tafter\nPartition:4\tcoupon-4\tafter\nPartition:4\tcoupon-6\tafter\nPartition:4\tcoupon-10\tafter\nPartition:4\tcoupon-11\tafter\nPartition:1\tcoupon-7\tafter\nPartition:0\tcoupon-0\tbefore\nPartition:0\tcoupon-1\tbefore\nPartition:0\tcoupon-2\tbefore\nPartition:0\tcoupon-3\tbefore\nPartition:0\tcoupon-4\tbefore\nPartition:0\tcoupon-5\tbefore\nPartition:0\tcoupon-6\tbefore\nPartition:0\tcoupon-7\tbefore\nPartition:0\tcoupon-8\tbefore\nPartition:0\tcoupon-9\tbefore\nPartition:0\tcoupon-10\tbefore\nPartition:0\tcoupon-11\tbefore",
+  "passed": true,
+  "scope": "A fresh producer is used after expansion so it observes the new partition metadata; existing records remain where originally appended."
+}

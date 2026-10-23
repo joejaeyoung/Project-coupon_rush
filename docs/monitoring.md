@@ -1,8 +1,8 @@
 # 성능 테스트 & 모니터링
 ## k6 + InfluxDB + Prometheus + Grafana
 
-> 이 프로젝트에서는 각 Phase마다 같은 테스트를 돌려서 성능 변화를 직접 수치로 확인한다.
-> Phase 1(DB Lock) → Phase 2(Redis) → Phase 3(Kafka)로 갈수록 TPS가 올라가는 것을 Grafana로 눈으로 본다.
+> 기존 Phase 1~3에 같은 부하를 주고 HTTP 응답 처리량·지연과 DB·서버 지표를 함께 관측하는 안내다. 단계가 바뀌면 반드시 성능이 좋아진다고 가정하지 않는다.
+> 성공·거절·접수를 합친 HTTP 요청 처리량과 최종 DB 발급 처리량은 다르다. [9월 측정 기록](benchmark-2026-09-12.md)은 HTTP 응답 기준이며, [10월 독립 실험](experiments-2026-10-22.md)은 접수 응답과 최종 발급 지연을 분리한다.
 
 ---
 
@@ -152,13 +152,14 @@ k6 run --out influxdb=http://localhost:8086/k6 k6/phase1-duplicate-check.js
 ### Phase 3 — Kafka
 
 ```bash
-# 202 즉시 응답 확인
+# 202 접수 응답과 최종 DB 발급을 구분해 관측
 k6 run --out influxdb=http://localhost:8086/k6 k6/phase1-concurrent-issue.js
 ```
 
 **확인 포인트:**
-- p95 응답 시간 대폭 감소 (즉시 202 응답이므로)
+- HTTP 응답 p95와 상태 코드별 분포 확인. 기존 Phase 3의 `202`는 Kafka ACK나 DB 발급 완료를 기다리지 않으므로 완료 지연으로 해석하지 않는다.
 - Consumer lag 모니터링 (Kafka UI 또는 kafka-consumer-groups.sh)
+- 요청 ID를 추적하는 후속 실험 모듈에서는 접수부터 최종 발급·거절까지의 지연도 별도로 기록한다. 기존 Phase 3의 k6 응답 지표만으로 이 값을 계산하지 않는다.
 
 ---
 
@@ -168,7 +169,9 @@ k6 run --out influxdb=http://localhost:8086/k6 k6/phase1-concurrent-issue.js
 
 | 지표 | Phase 1 (DB Lock) | Phase 2 (Redis) | Phase 3 (Kafka) |
 |------|-----------------|-----------------|-----------------|
-| p95 응답 시간 | - ms | - ms | - ms |
-| TPS | - | - | - |
+| HTTP 응답 p95 | - ms | - ms | - ms |
+| HTTP 요청 처리량 (성공·거절·접수 포함), req/s | - | - | - |
+| 최종 DB 발급 처리량 (별도 완료 계측 시), 건/s | - | - | - |
+| 접수부터 최종 발급까지 p95 (별도 완료 계측 시) | - ms | - ms | - ms |
 | 커넥션 대기 최댓값 | - | - | - |
 | 성공 수 (100개 맞나) | - | - | - |

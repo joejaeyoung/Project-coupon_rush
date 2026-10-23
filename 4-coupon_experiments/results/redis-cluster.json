@@ -1,0 +1,469 @@
+{
+  "at": "2026-10-22T09:39:04.743477+00:00",
+  "method": "Persistent TCP RESP clients; identical Lua stock/duplicate-check operation; equal operations, workers and connection count; randomized case order; no injected work or latency; three masters always running, keys placed on one or three masters",
+  "limits": [
+    "Command RTT only, not HTTP end-to-end latency",
+    "Local Docker shares CPU with other services; client and network can bottleneck",
+    "A single coupon keeps both keys in one slot and cannot spread its atomic Lua work over masters",
+    "Three masters without replicas test distribution, not high availability",
+    "Host clients explicitly map slots to exposed ports; no host-visible cluster redirection"
+  ],
+  "crossslot": {
+    "rejected": true,
+    "error": "CROSSSLOT Keys in request don't hash to the same slot",
+    "slots": [
+      1607,
+      9733
+    ]
+  },
+  "same_hash_tag": {
+    "keys": [
+      "stock:{cluster-experiment-1792661930751975000-3}",
+      "users:{cluster-experiment-1792661930751975000-3}"
+    ],
+    "slots": [
+      1607,
+      1607
+    ],
+    "lua_result": 1
+  },
+  "slot_ranges": [
+    {
+      "start": 0,
+      "end": 5460,
+      "owner": 0,
+      "node_id": "63b978b188cc773fce7f301478f7fee4cf822cd9"
+    },
+    {
+      "start": 5461,
+      "end": 10922,
+      "owner": 1,
+      "node_id": "75d3eef2e5972744f3216d369786390626fe00f2"
+    },
+    {
+      "start": 10923,
+      "end": 16383,
+      "owner": 2,
+      "node_id": "7a61fbbf21a364bc93d22f11bd616c6037f4c888"
+    }
+  ],
+  "summary": [
+    {
+      "distribution": "hot",
+      "coupon_owners": 1,
+      "median_operations_per_second": 18925.2,
+      "median_roundtrip_p95_ms": 1.576
+    },
+    {
+      "distribution": "hot",
+      "coupon_owners": 3,
+      "median_operations_per_second": 16900.43,
+      "median_roundtrip_p95_ms": 1.7867
+    },
+    {
+      "distribution": "uniform",
+      "coupon_owners": 1,
+      "median_operations_per_second": 15262.52,
+      "median_roundtrip_p95_ms": 2.189
+    },
+    {
+      "distribution": "uniform",
+      "coupon_owners": 3,
+      "median_operations_per_second": 16794.25,
+      "median_roundtrip_p95_ms": 1.9043
+    },
+    {
+      "distribution": "90hot",
+      "coupon_owners": 1,
+      "median_operations_per_second": 18626.84,
+      "median_roundtrip_p95_ms": 1.667
+    },
+    {
+      "distribution": "90hot",
+      "coupon_owners": 3,
+      "median_operations_per_second": 18871.99,
+      "median_roundtrip_p95_ms": 1.652
+    }
+  ],
+  "measurements": [
+    {
+      "repeat": 1,
+      "available_masters": 3,
+      "coupon_owners": 3,
+      "distribution": "uniform",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.71453,
+      "operations_per_second": 16794.25,
+      "roundtrip_p50_ms": 0.9178,
+      "roundtrip_p95_ms": 1.9043,
+      "evalsha_calls_by_port": {
+        "27379": 4000,
+        "27380": 4000,
+        "27381": 4000
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 2,
+      "available_masters": 3,
+      "coupon_owners": 1,
+      "distribution": "hot",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.732269,
+      "operations_per_second": 16387.41,
+      "roundtrip_p50_ms": 0.9265,
+      "roundtrip_p95_ms": 1.95,
+      "evalsha_calls_by_port": {
+        "27379": 12000,
+        "27380": 0,
+        "27381": 0
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 2,
+      "available_masters": 3,
+      "coupon_owners": 3,
+      "distribution": "uniform",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.825918,
+      "operations_per_second": 14529.28,
+      "roundtrip_p50_ms": 0.8719,
+      "roundtrip_p95_ms": 2.1745,
+      "evalsha_calls_by_port": {
+        "27379": 4000,
+        "27380": 4000,
+        "27381": 4000
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 2,
+      "available_masters": 3,
+      "coupon_owners": 1,
+      "distribution": "uniform",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.824074,
+      "operations_per_second": 14561.8,
+      "roundtrip_p50_ms": 0.9679,
+      "roundtrip_p95_ms": 2.432,
+      "evalsha_calls_by_port": {
+        "27379": 12000,
+        "27380": 0,
+        "27381": 0
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 3,
+      "available_masters": 3,
+      "coupon_owners": 3,
+      "distribution": "hot",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.760116,
+      "operations_per_second": 15787.06,
+      "roundtrip_p50_ms": 0.9081,
+      "roundtrip_p95_ms": 2.1636,
+      "evalsha_calls_by_port": {
+        "27379": 12000,
+        "27380": 0,
+        "27381": 0
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 1,
+      "available_masters": 3,
+      "coupon_owners": 1,
+      "distribution": "uniform",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.78624,
+      "operations_per_second": 15262.52,
+      "roundtrip_p50_ms": 0.9357,
+      "roundtrip_p95_ms": 2.189,
+      "evalsha_calls_by_port": {
+        "27379": 12000,
+        "27380": 0,
+        "27381": 0
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 3,
+      "available_masters": 3,
+      "coupon_owners": 3,
+      "distribution": "uniform",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.663155,
+      "operations_per_second": 18095.33,
+      "roundtrip_p50_ms": 0.8395,
+      "roundtrip_p95_ms": 1.6765,
+      "evalsha_calls_by_port": {
+        "27379": 4000,
+        "27380": 4000,
+        "27381": 4000
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 1,
+      "available_masters": 3,
+      "coupon_owners": 1,
+      "distribution": "90hot",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.658035,
+      "operations_per_second": 18236.11,
+      "roundtrip_p50_ms": 0.8452,
+      "roundtrip_p95_ms": 1.6722,
+      "evalsha_calls_by_port": {
+        "27379": 12000,
+        "27380": 0,
+        "27381": 0
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 2,
+      "available_masters": 3,
+      "coupon_owners": 1,
+      "distribution": "90hot",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.644231,
+      "operations_per_second": 18626.84,
+      "roundtrip_p50_ms": 0.852,
+      "roundtrip_p95_ms": 1.667,
+      "evalsha_calls_by_port": {
+        "27379": 12000,
+        "27380": 0,
+        "27381": 0
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 3,
+      "available_masters": 3,
+      "coupon_owners": 1,
+      "distribution": "90hot",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.634327,
+      "operations_per_second": 18917.7,
+      "roundtrip_p50_ms": 0.8445,
+      "roundtrip_p95_ms": 1.6138,
+      "evalsha_calls_by_port": {
+        "27379": 12000,
+        "27380": 0,
+        "27381": 0
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 3,
+      "available_masters": 3,
+      "coupon_owners": 3,
+      "distribution": "90hot",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.630394,
+      "operations_per_second": 19035.72,
+      "roundtrip_p50_ms": 0.8119,
+      "roundtrip_p95_ms": 1.5591,
+      "evalsha_calls_by_port": {
+        "27379": 11228,
+        "27380": 391,
+        "27381": 381
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 3,
+      "available_masters": 3,
+      "coupon_owners": 1,
+      "distribution": "hot",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.634075,
+      "operations_per_second": 18925.2,
+      "roundtrip_p50_ms": 0.843,
+      "roundtrip_p95_ms": 1.576,
+      "evalsha_calls_by_port": {
+        "27379": 12000,
+        "27380": 0,
+        "27381": 0
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 1,
+      "available_masters": 3,
+      "coupon_owners": 3,
+      "distribution": "hot",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.663135,
+      "operations_per_second": 18095.86,
+      "roundtrip_p50_ms": 0.8526,
+      "roundtrip_p95_ms": 1.761,
+      "evalsha_calls_by_port": {
+        "27379": 12000,
+        "27380": 0,
+        "27381": 0
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 3,
+      "available_masters": 3,
+      "coupon_owners": 1,
+      "distribution": "uniform",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.707453,
+      "operations_per_second": 16962.25,
+      "roundtrip_p50_ms": 0.8647,
+      "roundtrip_p95_ms": 1.7971,
+      "evalsha_calls_by_port": {
+        "27379": 12000,
+        "27380": 0,
+        "27381": 0
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 1,
+      "available_masters": 3,
+      "coupon_owners": 1,
+      "distribution": "hot",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.631138,
+      "operations_per_second": 19013.28,
+      "roundtrip_p50_ms": 0.8409,
+      "roundtrip_p95_ms": 1.5505,
+      "evalsha_calls_by_port": {
+        "27379": 12000,
+        "27380": 0,
+        "27381": 0
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 1,
+      "available_masters": 3,
+      "coupon_owners": 3,
+      "distribution": "90hot",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.877944,
+      "operations_per_second": 13668.3,
+      "roundtrip_p50_ms": 0.9412,
+      "roundtrip_p95_ms": 2.4271,
+      "evalsha_calls_by_port": {
+        "27379": 11228,
+        "27380": 391,
+        "27381": 381
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 2,
+      "available_masters": 3,
+      "coupon_owners": 3,
+      "distribution": "hot",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.710041,
+      "operations_per_second": 16900.43,
+      "roundtrip_p50_ms": 0.8771,
+      "roundtrip_p95_ms": 1.7867,
+      "evalsha_calls_by_port": {
+        "27379": 12000,
+        "27380": 0,
+        "27381": 0
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    },
+    {
+      "repeat": 2,
+      "available_masters": 3,
+      "coupon_owners": 3,
+      "distribution": "90hot",
+      "operations": 12000,
+      "workers": 18,
+      "elapsed_seconds": 0.635863,
+      "operations_per_second": 18871.99,
+      "roundtrip_p50_ms": 0.8394,
+      "roundtrip_p95_ms": 1.652,
+      "evalsha_calls_by_port": {
+        "27379": 11228,
+        "27380": 391,
+        "27381": 381
+      },
+      "accepted": 12000,
+      "unique_users": 12000,
+      "remaining_stock": 0,
+      "pass": true
+    }
+  ],
+  "pass": true
+}

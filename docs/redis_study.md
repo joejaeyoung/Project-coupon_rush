@@ -1,6 +1,10 @@
 # Redis 완전 정복
 ## 선착순 쿠폰 시스템으로 배우는 Redis
 
+> 2026-10-22 보완: 현재 구현과 학습용 예제를 구분하고 원자성·영속성 설명을 정정했다. 다섯 가지 멘토링 키워드와 미결정 설계는 [멘토링 논의안](mentoring-discussion.md)에 정리한다.
+
+> 실제 재현: Lua 예약·Stream relay는 [실험 모듈](../4-coupon_experiments/README.md), Lua 오류의 부분 쓰기·Redis 승격 시 쓰기 손실·Sentinel·Cluster 편중 부하는 [실증 보고서](experiments-2026-10-22.md)를 참고한다. 이 문서의 기존 Phase 2/3 설명과 구분한다.
+
 ---
 
 ## 1. Redis가 뭔가요?
@@ -18,7 +22,7 @@ MySQL은 데이터를 디스크에 쓰고 읽는다. 디스크 I/O는 메모리 
 
 Redis는 **싱글 스레드**다. 명령어를 하나씩 순서대로 처리한다. 얼핏 보면 느릴 것 같지만 오히려 장점이 있다.
 
-- **락(Lock)이 필요 없다** — 동시에 하나의 명령어만 실행되므로 경쟁 조건(Race Condition)이 없음
+- **단일 명령의 동시 실행을 애플리케이션 락으로 막을 필요가 없다** — 여러 명령을 조합한 업무 흐름에는 여전히 경쟁 조건이 생길 수 있음
 - **컨텍스트 스위칭 비용 없음** — 스레드 전환 오버헤드가 없음
 - **원자성(Atomicity) 보장** — 모든 단일 명령어는 중간에 끊기지 않고 완전히 실행됨
 
@@ -142,8 +146,8 @@ Thread B: SET stock 0, 쿠폰 발급  ← 재고 없는데 발급됨! ❌
 Redis의 `INCR`, `DECR`는 **Read-Modify-Write를 단 하나의 명령어로** 처리한다. 싱글 스레드이므로 두 클라이언트가 동시에 `DECR`를 해도 하나씩 순서대로 실행된다.
 
 ```
-Thread A: DECR coupon:1:stock → 1 (100→99)
-Thread B: DECR coupon:1:stock → 0 (99→98)  ← 순서대로 처리
+Thread A: DECR coupon:1:stock → 99 (100→99)
+Thread B: DECR coupon:1:stock → 98 (99→98)  ← 순서대로 처리
 ```
 
 ```bash
@@ -217,14 +221,14 @@ end
 return -1  -- 재고 없으면 차감 자체를 안 함
 ```
 
-Lua 스크립트는 **Redis 서버 안에서** 실행된다. 스크립트 전체가 싱글 스레드 이벤트 루프 안에서 끊기지 않고 돌아가므로 다른 클라이언트가 끼어들 물리적 공간이 없다.
+Lua 스크립트는 **Redis 서버 안에서** 실행되며 실행 중 다른 클라이언트 명령이 끼어들지 못한다. 위 예제는 재고만 다루는 학습용 코드다. 쿠폰 예약에는 중복 확인·재고 확인·차감·사용자 등록을 함께 묶어야 한다. 이 원자성은 Kafka/MySQL과의 트랜잭션이나 장애 시 영속성을 보장하지 않는다. [Redis Lua 문서](https://redis.io/docs/latest/develop/programmability/eval-intro/)
 
 **Lua가 필요한 경우 vs 아닌 경우:**
 
 | 상황 | Lua 필요 여부 | 이유 |
 |------|-------------|------|
 | 단순 INCR/DECR | ❌ | 명령어 자체가 Read-Modify-Write를 원자적으로 처리 |
-| SADD → 중복 체크 → DECR (Phase 2) | ❌ (허용 가능) | DECR이 음수면 롤백하는 패턴으로 커버 가능 |
+| SADD → 중복 체크 → DECR (현재 Phase 2/3) | 조합의 원자성이 필요하면 Lua 등으로 보완 | 개별 명령·보상 사이 장애로 불일치가 남을 수 있음 |
 | GET → 조건 판단 → SET/DECR | ✅ | GET과 SET 사이에 값이 바뀔 수 있음 |
 | 여러 키를 읽고 조건부로 여러 키를 수정 | ✅ | 중간 상태가 다른 클라이언트에 노출됨 |
 | 복잡한 비즈니스 조건 (등급 체크 + 재고 + 중복) | ✅ | 3번 왕복 → 각 사이에 개입 가능 |
@@ -250,7 +254,7 @@ Long result = redisTemplate.execute(script,
 );
 ```
 
-**Phase 2에서 Lua 없이 된 이유:**
+**현재 Phase 2/3 구현과 남은 한계:**
 
 ```java
 // SADD: 반환값 0이면 이미 추가된 것 → check-and-add가 원자적으로 해결됨
@@ -262,13 +266,15 @@ Long left = redisTemplate.opsForValue().decrement(stockKey);
 if (left < 0) { INCR; SREM; throw EXHAUSTED; }
 ```
 
-`DECR`이 Read-Modify-Write를 한 번에 처리하므로 "재고 확인 후 차감" 패턴을 따로 구현하지 않아도 된다. 단, SADD 직후 DECR 전 순간에 `users` 셋에는 userId가 있는데 stock은 아직 안 차감된 짧은 불일치 윈도우가 존재한다. 이 불일치가 허용 가능한 수준이면 Lua 없이도 되고, 완전히 없애야 한다면 두 연산을 Lua로 묶어야 한다.
+기존 Phase 2/3 코드는 `SADD → DECR`를 별도로 호출하고, 음수면 `INCR → SREM`으로 보상한다. 정상 실행 중 단일 명령의 원자성을 활용하지만, 전체 예약 연산은 원자적이지 않다. `SADD` 직후 프로세스가 죽으면 사용자만 등록되고, 차감 뒤 다음 처리가 실패하면 발급되지 않은 예약이 남을 수 있다. 따라서 불일치가 항상 짧게 끝나는 것은 아니다. Phase 2의 DB 실패 보상도 Redis에서 별도 실행되므로 보상 자체의 실패를 고려해야 한다.
 
-한 줄 요약: **명령어 하나**의 원자성은 Redis가 보장하지만, **"읽고 → 판단하고 → 쓰는" 조합**의 원자성은 Lua Script가 보장한다.
+Redis Cluster에서 여러 키를 한 스크립트로 다루려면 같은 hash slot에 모아야 한다. 예를 들어 `coupon:{1}:stock`, `coupon:{1}:users`처럼 실제 중괄호가 들어간 hash tag를 사용할 수 있다. 기존 Phase 2/3 코드는 `coupon:1:stock` 형태이며 Cluster 설정도 없다. 후속 실험 모듈은 `lab:{runId:couponId}:` hash tag를 사용하고, 별도 Cluster 실험에서 슬롯 제약과 명령 분포를 확인했다. 이는 쿠폰 API 전체의 Cluster 연결·장애 전환 검증과는 다르다. 같은 쿠폰 키를 한 slot에 모으면 원자적 처리는 가능하지만 특정 쿠폰의 hot key 쓰기 부하는 한 노드에 남는다. [Redis Cluster 명세](https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/)
 
 ---
 
 ## 4. Redisson — Java에서 분산 락 구현
+
+이 절은 대안 학습용이며 현재 Phase 2/3에는 Redisson 락이 구현되어 있지 않다.
 
 직접 `SETNX`를 구현하면 엣지 케이스가 많다. **Redisson** 라이브러리가 안전하게 처리해준다.
 
@@ -290,7 +296,7 @@ try {
 }
 ```
 
-**Watchdog 메커니즘**: Redisson은 락을 보유한 스레드가 살아있는 동안 자동으로 락 만료 시간을 갱신한다. 작업이 1초보다 오래 걸려도 락이 풀리지 않는다.
+**Watchdog 메커니즘**: lease time을 지정하지 않은 락에서 만료 시간을 갱신하는 기능이다. 위 예제는 lease time을 1초로 지정했으므로 작업이 더 길어지면 락이 풀릴 수 있다. [Redisson 락 문서](https://redisson.pro/docs/data-and-services/locks-and-synchronizers/)
 
 ---
 
@@ -313,7 +319,7 @@ SET coupon:1:stock 100 EX 60
               Cache Miss → MySQL 조회 → Redis SET (TTL 60s) → 반환
 ```
 
-잔여 수량 조회 API에 이 패턴을 적용하면 DB 부하가 대폭 줄어든다.
+위 TTL·cache-aside 흐름은 학습용 예제다. 현재 `initStock()`은 TTL 없이 재고와 기간을 저장한다. 잔여 수량 API는 Redis 키가 없으면 DB 값을 반환하지만 Redis를 다시 채우지 않는다. 특히 Phase 3의 재고는 처리 중 예약을 포함하므로 DB 값으로 무조건 덮어쓰면 안 된다.
 
 ---
 
@@ -331,7 +337,11 @@ Redis가 메모리 저장이라 서버 재시작 시 데이터가 사라지는 �
 - 장점: 데이터 유실 최소화
 - 단점: 파일 크기가 커짐, 재시작이 느림
 
-이 프로젝트에서는 Redis를 캐시/락 용도로만 쓰기 때문에 영속성 설정이 크게 중요하지 않다. Redis가 재시작되면 캐시가 날아가고 DB에서 다시 채워지면 된다.
+현재 Redis는 재고와 중복 예약 여부를 판정하는 저장소다. Phase 2/3의 `redis/redis.conf`에는 이미 `appendonly yes`, `appendfsync everysec` 및 RDB 주기 설정이 있으며 Compose가 이 파일과 데이터 볼륨을 연결한다. 초당 fsync는 장애 시 최근 쓰기의 손실 가능성을 남긴다. [Redis 영속성 문서](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/)
+
+기존 Phase 2/3은 단일 Redis이며 replica·Sentinel·Cluster 구성이 없다. 후속 실험 모듈에서는 primary·replica의 수동 승격, Sentinel 자동 승격, replica 없는 3-master Cluster의 슬롯·편중 부하를 각각 실험했다. Spring의 Sentinel 자동 연결 전환과 Cluster 복제본 failover까지 검증한 것은 아니다. 비동기 복제에서는 승인된 쓰기가 failover 때 사라질 수 있으며 손실 반례도 [실증 보고서](experiments-2026-10-22.md)에 남겼다. [Redis Cluster 쓰기 안전성](https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/)
+
+복구 시 DB의 발급 완료 기록만으로 재고를 재구성하면 Kafka 대기 중인 예약과 Redis 차감 후 Kafka에 기록되지 못한 예약을 놓친다. 재고·중복 정보·처리 중 요청을 함께 대조하는 복구 절차가 필요하다. 현재 `initStock()`은 총수량을 덮어쓰는 초기화 기능이며 이러한 장애 복구 기능이 아니다.
 
 ---
 
@@ -339,10 +349,11 @@ Redis가 메모리 저장이라 서버 재시작 시 데이터가 사라지는 �
 
 | Phase | Redis 활용 | 명령어 |
 |-------|-----------|-------|
-| Phase 2 | 쿠폰 잔여 수량 원자적 제어 | `INCR`, `DECR` |
-| Phase 2 | 중복 발급 방지 | `SADD`, `SISMEMBER` |
-| Phase 2 | 분산 락 | `SET NX PX` (Redisson) |
-| Phase 2 | 잔여 수량 캐시 | `GET`, `SET EX` |
+| Phase 2/3 | 재고 차감·실패 시 보상 (각 명령은 원자적) | `DECR`, `INCR` |
+| Phase 2/3 | 중복 예약 판정·실패 시 제거 | `SADD`, `SREM` |
+| Phase 2/3 | 재고·기간 초기화 및 조회 (TTL 없음) | `SET`, `GET` |
+| 후속 실험 모듈 | 요청 ID·중복·재고의 원자적 예약, Stream 전달 기록 | Lua, `XADD` — 기존 Phase 2/3와 분리된 구현 |
+| 대안 학습 | 분산 락 | Redisson — 미구현 |
 
 ---
 

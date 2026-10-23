@@ -1,0 +1,466 @@
+{
+  "name": "fault-metadata-lookup-before-handler-KAFKA_FIRST",
+  "startedAt": "2026-10-22T09:49:04.587790+00:00",
+  "parameters": {
+    "strategy": "KAFKA_FIRST",
+    "stock": 10,
+    "coupons": 1,
+    "partitions": 1,
+    "workers": 1,
+    "ordering": "BLOCKING"
+  },
+  "http": [
+    {
+      "method": "POST",
+      "path": "/lab/runs",
+      "payload": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 1,
+        "ordering": "BLOCKING"
+      },
+      "startedAt": "2026-10-22T09:49:04.587802+00:00",
+      "status": 201,
+      "response": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-00e466e2-5534-40ad-a7f3-19df61ad8750",
+        "runId": "00e466e2-5534-40ad-a7f3-19df61ad8750",
+        "strategy": "KAFKA_FIRST"
+      },
+      "durationMs": 35.725041,
+      "finishedAt": "2026-10-22T09:49:04.623533+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/00e466e2-5534-40ad-a7f3-19df61ad8750/control",
+      "payload": {
+        "paused": true
+      },
+      "startedAt": "2026-10-22T09:49:04.623548+00:00",
+      "status": 200,
+      "response": {
+        "runId": "00e466e2-5534-40ad-a7f3-19df61ad8750",
+        "workers": 1,
+        "paused": true
+      },
+      "durationMs": 2.765125,
+      "finishedAt": "2026-10-22T09:49:04.626319+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/00e466e2-5534-40ad-a7f3-19df61ad8750/requests",
+      "payload": {
+        "requestId": "lookup-fails-first",
+        "userId": "lookup-fails-first",
+        "couponId": 1,
+        "fault": "READ_BEFORE_HANDLER"
+      },
+      "startedAt": "2026-10-22T09:49:04.626334+00:00",
+      "status": 202,
+      "response": {
+        "requestId": "lookup-fails-first",
+        "couponId": 1,
+        "userId": "lookup-fails-first",
+        "status": "PENDING",
+        "reason": null,
+        "partition": 0,
+        "offset": 0,
+        "reservationSeq": null,
+        "completionSeq": null,
+        "receivedAt": 1792662544626,
+        "completedAt": null,
+        "reserved": false,
+        "published": true,
+        "fault": "READ_BEFORE_HANDLER",
+        "faultConsumed": false,
+        "processingDelayMs": 0,
+        "dbReserved": false,
+        "stage": "PENDING"
+      },
+      "durationMs": 336.560667,
+      "finishedAt": "2026-10-22T09:49:04.962903+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/00e466e2-5534-40ad-a7f3-19df61ad8750/requests",
+      "payload": {
+        "requestId": "after-lookup-failure",
+        "userId": "after-lookup-failure",
+        "couponId": 1
+      },
+      "startedAt": "2026-10-22T09:49:04.962917+00:00",
+      "status": 202,
+      "response": {
+        "requestId": "after-lookup-failure",
+        "couponId": 1,
+        "userId": "after-lookup-failure",
+        "status": "PENDING",
+        "reason": null,
+        "partition": 0,
+        "offset": 1,
+        "reservationSeq": null,
+        "completionSeq": null,
+        "receivedAt": 1792662544963,
+        "completedAt": null,
+        "reserved": false,
+        "published": true,
+        "fault": null,
+        "faultConsumed": false,
+        "processingDelayMs": 0,
+        "dbReserved": false,
+        "stage": "PENDING"
+      },
+      "durationMs": 7.11925,
+      "finishedAt": "2026-10-22T09:49:04.970041+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/00e466e2-5534-40ad-a7f3-19df61ad8750/control",
+      "payload": {
+        "paused": false
+      },
+      "startedAt": "2026-10-22T09:49:04.970050+00:00",
+      "status": 200,
+      "response": {
+        "runId": "00e466e2-5534-40ad-a7f3-19df61ad8750",
+        "workers": 1,
+        "paused": false
+      },
+      "durationMs": 1.669083,
+      "finishedAt": "2026-10-22T09:49:04.971722+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/00e466e2-5534-40ad-a7f3-19df61ad8750",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:04.971733+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 2,
+        "issued": 0
+      },
+      "durationMs": 3.2685,
+      "finishedAt": "2026-10-22T09:49:04.975005+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/00e466e2-5534-40ad-a7f3-19df61ad8750",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:05.129251+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 2,
+        "issued": 0
+      },
+      "durationMs": 16.15275,
+      "finishedAt": "2026-10-22T09:49:05.145420+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/00e466e2-5534-40ad-a7f3-19df61ad8750",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:05.295620+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 1,
+        "issued": 1
+      },
+      "durationMs": 6.036,
+      "finishedAt": "2026-10-22T09:49:05.301673+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/00e466e2-5534-40ad-a7f3-19df61ad8750",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:05.456669+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 0,
+        "issued": 2
+      },
+      "durationMs": 5.095292,
+      "finishedAt": "2026-10-22T09:49:05.461799+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/00e466e2-5534-40ad-a7f3-19df61ad8750/control",
+      "payload": {
+        "paused": true,
+        "workers": 0
+      },
+      "startedAt": "2026-10-22T09:49:05.461850+00:00",
+      "status": 200,
+      "response": {
+        "runId": "00e466e2-5534-40ad-a7f3-19df61ad8750",
+        "workers": 0,
+        "paused": true
+      },
+      "durationMs": 3.835625,
+      "finishedAt": "2026-10-22T09:49:05.465689+00:00"
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "settled",
+      "observedAt": "2026-10-22T09:49:05.461816+00:00",
+      "value": {
+        "runId": "00e466e2-5534-40ad-a7f3-19df61ad8750",
+        "strategy": "KAFKA_FIRST",
+        "topic": "coupon-lab-00e466e2-5534-40ad-a7f3-19df61ad8750",
+        "ordering": "BLOCKING",
+        "paused": false,
+        "workers": 1,
+        "partitions": 1,
+        "received": 2,
+        "accepted": 2,
+        "reserved": 2,
+        "issued": 2,
+        "rejected": 0,
+        "cancelled": 0,
+        "pending": 0,
+        "activeDbReservations": 0,
+        "ledgerIssued": 2,
+        "ledgerDuplicateUsers": 0,
+        "outboxPending": 0,
+        "unpublishedStreamReservations": 0,
+        "streamPel": 0,
+        "streamLag": 0,
+        "streamPending": 0,
+        "consumerErrors": 1,
+        "replays": 0,
+        "relayErrors": 0,
+        "perCoupon": [
+          {
+            "couponId": 1,
+            "total": 10,
+            "dbRemaining": 8,
+            "issued": 2,
+            "ledgerIssued": 2,
+            "redisStock": 8,
+            "redisUsers": 2
+          }
+        ],
+        "requests": [
+          {
+            "requestId": "lookup-fails-first",
+            "couponId": 1,
+            "userId": "lookup-fails-first",
+            "status": "ISSUED",
+            "reason": null,
+            "partition": 0,
+            "offset": 0,
+            "reservationSeq": 1,
+            "completionSeq": 1,
+            "receivedAt": 1792662544626,
+            "completedAt": 1792662545285,
+            "reserved": true,
+            "published": true,
+            "fault": "READ_BEFORE_HANDLER",
+            "faultConsumed": true,
+            "processingDelayMs": 0,
+            "dbReserved": false
+          },
+          {
+            "requestId": "after-lookup-failure",
+            "couponId": 1,
+            "userId": "after-lookup-failure",
+            "status": "ISSUED",
+            "reason": null,
+            "partition": 0,
+            "offset": 1,
+            "reservationSeq": 2,
+            "completionSeq": 2,
+            "receivedAt": 1792662544963,
+            "completedAt": 1792662545295,
+            "reserved": true,
+            "published": true,
+            "fault": null,
+            "faultConsumed": false,
+            "processingDelayMs": 0,
+            "dbReserved": false
+          }
+        ]
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "metadata_lookup_fault_triggered",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "metadata_lookup_failure_observed",
+      "passed": true,
+      "actual": 1,
+      "expected": ">=1"
+    },
+    {
+      "name": "failed_metadata_record_retried_before_next_record",
+      "passed": true,
+      "actual": [
+        1,
+        2
+      ],
+      "expected": "first < second"
+    },
+    {
+      "name": "coupon_snapshot_present",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "coupon_1_no_oversell",
+      "passed": true,
+      "actual": 2,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_db_counter_conservation",
+      "passed": true,
+      "actual": {
+        "dbRemaining": 8,
+        "issued": 2
+      },
+      "expected": 10
+    },
+    {
+      "name": "coupon_1_db_stock_within_bounds",
+      "passed": true,
+      "actual": 8,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_request_state_matches_final_ledger",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "coupon_1_redis_stock_within_bounds",
+      "passed": true,
+      "actual": 8,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_redis_users_within_bounds",
+      "passed": true,
+      "actual": 2,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_redis_counter_conservation",
+      "passed": true,
+      "actual": {
+        "redisStock": 8,
+        "redisUsers": 2
+      },
+      "expected": 10
+    },
+    {
+      "name": "no_duplicate_issued_user_per_coupon",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "request_ids_unique",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "issued_count_matches_requests",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "issued_count_matches_final_database_ledger",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "no_duplicate_users_in_final_database_ledger",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "name": "expected_issued",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "all_requests_terminal",
+      "passed": true,
+      "actual": [],
+      "expected": []
+    }
+  ],
+  "expectedObservations": [],
+  "metrics": {
+    "settledWaitMs": 490.0833750143647,
+    "apiLatencyMs": {
+      "samples": 2,
+      "min": 7.11925,
+      "mean": 171.83995850000002,
+      "p50": 7.11925,
+      "p95": 336.560667,
+      "p99": 336.560667,
+      "max": 336.560667
+    },
+    "httpStatusCounts": {
+      "202": 2
+    },
+    "issuedEndToEndLatencyMs": {
+      "samples": 2,
+      "min": 332.0,
+      "mean": 495.5,
+      "p50": 332.0,
+      "p95": 659.0,
+      "p99": 659.0,
+      "max": 659.0
+    },
+    "allTerminalEndToEndLatencyMs": {
+      "samples": 2,
+      "min": 332.0,
+      "mean": 495.5,
+      "p50": 332.0,
+      "p95": 659.0,
+      "p99": 659.0,
+      "max": 659.0
+    },
+    "partitionRequestCounts": {
+      "0": 2
+    },
+    "issued": 2,
+    "totalRunIssuedIncludingWarmup": 2
+  },
+  "run": {
+    "couponIds": [
+      1
+    ],
+    "topic": "coupon-lab-00e466e2-5534-40ad-a7f3-19df61ad8750",
+    "runId": "00e466e2-5534-40ad-a7f3-19df61ad8750",
+    "strategy": "KAFKA_FIRST"
+  },
+  "finishedAt": "2026-10-22T09:49:05.465697+00:00",
+  "passed": true
+}

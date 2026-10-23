@@ -1,6 +1,10 @@
 # Phase 2. Redis로 동시성 제어
 ## 선착순 쿠폰 시스템 구축기 (3) — 오버셀링 아키텍처 진화
 
+> 2026-10-22 보완: 과거 실험·학습 기록을 유지하되 현재 구현과 대안을 구분했다. 현재 Phase 2/3는 Lua·Redisson 없이 `SADD → DECR`를 개별 호출한다. 동시성·장애 정합성·확장성의 추가 질문은 [멘토링 논의안](mentoring-discussion.md)을 참고한다.
+
+> 후속 실증: 별도 [실험 모듈](../4-coupon_experiments/README.md)에 Lua 예약과 Redis Stream 전달을 구현했다. 분리 명령의 중간 실패, Lua 런타임 오류의 부분 쓰기, 복제 지연 후 승격, Cluster 키 편중 결과는 [실증 보고서](experiments-2026-10-22.md)에 기록한다. 본문의 기존 Phase 2 구현과 구분한다.
+
 > Phase 1에서 Pessimistic Lock으로 정확성은 잡았다.  
 > 근데 p95가 2.32초, RPS 409. 이걸 Redis로 바꾸면 얼마나 달라질까?  
 > 그 전에, 왜 DB Lock이 한계에 부딪히는지 실제 서비스 관점에서 먼저 이해해야 한다.
@@ -18,11 +22,11 @@
                   ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ... (10만 개의 동시 요청)
 ```
 
-Scale-out(서버 증설), Scale-up(CPU/메모리 증설)을 해봤자 소용없다.  
+애플리케이션 Scale-out(서버 증설)만으로 같은 DB Row의 직렬화가 없어지지는 않는다.
 **트래픽이 분산되지 않고 단 하나의 DB Row에 꽂히기 때문이다.**  
 서버가 100대여도 결국 같은 Row에 Lock을 걸려고 줄을 선다.
 
-샤딩(Sharding)도 해결이 안 된다. 재고는 쪼갤 수 없는 단일 자원이다.
+쿠폰 ID로 샤딩하면 여러 쿠폰은 분산할 수 있지만 한 쿠폰의 부하는 한곳에 남는다. 재고를 여러 버킷으로 쪼개는 대안도 있으나 총수량 보장, 남은 수량 재배분, 선착순 기준을 다시 설계해야 한다. 서버 증설로 해결되는 범위와 이런 데이터 모델 변경을 구분한다.
 
 ### 0.1초의 전쟁
 
@@ -203,9 +207,7 @@ end
 return count  -- 성공, 몇 번째 발급인지 반환
 ```
 
-Lua Script는 이 프로젝트의 Phase 2에서 선택적으로 쓸 수 있다.  
-단순 재고 차감만이라면 `INCR` 명령어 하나로도 충분하다.  
-조건이 복잡해질수록(쿠폰 적용, 사용자당 제한 수 등) Lua Script가 유리하다.
+위 Lua 코드는 발급 수를 `INCR`하는 학습용 예제이며 현재 구현이 아니다. 현재 Phase 2/3는 남은 재고를 `DECR`하고 `SADD`로 중복을 판정한다. 각 명령의 원자성과 예약 전체의 원자성은 다르므로, 명령 사이 프로세스 종료·네트워크 실패까지 고려하면 중복 확인·재고 확인·차감·사용자 등록을 Lua 등으로 묶는 개선을 검토해야 한다. Lua도 Redis와 DB/Kafka 사이의 트랜잭션을 대신하지 않는다. [Redis Lua 문서](https://redis.io/docs/latest/develop/programmability/eval-intro/)
 
 ### 4-4. Redisson 분산 락: 복잡한 비즈니스 로직 보호
 
@@ -245,8 +247,7 @@ try {
 - Lettuce: 락을 얻을 때까지 반복적으로 `SETNX` 재시도 → Redis에 불필요한 부하
 - Redisson: Pub/Sub으로 락 해제 이벤트를 구독 → 해제 시 알림 받아서 대기, CPU 낭비 없음
 
-이 프로젝트의 Phase 2는 `INCR` + `SADD` 원자성으로 충분하다.  
-Redisson은 비즈니스 로직이 복잡해지는 Phase 3 이후에 추가한다.
+현재 Phase 2/3는 `SADD → DECR`와 실패 시 `INCR → SREM` 보상으로 구현되어 있다. Lua·Redisson은 도입한 기능이 아니라 비교할 대안이다. 정상 동시 요청 테스트만으로 명령 사이 장애나 보상 실패 때의 정합성까지 확인했다고 볼 수 없다.
 
 ---
 
@@ -254,24 +255,23 @@ Redisson은 비즈니스 로직이 복잡해지는 Phase 3 이후에 추가한�
 
 결제 창에 진입했다가 이탈한 사용자의 "선점된 재고"는 어떻게 복구하나.
 
-**Redis TTL로 해결하면 안 되는 이유:**
+**Redis TTL 만료 알림만으로 복구를 완료할 수 없는 이유:**
 ```
 SET coupon:1:lock:9999 "reserved" EX 300  ← 5분 TTL
 
 문제:
-1. TTL 만료는 정확히 5분이 아님
-   → Redis는 Scan Event 기반으로 만료를 처리
-   → CPU 여유가 있을 때 스캔함 → 수십 초 지연 가능
-   → 1시간 이상 TTL은 그나마 안전, 수 분 단위 TTL은 타이밍 부정확
+1. 키의 만료 시각과 만료 알림의 전달 시각은 다름
+   → TTL을 설정했다고 그 시각에 재고 복구 작업까지 완료되는 것은 아님
 
 2. 발송 보장 없음 (ACK 없음)
    → 만료 이벤트를 구독하다가 처리 실패해도 재시도 불가
    → 재고가 복구 안 되고 유실됨
 
-3. 서버 다운 시 복구 불가
-   → Delayed MQ는 내부 스냅샷으로 백업, 서버 재시작해도 복구됨
-   → Redis는 상대적으로 복구 신뢰성이 낮음
+3. 복구 작업 자체도 실패할 수 있음
+   → 예약 상태와 만료 시각을 기록하고 재시도·중복 복구 방지를 설계해야 함
 ```
+
+만료 이벤트는 지연될 수 있고 Redis Pub/Sub은 연결이 끊긴 구독자에게 알림을 재전달하지 않는다. 이는 TTL을 예약 기한으로 쓰지 못한다는 뜻이 아니라, 알림만을 복구의 유일한 근거로 삼지 말아야 한다는 뜻이다. [Redis 키 공간 알림](https://redis.io/docs/latest/develop/pubsub/keyspace-notifications/)
 
 **Delayed MQ로 해결:**
 ```
@@ -282,11 +282,9 @@ SET coupon:1:lock:9999 "reserved" EX 300  ← 5분 TTL
               미완료 → Redis INCR으로 재고 복구 + SREM으로 유저 제거
 ```
 
-RabbitMQ는 순서 보장이 확실하고 ACK 기반이라 복구가 안전하다.  
-Kafka도 설계에 따라 가능하지만 모든 상황에서의 순서 보장은 RabbitMQ가 우위다.
+RabbitMQ도 여러 Consumer와 재전달 상황에서는 처리 순서를 별도로 고려해야 하며, ACK만으로 외부 DB 처리까지 원자적으로 보장되지는 않는다. Kafka와의 선택은 지연 전달, 재시도, 순서의 범위, 운영 방식으로 비교한다. [RabbitMQ 메시지 순서](https://www.rabbitmq.com/docs/queues#message-ordering)
 
-이 프로젝트는 선착순 쿠폰이라 "결제 대기" 개념이 없으므로  
-Delayed MQ는 Phase 3(Kafka)에서 함께 다룬다.
+이 프로젝트에는 결제 대기와 Delayed MQ가 구현되어 있지 않다. 위 흐름은 예약 만료가 필요한 서비스로 확장할 때의 비교 대상이다.
 
 ---
 
@@ -321,17 +319,17 @@ Phase 1: DB Lock
 클라이언트 → Spring → MySQL (SELECT FOR UPDATE → UPDATE)
             ↑ 커넥션 풀 고갈, 응답 지연, TPS 제한
 
-Phase 2: Redis 원자적 연산
-클라이언트 → Spring → Redis (INCR/SADD, 원자적)
+Phase 2: Redis 개별 원자적 연산
+클라이언트 → Spring → Redis (SADD → DECR, 전체는 별도 호출)
                      → MySQL (Write-through)
-            ↑ DB Lock 없음, 응답 수십ms, TPS 수만
+            ↑ 판정에서 DB 락 제거, 승인된 요청의 DB 쓰기는 동기
 
 Phase 3: Kafka 비동기 Write-Back
 클라이언트 → Spring → Redis (즉시 응답)
                      → Kafka → MySQL (Throttling, DB 보호)
-            ↑ 유저는 즉시 UX, DB는 안전하게 순차 처리
+            ↑ 응답과 DB 저장 분리, 순서·실패 복구는 별도 설계 필요
 
-실서비스 Full:
+추가 대안 예시 (현재 미구현, 모두 필요한 조합은 아님):
 클라이언트 → 대기열 (앞단 쓰로틀링)
            → Spring → Redisson 락 → Redis Lua Script
                     → Delayed MQ (재고 선점 타임아웃)
@@ -342,6 +340,8 @@ Phase 3: Kafka 비동기 Write-Back
 ---
 
 ## 8. Phase 2 구현 상세 — 코드 레벨
+
+이 절의 코드는 설명을 위한 축약 예제다. 현재 구현은 [CouponRedisService](../2-coupon_redis/spring/src/main/java/com/example/coupon/service/CouponRedisService.java)와 [CouponService](../2-coupon_redis/spring/src/main/java/com/example/coupon/service/CouponService.java)를 기준으로 확인한다.
 
 ### 8-1. 전체 흐름 변화
 
@@ -362,19 +362,19 @@ POST /api/coupons/{couponId}/issue
 Phase 2 (Redis):
 POST /api/coupons/{couponId}/issue
 
-  1. 기간 체크 (Redis 또는 DB, 캐시 가능)
+  1. 기간 체크 (Redis)
   2. 중복 체크 → Redis SADD  ← 0이면 중복 → 즉시 반환
-  3. 재고 차감 → Redis INCR  ← 총량 초과하면 DECR + SREM → 즉시 반환
-  4. IssuedCoupon INSERT (MySQL)  ← DB 쓰기는 성공한 1건만
-  5. 완료
+  3. 재고 차감 → Redis DECR  ← 음수면 INCR + SREM → 재고 소진
+  4. MySQL 수량 증가 + IssuedCoupon INSERT (TransactionTemplate)
+  5. DB 실패 시 Redis 보상, 성공 시 완료
   ↑
-  DB Lock 없음. 2~3번은 μs 단위. DB 쓰기는 성공한 경우만.
+  판정에서 DB 락을 제거한다. DB 쓰기는 Redis 판정을 통과한 요청만 수행한다.
 ```
 
 ### 8-2. Redis 초기화 — 쿠폰 재고를 언제 Redis에 올리나
 
 쿠폰 발급 요청이 오기 전에 Redis에 재고를 세팅해야 한다.  
-두 가지 방법이 있다:
+다음은 비교할 두 가지 방법이며 현재 그대로 구현된 흐름은 아니다:
 
 **방법 A: 쿠폰 생성 시 Redis 초기화**
 ```java
@@ -400,8 +400,7 @@ if (stock == null) {
 }
 ```
 
-이 프로젝트에서는 **방법 A**가 단순하다.  
-다만 이미 발급된 쿠폰이 있다면 `totalQuantity - issuedQuantity`로 초기화해야 한다.
+현재는 별도 `POST /api/coupons/{couponId}/stock/init` API로 총수량과 기간을 초기화한다. 자동 생성 훅이나 발급 요청의 cache-aside 재적재는 없다. 이미 발급된 쿠폰을 복구할 때는 총수량뿐 아니라 발급 완료 사용자와 처리 중 예약을 함께 고려해야 한다. 특히 Phase 3에서 DB의 `totalQuantity - issuedQuantity`만 쓰면 Kafka 대기 중인 예약을 놓친다.
 
 ### 8-3. Spring에서 Redis 사용하기 — RedisTemplate
 
@@ -443,9 +442,7 @@ if (added == null || added == 0) {
 }
 ```
 
-> 주의: SADD를 먼저 하고 DECR을 해야 한다.  
-> DECR 먼저 하면 재고는 차감됐는데 SADD가 실패할 경우 재고만 줄고 발급은 안 된 상태가 된다.  
-> 반대로 SADD 먼저 하면 DECR 실패 시 SREM으로 되돌릴 수 있다.
+> 현재는 `SADD`로 중복을 먼저 거른 뒤 `DECR`한다. 순서만 바꾼다고 장애 문제가 사라지는 것은 아니다. `SADD` 이후 실패하면 사용자 등록이 남을 수 있고 `SREM` 보상도 실패할 수 있으므로, 전체 예약 연산의 원자성과 실패 복구를 따로 설계해야 한다.
 
 ### 8-4. CouponService 변경 포인트
 
@@ -479,7 +476,7 @@ public void issueCoupon(Long couponId, Long userId) {
 Phase 1은 전체 로직이 하나의 트랜잭션 안에 있었지만,  
 Phase 2는 Redis 처리는 트랜잭션 밖, MySQL 쓰기만 트랜잭션 안에 있다.
 
-### 8-5. 재고 조회 API — Cache-aside
+### 8-5. 재고 조회 API — Redis 조회 후 DB fallback
 
 ```java
 // GET /api/coupons/{couponId}/stock
@@ -496,7 +493,7 @@ public Object getStock(Long couponId) {
 ```
 
 Phase 1에서는 재고 조회마다 DB를 쳤지만,  
-Phase 2에서는 Redis에서 바로 반환된다.
+Phase 2에서는 Redis에 값이 있으면 바로 반환하고, 없으면 DB를 조회한다. 이 fallback은 Redis를 재적재하지 않으며 예약 정보를 복구하는 기능도 아니다.
 
 ### 8-6. 테스트 시 주의사항
 
@@ -586,34 +583,31 @@ After:  1000개 → validatePeriod(Redis) → checkAndIssue(Redis) → 900개 �
                                                                → 100개만 DB 접근
 ```
 
-### 남은 병목 — Tomcat 스레드 풀
+### 당시의 병목 가설 — Tomcat 스레드 풀
 
-p(95)=1.39s까지 줄었지만 500ms 목표엔 못 미쳤다.  
-지금 병목은 Tomcat 스레드 풀(기본 200개)이다.
+초기 학습 기록의 p(95)=1.39s는 당시 500ms 목표에 못 미쳤다. 이 값은 [2026-09-12 비교](benchmark-2026-09-12.md) 및 10월 실험과 별도 기록이며, 여기에는 실행 조건과 원시 계측 자료가 연결되어 있지 않다.
 
-1000개 요청이 동시에 들어오면 800개가 스레드를 못 받고 대기한다.  
-Redis 로직이 아무리 빠르더라도 스레드를 못 받으면 의미가 없다.
+당시에는 Tomcat 요청 처리 스레드 부족을 병목 후보로 보았다. 그러나 동시 요청 수만으로 스레드 대기 수를 확정할 수 없고, 스레드 사용량·큐 대기·DB 연결 대기·CPU를 함께 측정해야 원인을 구분할 수 있다.
 
-`server.tomcat.threads.max=1000`으로 높이면 p(95)가 크게 줄지만,  
-Phase 3(Kafka)에서 비동기 처리로 근본적으로 해결할 수 있으므로 여기서는 넘어간다.
+`server.tomcat.threads.max=1000`으로 늘리는 것은 비교할 튜닝안이다. 지연이 줄어드는지는 같은 부하로 재측정해야 하며, DB·CPU 경합이 늘 수도 있다. Phase 3의 Kafka 전환은 HTTP 요청 경로에서 DB 저장 대기를 분리하는 대안이다. Redis 호출과 HTTP 요청 처리는 남으므로 스레드 풀 병목을 근본적으로 해결했다고 단정하지 않는다.
 
 ---
 
 ## 9. Phase 2의 한계 (Phase 3 예고)
 
-Redis로 응답 속도와 TPS는 해결됐다.  
-하지만 남은 문제:
+Redis로 판정 경로를 옮겼지만 다음 문제는 별도로 남는다:
 
-1. **Redis가 죽으면?** — 메모리 기반이라 장애 시 재고 데이터 유실 위험
-2. **DB 동기화** — Redis에서 발급된 내역을 MySQL에 언제, 어떻게 쓸 것인가
-3. **순서 보장** — 50번째 발급자에게 특별 이벤트를 주려면 정확한 순서가 필요
+1. **Redis가 죽으면?** — 이미 AOF `everysec`와 RDB를 설정했지만 최근 쓰기 유실 가능성과 단일 노드 장애가 남는다. 복구 시 재고와 중복 정보, 처리 중 예약을 함께 대조해야 한다.
+2. **DB 동기화** — Redis 예약 후 DB 실패 시 보상하며, 보상도 실패할 수 있다. Kafka를 넣으면 Redis 차감 후 발행 실패라는 새로운 간격이 생긴다.
+3. **순서 보장** — 50번째 발급자의 기준이 API 도착인지, Redis 예약인지, Kafka 기록인지부터 정해야 한다. 파티션 안의 기록 순서가 곧 API 도착 순서는 아니다.
+4. **확장 한계** — 쿠폰 수가 많을 때의 키 분산과 한 쿠폰의 hot key는 다르다. Kafka를 뒤에 붙여도 Redis에 도착하는 요청량은 줄지 않는다.
 
-→ Phase 3에서 Kafka로 Redis → MySQL 비동기 Write-Back, 순서 보장, DB 보호를 구현한다.
+→ Phase 3는 Redis → Kafka → MySQL 비동기 저장을 구현한다. 장애 복구와 업무상 선착순 보장은 추가 설계·검증 과제다.
 
 ---
 
 ## 다음 글 예고
 
-Phase 3에서는 Kafka를 Redis와 MySQL 사이에 두어 폭발적인 Write 트래픽으로부터 DB를 보호하고, 이벤트 순서를 보장하는 방법을 다룬다.
+Phase 3에서는 Kafka를 Redis와 MySQL 사이에 두어 DB 쓰기를 분리하고, 파티션 순서와 실제 발급 순서의 관계를 다룬다.
 
 > 다음: Phase 3. Kafka 비동기 처리 — 선착순 쿠폰 시스템 구축기 (4)
