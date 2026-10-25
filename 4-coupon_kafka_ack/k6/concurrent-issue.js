@@ -33,13 +33,12 @@ export default function () {
     { headers: { 'Content-Type': 'application/json' } }
   );
 
-  // Phase 3: Kafka 비동기 처리 시 202 Accepted 응답
   check(res, {
-    'status 200 or 202 (발급 성공/접수)': (r) => r.status === 200 || r.status === 202,
-    'status 409 (소진/중복)':             (r) => r.status === 409,
-    'status is not 500':                  (r) => r.status !== 500,
+    'status 202 (접수)':      (r) => r.status === 202,
+    'status 409 (소진/중복)': (r) => r.status === 409,
+    'status is not 500':      (r) => r.status !== 500,
   });
 
-  if (res.status === 200 || res.status === 202) successCount.add(1);
-  else                                          failCount.add(1);
+  if (res.status === 202) successCount.add(1);
+  else                    failCount.add(1);
 }

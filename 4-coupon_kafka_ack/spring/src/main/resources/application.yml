@@ -38,13 +38,3 @@ spring:
         delivery.timeout.ms: 10000
         request.timeout.ms: 5000
         max.block.ms: 5000
-
-# ── Actuator (Prometheus 메트릭 노출) ──────────────────────────
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, prometheus, metrics
-  metrics:
-    tags:
-      application: ${spring.application.name}

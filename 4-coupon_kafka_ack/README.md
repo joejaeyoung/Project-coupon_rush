@@ -1,12 +1,11 @@
-# Phase 4 — Kafka ACK 확인·보상: Phase 3를 Spring 컨벤션으로 정리
+# Phase 4 — Redis 판정 → Kafka ACK 확인 → DB. 뼈대만
 
-Phase 3와 같은 흐름(Redis 판정 → Kafka → DB)이다. 달라진 점은 둘이다.
-
-1. **"Kafka에 갔는지"를 응답 전에 확정한다.** 브로커 ACK(`acks=all`)를 받으면 202, 못 받으면 Redis 예약을 되돌리고 503.
-2. **Spring 컨벤션 정리.** 소문자 패키지, 엔티티 setter 제거, record DTO, `GlobalExceptionHandler`, DB 유니크 제약.
+선착순 쿠폰 발급의 최소 구성이다. 발급 판정은 Redis, 영속화는 Kafka 뒤의 Consumer, 그리고 "Kafka에 갔는지"를 응답 전에 확정한다.
+브로커 ACK(`acks=all`)를 받으면 202, 못 받으면 Redis 예약을 되돌리고 503.
 
 처음엔 Lua 한 번으로 예약과 이벤트 기록을 묶고 Redis Stream을 outbox로 쓰는 버전을 만들었다(커밋 `2432d73`).
-멘토링(2026-10-25)에서 "KV outbox는 복잡해지고, 어차피 있는 Kafka를 쓰면 된다"는 피드백을 받아 Stream·Lua를 걷어냈다.
+멘토링(2026-10-25)에서 "KV outbox는 복잡해지고, 어차피 있는 Kafka를 쓰면 된다"는 피드백을 받아 Stream·Lua를 걷어냈고,
+리팩토링 3회(`726c768`·`2d76bc3`·`cd2dfe6`) 뒤 발급 경로와 무관한 것(모니터링 스택, 할인·사용·조회 기능, 미사용 엔티티)을 전부 뺐다.
 
 ```mermaid
 sequenceDiagram
@@ -35,6 +34,21 @@ sequenceDiagram
     end
 ```
 
+## 구성
+
+| 파일 | 역할 |
+| --- | --- |
+| `api/CouponController` | `POST /{id}/issue`(202) · `GET /{id}/stock` · `POST /{id}/stock/init` |
+| `api/CouponIssueRequest` · `ApiResponse` · `exception/*` | `userId` 필수 검증(compact 생성자), 공통 응답, 에러 코드 → HTTP 상태 |
+| `service/CouponService` | 선확인 → 예약 → 발행. 발행 실패 시 `rollback` + 503 + WARN 로그 |
+| `service/CouponRedisService` | `coupon:{id}:stock / users / startDate / endDate`. MGET 선확인, SADD → DECR, INCR + SREM 보상 |
+| `service/CouponKafkaProducer` | `send().join()` — 브로커 ACK 대기. 타임아웃은 yml만 소유 |
+| `service/CouponKafkaConsumer` | 발급 여부 확인 → `issued_quantity < total_quantity` 조건부 UPDATE → INSERT. `@Transactional` 뒤 offset 커밋 |
+| `domain/Coupon` · `IssuedCoupon` | `coupon(total_quantity, issued_quantity, start_date, end_date)` · `issued_coupon(coupon_id, user_id, issued_at)` + 유니크 제약 |
+| `event/CouponIssueEvent` | `(couponId, userId, issuedAt)` record. JSON 직렬화 |
+| `docker-compose.yml` | MySQL · Redis(AOF) · Kafka(KRaft 단일 노드) |
+| `reset-coupon.sh` · `k6/concurrent-issue.js` · `report.sh` | 쿠폰 초기화 · 1,000명 동시 요청 · Redis users = DB rows = issued_quantity 대조 |
+
 ## 멘토링 피드백 반영 — 2026-10-25
 
 | 피드백 | 반영 |
@@ -52,7 +66,7 @@ sequenceDiagram
 | 1. 발급 확정 — Redis 발급 기록 + Outbox를 함께 확정 후 응답 | Outbox 없음. 대신 Kafka ACK를 **동기로** 확인한 뒤 응답. 응답 지연에 ACK 시간이 포함된다 |
 | 2. Relay → Kafka → Consumer, DB 커밋 후 offset 커밋 | Relay 없음(API가 직접 발행). Consumer의 "DB 커밋 → offset 커밋" 순서는 동일(`enable-auto-commit=false` + `@Transactional`) |
 | 3. DB 확인 후 Outbox 정리 | 해당 없음 |
-| 4. 조회 API의 Redis 캐시 | 미구현. 조회는 MySQL 직행 |
+| 4. 조회 API의 Redis 캐시 | 조회 API 자체를 두지 않았다 |
 
 설계도의 열린 질문 "Lua 없이 발급 기록과 Outbox를 함께 확정하는 방법"에 대한 답:
 `MULTI/EXEC`는 쓰기 묶음은 원자적으로 만들지만 **판정**(중복이면 차감하지 않는다)을 묶지 못한다. 중복 사용자도 DECR이 실행되고 INCR로 되돌려야 하며,
@@ -69,19 +83,19 @@ sequenceDiagram
 ## 실행
 
 ```bash
-docker compose up -d                       # MySQL 3306 · Redis 6379 · Kafka 9092 (+ Grafana 3001)
-cd spring && ./gradlew bootRun             # 또는 docker compose up -d --build spring
-./reset-coupon.sh 1 100                    # DB 쿠폰 생성 + Redis 재고 초기화
-./run-k6.sh 1 1000                         # 1,000명 동시 요청
-./report.sh 1                              # Redis users == DB rows == issued_qty 대조
-cd spring && ./gradlew test                # 동시 1,000명 · 동일 사용자 100회 · 발행 실패 보상 (인프라 필요)
+docker compose up -d --wait                       # MySQL 3306 · Redis 6379 · Kafka 9092
+cd spring && ./gradlew bootRun
+./reset-coupon.sh 1 100                           # DB 쿠폰 생성 + Redis 재고 초기화
+k6 run -e COUPON_ID=1 -e USERS=1000 k6/concurrent-issue.js
+./report.sh 1                                     # Redis users == DB rows == issued_qty 대조
+cd spring && ./gradlew test                       # 동시 1,000명 · 동일 사용자 100회 · 발행 실패 보상 · 400 포맷 (인프라 필요)
 ```
 
 호스트 6379를 다른 컨테이너가 쓰고 있으면 override로 포트만 바꾼다:
 
 ```bash
 printf 'services:\n  redis:\n    ports: !override\n      - "6380:6379"\n' > /tmp/redis-port.yml
-docker compose -f docker-compose.yml -f /tmp/redis-port.yml up -d mysql redis kafka
+docker compose -f docker-compose.yml -f /tmp/redis-port.yml up -d --wait
 SPRING_DATA_REDIS_PORT=6380 ./gradlew bootRun     # 테스트도 같은 환경변수로
 ```
 
@@ -89,46 +103,17 @@ SPRING_DATA_REDIS_PORT=6380 ./gradlew bootRun     # 테스트도 같은 환경�
 
 k6 1,000 VU `shared-iterations`, 재고 100, Apple Silicon 1대에 앱·인프라 동거. 절대 성능이 아니라 동작 확인용.
 
-| 항목 | 리팩토링 전 | 리팩토링 3회 후 |
-| --- | ---: | ---: |
-| 처리량 | 3,878 req/s | 3,966 req/s |
-| 응답 p95 / 평균 | 211.96 / 154.38 ms | 210.09 / 127.84 ms |
-| 발급 성공 / 정상 탈락 / 초과 발급 | 100 / 900 / 0 | 100 / 900 / 0 |
-| Redis 명령 수 (요청 1,000건, `INFO commandstats`) | 5,800 (계산: GET 2,000 · SADD/DECR 2,000 · INCR/SREM 1,800) | 1,540 (실측: MGET 1,000 · SADD/DECR 370 · INCR/SREM 170) |
-| Redis users = DB rows = issued_quantity | 100 = 100 = 100 | 100 = 100 = 100 |
+| 항목 | 리팩토링 전 | 리팩토링 3회 후 | 뼈대만 |
+| --- | ---: | ---: | ---: |
+| 처리량 | 3,878 req/s | 3,966 req/s | 5,040 req/s |
+| 응답 p95 / 평균 | 211.96 / 154.38 ms | 210.09 / 127.84 ms | 183.24 / 105.40 ms |
+| 발급 성공 / 정상 탈락 / 초과 발급 | 100 / 900 / 0 | 100 / 900 / 0 | 100 / 900 / 0 |
+| Redis 명령 수 (요청 1,000건, `INFO commandstats`) | 5,800 (계산) | 1,540 | 1,600 (MGET 1,000 · SADD/DECR 400 · INCR/SREM 200) |
+| Redis users = DB rows = issued_quantity | 100 = 100 = 100 | 100 = 100 = 100 | 100 = 100 = 100 |
 
-Phase 3 수치(2026-09-12)와는 측정일·설정이 달라 직접 비교하지 않는다. 성공 100건의 응답에는 Kafka ACK 대기가 포함된다.
+세 열은 같은 날 같은 기계지만 실행 간 편차가 있다. 성공 100건의 응답에는 Kafka ACK 대기가 포함된다(p95 ≈ 185 ms).
 
 **Kafka 중단 실험** — `docker stop kafka` 후 재고 5 쿠폰에 요청 1건: 10.0초 뒤 503(`delivery.timeout.ms=10000`), Redis `stock=5 · users=0`으로 되돌아갔다.
-Phase 3라면 재고만 줄고 사용자는 "이미 발급"으로 남았을 상황이다.
-
-## Phase 3와 달라진 코드
-
-| 파일 | 변경 |
-| --- | --- |
-| `service/CouponKafkaProducer.java` | `send().join()`으로 브로커 ACK 대기. 포기 시점은 yml의 `delivery/request/max.block` 타임아웃만 소유 |
-| `service/CouponService.issueCoupon` | 발행 실패 시 `rollback` + `ISSUE_FAILED`(503) + WARN 로그 |
-| `service/CouponRedisService.validateIssuable` | 기간·재고를 MGET 한 번으로 선확인. 소진 뒤 요청은 SADD·DECR·보상 없이 바로 409 |
-| `api/CouponIssueRequest` + `GlobalExceptionHandler` | `userId` 검증을 DTO compact 생성자로. 빈 본문·타입 불일치·누락 전부 같은 400 포맷 |
-| `repository/IssuedCouponRepository` | `@EntityGraph(coupon)` — 보유 쿠폰 조회의 N+1 제거 |
-| `application.yml` | `open-in-view: false` — DB를 안 보는 발급 핫패스에서 요청당 Session 생성 제거 |
-| `repository/CouponRepository.incrementIssuedQuantity` | `issued_quantity < total_quantity` 조건부 UPDATE — 되돌린 예약의 이벤트가 뒤늦게 도착해도 총량을 넘지 않는다 |
-| `domain/issuedcoupon/IssuedCoupon.java` | `(coupon_id, user_id)` 유니크 제약 — DB 차원 최종 중복 방어선 |
-| `exception/CouponErrorCode` | `INVALID_REQUEST`·`ISSUE_FAILED` 추가 |
-
-적용한 컨벤션: 소문자 패키지(`issuedcoupon`), `Status` 중복 enum → `CouponStatus`/`IssuedCouponStatus`, 엔티티 setter 제거(`@NoArgsConstructor(PROTECTED)` + `@Builder` + `issue()`/`use()` 도메인 메서드), 요청·응답·이벤트 record, 검증은 DTO 경계, 컨트롤러는 `ApiResponse` 직접 반환(비 200만 `@ResponseStatus`), `Object` 반환 → 타입 명시, 인프라 어댑터는 `@Component`.
-
-## 리팩토링 3회 — 2026-10-25
-
-재사용·단순화·효율·깊이 네 관점으로 리뷰한 17건을 세 번에 나눠 적용했다. 매 회차 테스트로 확인하고 따로 커밋했다.
-
-| 회차 | 주제 | 한 일 |
-| --- | --- | --- |
-| 1 | 중복·기본값 제거 | 코드의 12s 타임아웃이 yml의 `delivery.timeout`과 이중이라 제거하고 `join()`으로. `ApiResponse` record. Boot 기본값·Boot 2 키 7줄 삭제. 미사용 리포지토리·스텁 테스트 삭제. 테스트 보일러플레이트를 `invokeAll` 헬퍼 하나로, 보상 검증을 Redis 키 대신 "같은 사용자가 다시 발급받을 수 있다"로 |
-| 2 | 경계·타입 정리 | 이벤트 record + `LocalDateTime`(양 끝의 toString/parse 제거). `userId` 검증을 DTO 경계로 옮기고 `issueCoupon(long)`. Consumer는 조건부 UPDATE를 게이트로 먼저 두고 엔티티는 뒤에 로드(HTTP 예외·`clearAutomatically` 제거). 컨트롤러 `ResponseEntity` 제거. OSIV off |
-| 3 | 핫패스 효율 | 기간·재고 MGET 선확인으로 소진 뒤 요청 6→1 RTT. `initStock` MSET. `@EntityGraph`로 N+1 제거 |
-
-소스 955줄 → 907줄(테스트 1개 추가 포함). 안 한 것: `CouponException` 스택 추적 생략(1~3% CPU, 3시에 읽기엔 영리함), 피드백에 없는 새 추상화.
 
 ## 남은 한계
 
@@ -136,4 +121,3 @@ Phase 3라면 재고만 줄고 사용자는 "이미 발급"으로 남았을 상�
 - **DECR 뒤 ACK 전 크래시** — 보상이 돌지 못해 재고 1·사용자 1이 샌다. 확률은 낮지만 0이 아니다. 복구는 `users` 집합과 DB 발급 내역을 대조하는 정리 작업(설계도 3단계)의 몫이다.
 - **실패 응답 지연** — Kafka가 죽어 있으면 503까지 10초 걸린다. 더 줄이면 일시 지연을 실패로 오판한다.
 - **Redis 복제** — 비동기라 primary 장애 시 승인된 예약이 사라질 수 있다. `WAIT`·스냅샷 복구는 위 피드백 표의 세 포인트까지만.
-- **조회 캐시 없음** — 설계도 4단계. 필요해지면 `getUserCoupons`에 Cache-aside로 붙인다.

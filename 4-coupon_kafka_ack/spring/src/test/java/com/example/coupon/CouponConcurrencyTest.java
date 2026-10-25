@@ -1,6 +1,6 @@
 package com.example.coupon;
 
-import com.example.coupon.domain.coupon.Coupon;
+import com.example.coupon.domain.Coupon;
 import com.example.coupon.exception.CouponException;
 import com.example.coupon.repository.CouponRepository;
 import com.example.coupon.repository.IssuedCouponRepository;
@@ -47,7 +47,6 @@ class CouponConcurrencyTest {
         issuedCouponRepository.deleteAllInBatch();
         couponId = couponRepository.save(Coupon.builder()
                 .totalQuantity(100)
-                .validDays(30)
                 .startDate(LocalDateTime.now().minusDays(1))
                 .endDate(LocalDateTime.now().plusDays(1))
                 .build()).getId();
