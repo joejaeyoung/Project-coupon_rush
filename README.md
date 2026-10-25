@@ -19,20 +19,20 @@ DB 비관적 락 → Redis → Redis+Kafka의 세 단계 비교에서 시작한 
 
 ## 최신 구현
 
-Phase 3와 같은 흐름(Redis 판정 → Kafka → Consumer가 DB 저장)이지만, **"Kafka에 갔는지"를 응답 전에 확정**합니다. 브로커 ACK(`acks=all`)를 받으면 202, 못 받으면 Redis 예약을 되돌리고 503입니다.
+Phase 3와 같은 흐름(Redis 판정 → Kafka → Consumer가 DB 저장)이지만, **"Kafka에 갔는지"를 응답 전에 확정**합니다. 브로커 ACK(`acks=all`)를 받으면 202, 못 받으면 Redis 예약을 되돌리고 503입니다. Redis는 primary·replica·Sentinel 3으로 구성했고, 예약은 replica가 받은 뒤(`WAIT`)에만 승인합니다.
 
 ```mermaid
 flowchart LR
     A["발급 요청 · userId"] --> M["Redis MGET<br/>기간 · 재고 선확인"]
-    M -->|"통과"| R["SADD users → DECR stock"]
+    M -->|"통과"| R["SADD users → DECR stock<br/>WAIT 1 · replica 수신 확인"]
     R -->|"통과"| P["Producer.send · acks=all<br/>브로커 ACK 대기"]
     P -->|"ACK"| S["202 접수"]
     P -.->|"실패 · 타임아웃"| C["INCR · SREM 보상 → 503"]
     P --> K["Kafka · coupon-issue"]
     K --> N["Consumer<br/>발급 여부 확인 → 총량 조건부 UPDATE → INSERT"]
     N --> D["DB 커밋 후 offset 커밋"]
-    M -->|"소진 · 기간 외"| F["409 · 400"]
-    R -->|"중복 · 소진"| F
+    M -->|"소진 · 기간 외"| F["409 · 400 · 503"]
+    R -->|"중복 · 소진 · 복제 안 됨"| F
     style P fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
 ```
 
@@ -42,13 +42,14 @@ flowchart LR
 | 발행 실패 보상 | `INCR`·`SREM`으로 예약을 되돌리고 `503 ISSUE_FAILED`, WARN 로그 | [CouponService](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/service/CouponService.java) |
 | 소진 뒤 요청은 1 RTT | `MGET`으로 기간·재고 선확인. 소진 뒤 요청은 SADD·DECR·보상 없이 409 | [CouponRedisService](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/service/CouponRedisService.java) |
 | DB 최종 방어 | `(coupon_id, user_id)` 유니크 제약 + `issued_quantity < total_quantity` 조건부 UPDATE가 게이트 | [IssuedCoupon](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/domain/IssuedCoupon.java) · [Consumer](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/service/CouponKafkaConsumer.java) |
+| Redis HA | primary·replica·Sentinel 3. Lettuce가 Sentinel에게 primary를 묻고 failover 뒤 자동으로 옮겨 붙습니다. 다시 승인되기까지 WAIT 켜면 10.5 s, 끄면 4.9 s | [compose](4-coupon_redisHA_kafka/docker-compose.yml) · [failover.sh](4-coupon_redisHA_kafka/failover.sh) |
 | 뼈대만 | API는 발급·재고 조회·재고 초기화 셋. 할인·사용·목록 기능과 모니터링 스택은 뺐습니다 | [모듈 README](4-coupon_redisHA_kafka/README.md) |
 
 | 멘토링 피드백 (2026-10-25) | 반영 |
 | --- | --- |
 | Redis Stream(KV) outbox는 복잡해진다. 어차피 Kafka가 있으니 있는 걸 써라 | Stream·relay·Lua 제거. API가 Kafka에 직접 발행하고 ACK를 확인 |
 | 비동기로 돌리면 남는 게 없다. 로그로 남겨라 | 발행 실패·DB 총량 거부·중복 건너뜀을 WARN/INFO 로그로 |
-| Redis primary↔replica는 세 포인트만 (비동기 유실 · 스냅샷 복구 · 복제 대기) | 모듈 이름의 `redisHA`가 이 과제입니다. 현재는 단일 노드 + AOF이며 복제·Sentinel 구성은 남은 과제 |
+| Redis primary↔replica는 세 포인트만 (비동기 유실 · 스냅샷 복구 · 복제 대기) | primary·replica·Sentinel 3 구성, 예약 직후 `WAIT`로 replica 수신 확인, 양쪽 AOF. failover·복제 지연 실험으로 WAIT 유무의 차이를 확인했습니다 |
 
 Lua를 뺀 이유와 `MULTI/EXEC`로는 판정을 묶지 못하는 이유는 [모듈 README](4-coupon_redisHA_kafka/README.md#lua-스크립트의-단점-멘토-질문)에 있습니다.
 
@@ -66,6 +67,8 @@ k6 1,000 VU `per-vu-iterations`(VU당 1회, 서로 다른 사용자 1,000명), �
 
 **Kafka 중단 실험** — `docker stop kafka` 후 재고 5 쿠폰에 요청 1건: 10.0초 뒤 503, Redis `stock=5 · users=0`으로 되돌아갔습니다. Phase 3라면 재고만 줄고 사용자는 "이미 발급"으로 남았을 상황입니다.
 
+**Redis failover 실험** (`failover.sh`) — primary를 kill한 뒤 다시 202가 나오기까지 WAIT를 켜면 10.5초(옛 primary가 replica로 돌아와야 통과), 끄면 4.9초. 복제 지연 중에는 WAIT가 승인 자체를 거절해 소실 0, 끄면 승인된 5건이 사라지고 5명이 202만 받고 쿠폰을 못 받았습니다. 건강한 replica에서 WAIT 비용은 호출당 19 µs였습니다. 상세는 [모듈 README](4-coupon_redisHA_kafka/README.md#redis-ha--2026-10-26).
+
 JUnit 4건(동시 1,000명 → 100 · 동일 사용자 100회 → 1 · 발행 실패 보상 · 잘못된 본문 400)은 실제 MySQL·Redis·Kafka를 띄우고 실행합니다.
 
 ## 실행
@@ -75,15 +78,16 @@ JDK 17, Docker Compose, k6가 필요합니다. 네 단계는 컨테이너 이름
 ```bash
 git clone https://github.com/joejaeyoung/Project-coupon_rush.git
 cd Project-coupon_rush/4-coupon_redisHA_kafka
-docker compose up -d --wait              # MySQL 3306 · Redis 6379 · Kafka 9092
+docker compose up -d --wait              # MySQL 3306 · Redis 6381/6382 + Sentinel 26379~26381 · Kafka 9092
 (cd spring && ./gradlew bootRun)
 ./reset-coupon.sh 1 100                  # DB 쿠폰 생성 + Redis 재고 초기화
 k6 run -e COUPON_ID=1 -e USERS=1000 k6/concurrent-issue.js
 ./report.sh 1                            # Redis users == DB rows == issued_qty 대조
+./failover.sh                            # primary kill → 다시 승인까지 (lag: 복제 지연 중 승인 소실)
 (cd spring && ./gradlew test)            # bootRun을 끈 뒤
 ```
 
-호스트 6379를 다른 컨테이너가 쓰고 있을 때의 포트 override는 [모듈 README](4-coupon_redisHA_kafka/README.md#실행)에 있습니다.
+Redis는 6381/6382를 쓰므로 6379를 점유한 다른 컨테이너와 겹치지 않습니다.
 
 ## 기존 Phase 1~3
 
@@ -314,7 +318,7 @@ JUnit은 `CountDownLatch`로 작업 시작을 맞추고, Phase 3은 Awaitility�
 
 | 주제 | 현재 | 남은 구현·검증 |
 | --- | --- | --- |
-| Redis HA | 단일 노드 + AOF. 복제 지연 중 승인된 예약 손실은 [실증 보고서](docs/experiments-2026-10-22.md)에서 재현 | primary/replica·Sentinel 구성, 앱 자동 연결 전환, `WAIT` 비용 측정 |
+| Redis HA | primary·replica·Sentinel 3 + `WAIT`. failover 뒤 WAIT가 통과할 때까지 10.5 s 공백, WAIT가 공유 커넥션을 막음 | replica 2대 이상, WAIT 전용 커넥션, 서버 쪽 `min-replicas-to-write`와 비교, Cluster |
 | 예약과 발행 사이의 창 | SADD→DECR 사이, DECR→ACK 사이에 죽으면 보상이 돌지 못함 | `users` 집합과 DB 발급 내역을 대조하는 정리 작업 |
 | 실패 메시지 | 적용할 수 없는 이벤트는 로그 후 건너뜀. DB 쓰기 예외는 컨테이너가 10회 재시도한 뒤 건너뜀 | DLT, 독성 메시지 한도 |
 | 실패 응답 지연 | Kafka 중단 시 503까지 10초 | 타임아웃과 오판 사이의 기준 |

@@ -1,5 +1,23 @@
 name: coupon-redisha-kafka
 
+# Redis 묶음(primary · replica · Sentinel 3)은 redis-net 컨테이너의 네트워크 네임스페이스를 공유한다.
+# 서로를 127.0.0.1:<port>로 보고, 같은 포트를 호스트에 그대로 노출하므로 Sentinel이 알려주는
+# 주소(127.0.0.1:6381/6382)가 컨테이너 안에서도 호스트의 앱에서도 똑같이 통한다 (Docker Desktop에서 Sentinel을 쓰는 가장 짧은 길).
+x-sentinel: &sentinel
+  image: redis:7-alpine
+  network_mode: "service:redis-net"
+  depends_on: [redis-primary, redis-replica]
+  entrypoint: ["sh", "-c"]
+  command:
+    - |
+      printf 'port %s\ndir /tmp\nsentinel monitor mymaster 127.0.0.1 6381 2\nsentinel down-after-milliseconds mymaster 2000\nsentinel failover-timeout mymaster 10000\nsentinel parallel-syncs mymaster 1\nsentinel announce-ip 127.0.0.1\nsentinel announce-port %s\n' "$$SENTINEL_PORT" "$$SENTINEL_PORT" > /tmp/sentinel.conf
+      exec redis-sentinel /tmp/sentinel.conf
+  healthcheck:
+    test: ["CMD-SHELL", "redis-cli -p $$SENTINEL_PORT ping"]
+    interval: 5s
+    timeout: 3s
+    retries: 5
+
 services:
   mysql:
     image: mysql:8.0
@@ -19,19 +37,57 @@ services:
       timeout: 5s
       retries: 5
 
-  redis:
-    image: redis:7-alpine
-    container_name: redis
-    command: redis-server --appendonly yes
+  redis-net:
+    image: alpine:3.20
+    container_name: redis-net
+    command: sleep infinity
     ports:
-      - "6379:6379"
+      - "6381:6381"     # primary (처음 기동 시)
+      - "6382:6382"     # replica
+      - "26379:26379"   # sentinel ×3
+      - "26380:26380"
+      - "26381:26381"
+
+  redis-primary:
+    image: redis:7-alpine
+    container_name: redis-primary
+    network_mode: "service:redis-net"
+    depends_on: [redis-net]
+    command: redis-server --port 6381 --appendonly yes --replica-announce-ip 127.0.0.1 --replica-announce-port 6381
     volumes:
-      - redis_data:/data
+      - redis_primary:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "redis-cli", "-p", "6381", "ping"]
+      interval: 5s
+      timeout: 3s
       retries: 5
+
+  redis-replica:
+    image: redis:7-alpine
+    container_name: redis-replica
+    network_mode: "service:redis-net"
+    depends_on: [redis-primary]
+    command: redis-server --port 6382 --appendonly yes --replicaof 127.0.0.1 6381 --replica-announce-ip 127.0.0.1 --replica-announce-port 6382
+    volumes:
+      - redis_replica:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6382", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  sentinel-1:
+    <<: *sentinel
+    container_name: sentinel-1
+    environment: { SENTINEL_PORT: "26379" }
+  sentinel-2:
+    <<: *sentinel
+    container_name: sentinel-2
+    environment: { SENTINEL_PORT: "26380" }
+  sentinel-3:
+    <<: *sentinel
+    container_name: sentinel-3
+    environment: { SENTINEL_PORT: "26381" }
 
   kafka:
     image: apache/kafka:3.7.1
@@ -61,5 +117,6 @@ services:
 
 volumes:
   mysql_data:
-  redis_data:
+  redis_primary:
+  redis_replica:
   kafka_data:

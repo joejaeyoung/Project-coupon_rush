@@ -15,7 +15,14 @@ spring:
     # 발급 핫패스는 DB를 보지 않는다 — 요청마다 Session을 여는 OSIV는 끈다
     open-in-view: false
 
-  # ── Redis·Kafka: 기본값 localhost:6379 / localhost:9092. 포트가 겹치면 SPRING_DATA_REDIS_PORT 같은 환경변수로 덮어쓴다 (README 실행) ──
+  # ── Redis: Sentinel에게 primary 주소를 묻는다. failover로 primary가 바뀌면 Lettuce가 +switch-master를 받아 다시 붙는다 ──
+  data:
+    redis:
+      sentinel:
+        master: mymaster
+        nodes: localhost:26379,localhost:26380,localhost:26381
+
+  # ── Kafka ──────────────────────────────────────────────────
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
@@ -38,3 +45,11 @@ spring:
         delivery.timeout.ms: 10000
         request.timeout.ms: 5000
         max.block.ms: 5000
+
+# ── 발급 예약의 복제 확인 ──────────────────────────────────────
+coupon:
+  redis:
+    # 예약(SADD·DECR)을 replica 몇 대가 받은 뒤 승인할지 (WAIT). 0이면 확인 없이 승인 — failover 때 승인된 예약이 사라질 수 있다
+    wait-replicas: 1
+    # 이 시간 안에 복제되지 않으면 예약을 되돌리고 503. WAIT가 공유 커넥션을 막으므로 replica 장애 중에는 요청당 이만큼 느려진다
+    wait-timeout-ms: 1000

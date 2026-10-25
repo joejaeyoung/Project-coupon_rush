@@ -18,7 +18,7 @@
 
 ## 기존 Phase 1~3에서 출발하기
 
-아래 표는 후속 실험 전의 기준선이다. 실험 모듈(2026-10-26 main에서 제거, 코드는 [커밋 dc0e901](https://github.com/joejaeyoung/Project-coupon_rush/tree/dc0e901/4-coupon_experiments))은 다섯 경로, Lua 원자적 판정, DB 유일 제약, 요청 상태 조회, Outbox/Stream relay를 추가했다. 기존 Phase 1~3 파일은 그대로 보존했다. 멘토링(2026-10-25) 뒤 정리한 현재 구현은 [4-coupon_redisHA_kafka](../4-coupon_redisHA_kafka/README.md)다.
+아래 표는 후속 실험 전의 기준선이다. 실험 모듈(2026-10-26 main에서 제거, 코드는 [커밋 dc0e901](https://github.com/joejaeyoung/Project-coupon_rush/tree/dc0e901/4-coupon_experiments))은 다섯 경로, Lua 원자적 판정, DB 유일 제약, 요청 상태 조회, Outbox/Stream relay를 추가했다. 기존 Phase 1~3 파일은 그대로 보존했다. 멘토링(2026-10-25) 뒤 정리한 현재 구현은 [4-coupon_redisHA_kafka](../4-coupon_redisHA_kafka/README.md)다(Kafka ACK 확인·보상 + Redis Sentinel HA·`WAIT`).
 
 | 항목 | 코드로 확인한 사실 | 아직 보장하지 않는 것 |
 | --- | --- | --- |

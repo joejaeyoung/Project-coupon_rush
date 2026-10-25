@@ -22,7 +22,7 @@ Phase 1~3의 정상 부하 비교 이후 **장애 상황의 정합성·선착순
 
 ### 멘토링 결과 — 2026-10-25
 
-실험 결과를 들고 간 멘토링의 피드백은 "KV(Redis Stream) outbox는 복잡해진다, 어차피 있는 Kafka를 써라", "비동기 구간은 로그로 남겨라", "Redis primary↔replica는 비동기 유실·스냅샷 복구·복제 대기 세 포인트까지"였다. 그래서 4단계는 실험 모듈이 아니라 Phase 3에 브로커 ACK 확인과 보상만 더한 [4-coupon_redisHA_kafka](../4-coupon_redisHA_kafka/README.md)로 정리했고, `4-coupon_experiments/`는 2026-10-26 main에서 제거했다(코드·결과는 커밋 `dc0e901`). 이름의 `redisHA`는 다음 과제인 Redis 복제·Sentinel 구성을 가리키며 아직 단일 노드다.
+실험 결과를 들고 간 멘토링의 피드백은 "KV(Redis Stream) outbox는 복잡해진다, 어차피 있는 Kafka를 써라", "비동기 구간은 로그로 남겨라", "Redis primary↔replica는 비동기 유실·스냅샷 복구·복제 대기 세 포인트까지"였다. 그래서 4단계는 실험 모듈이 아니라 Phase 3에 브로커 ACK 확인과 보상만 더한 [4-coupon_redisHA_kafka](../4-coupon_redisHA_kafka/README.md)로 정리했고, `4-coupon_experiments/`는 2026-10-26 main에서 제거했다(코드·결과는 커밋 `dc0e901`). `redisHA`는 Redis primary·replica·Sentinel 3 구성과 예약의 복제 확인(`WAIT`)이다(2026-10-26 구현, failover·복제 지연 실험 포함).
 
 ---
 

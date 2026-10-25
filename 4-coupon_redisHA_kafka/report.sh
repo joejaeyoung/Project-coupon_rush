@@ -1,13 +1,15 @@
 #!/bin/bash
 COUPON_ID=${1:-1}
+# Sentinel에게 현재 primary 포트를 묻는다 (failover 뒤에는 6382일 수 있다). Redis 묶음은 네임스페이스를 공유하므로 sentinel-1에서 127.0.0.1:<port>로 닿는다
+redis() { docker exec sentinel-1 redis-cli -p "$(docker exec sentinel-1 redis-cli -p 26379 SENTINEL get-master-addr-by-name mymaster | tail -1)" "$@"; }
 
 echo "========================================"
 echo " 쿠폰 #${COUPON_ID} 발급 현황 리포트"
 echo "========================================"
 
 # ── Redis ──────────────────────────────────
-REDIS_STOCK=$(docker exec redis redis-cli GET "coupon:${COUPON_ID}:stock" 2>/dev/null)
-REDIS_USERS=$(docker exec redis redis-cli SCARD "coupon:${COUPON_ID}:users" 2>/dev/null)
+REDIS_STOCK=$(redis GET "coupon:${COUPON_ID}:stock" 2>/dev/null)
+REDIS_USERS=$(redis SCARD "coupon:${COUPON_ID}:users" 2>/dev/null)
 
 echo ""
 echo "[Redis]"
