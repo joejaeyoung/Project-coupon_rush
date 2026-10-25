@@ -6,7 +6,7 @@
 
 ## 후속 멘토링 논의 — 2026-10-22
 
-Phase 1~3의 정상 부하 비교 이후 **장애 상황의 정합성·선착순 기준·편중 트래픽의 확장 한계**를 검토한다. 다섯 발급 경로를 [독립 실험 모듈](../4-coupon_experiments/README.md)에 구현했고, 실제 실행 결과는 [실증 보고서](experiments-2026-10-22.md)에 남긴다. 아래 주제는 실험과 멘토링을 연결하는 질문이며 운영 설계의 확정 목록은 아니다. 기존 Phase 계획의 학습 예시와 기존 코드가 다른 부분은 [멘토링 논의안](mentoring-discussion.md)의 구현 표에서 구분한다.
+Phase 1~3의 정상 부하 비교 이후 **장애 상황의 정합성·선착순 기준·편중 트래픽의 확장 한계**를 검토한다. 다섯 발급 경로를 실험 모듈(2026-10-26 main에서 제거, 코드는 [커밋 dc0e901](https://github.com/joejaeyoung/Project-coupon_rush/tree/dc0e901/4-coupon_experiments))에 구현했고, 실제 실행 결과는 [실증 보고서](experiments-2026-10-22.md)에 남긴다. 아래 주제는 실험과 멘토링을 연결하는 질문이며 운영 설계의 확정 목록은 아니다. 기존 Phase 계획의 학습 예시와 기존 코드가 다른 부분은 [멘토링 논의안](mentoring-discussion.md)의 구현 표에서 구분한다.
 
 | 논의 주제 | 확인할 설계 선택 |
 | --- | --- |
@@ -16,15 +16,19 @@ Phase 1~3의 정상 부하 비교 이후 **장애 상황의 정합성·선착순
 | 고가용성과 장애 시 정합성 | Redis failover, Kafka 재처리, 예약과 이벤트 기록 사이의 장애 복구 |
 | Kafka 앞단의 순서 보장 | 선착순 기준, 재시도·병렬 소비·리밸런싱 정책 |
 
-질문·미정 사항과 멘토링 후 결정 기록은 [멘토링 논의안](mentoring-discussion.md)에서 관리한다. 기존 측정값은 [벤치마크 원본](benchmark-2026-09-12.md)에 보존하며, 새 구현의 원본 요청·응답·최종 상태는 [실험 결과](../4-coupon_experiments/results/)에서 확인한다.
+질문·미정 사항과 멘토링 후 결정 기록은 [멘토링 논의안](mentoring-discussion.md)에서 관리한다. 기존 측정값은 [벤치마크 원본](benchmark-2026-09-12.md)에 보존하며, 새 구현의 원본 요청·응답·최종 상태는 [실험 결과](https://github.com/joejaeyoung/Project-coupon_rush/tree/dc0e901/4-coupon_experiments/results/)에서 확인한다.
 
 추가 구현은 `SPLIT_REDIS`, `LUA_REDIS`, `KAFKA_FIRST`, `DB_OUTBOX`, `REDIS_STREAM`이다. 정상·중복·본문 충돌, 발행 경계의 실패, DB 커밋 후 재처리, 순서 역전, 리밸런싱, 편중 트래픽, 프로세스·노드 장애를 각각 재현한다. 실험에서 기대한 결함을 관측한 것과 결함을 방지한 것을 구별한다. Redis Cluster는 쿠폰 간 키 분산을 검증하며, 단일 쿠폰 재고의 분할·합산은 후속 과제다.
+
+### 멘토링 결과 — 2026-10-25
+
+실험 결과를 들고 간 멘토링의 피드백은 "KV(Redis Stream) outbox는 복잡해진다, 어차피 있는 Kafka를 써라", "비동기 구간은 로그로 남겨라", "Redis primary↔replica는 비동기 유실·스냅샷 복구·복제 대기 세 포인트까지"였다. 그래서 4단계는 실험 모듈이 아니라 Phase 3에 브로커 ACK 확인과 보상만 더한 [4-coupon_redisHA_kafka](../4-coupon_redisHA_kafka/README.md)로 정리했고, `4-coupon_experiments/`는 2026-10-26 main에서 제거했다(코드·결과는 커밋 `dc0e901`). 이름의 `redisHA`는 다음 과제인 Redis 복제·Sentinel 구성을 가리키며 아직 단일 노드다.
 
 ---
 
 ## 전체 로드맵
 
-아래는 기존 단계별 학습 로드맵이다. 추가한 `4-coupon_experiments/`는 다섯 설계 질문을 비교하는 후속 실험이며, 아래의 Read Replica 과제를 구현했다는 의미는 아니다.
+아래는 기존 단계별 학습 로드맵이다. 실제 4단계는 `4-coupon_redisHA_kafka/`(Phase 3 + Kafka ACK 확인·보상)이며, 아래 Read Replica 과제는 계획에만 남아 있다.
 
 ```
 Phase 0 → Phase 1 → Phase 2 → Phase 3 → Phase 4
@@ -362,7 +366,7 @@ public record CouponIssueMessage(
 
 ---
 
-## Phase 4 — MySQL Read Replica (읽기/쓰기 분산)
+## (계획) Phase 4 — MySQL Read Replica (읽기/쓰기 분산) — 미구현. 실제 4단계는 `4-coupon_redisHA_kafka`
 
 **목표:** 조회 트래픽을 Replica로 분산해 Primary DB 부하를 줄인다. CQRS를 인프라 레벨까지 구현한다.
 

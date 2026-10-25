@@ -3,7 +3,7 @@
 
 > 2026-10-22 보완: 과거 실험·학습 기록을 유지하되 현재 구현과 대안을 구분했다. 현재 Phase 2/3는 Lua·Redisson 없이 `SADD → DECR`를 개별 호출한다. 동시성·장애 정합성·확장성의 추가 질문은 [멘토링 논의안](mentoring-discussion.md)을 참고한다.
 
-> 후속 실증: 별도 [실험 모듈](../4-coupon_experiments/README.md)에 Lua 예약과 Redis Stream 전달을 구현했다. 분리 명령의 중간 실패, Lua 런타임 오류의 부분 쓰기, 복제 지연 후 승격, Cluster 키 편중 결과는 [실증 보고서](experiments-2026-10-22.md)에 기록한다. 본문의 기존 Phase 2 구현과 구분한다.
+> 후속 실증: 별도 실험 모듈(2026-10-26 main에서 제거, 코드는 [커밋 dc0e901](https://github.com/joejaeyoung/Project-coupon_rush/tree/dc0e901/4-coupon_experiments))에 Lua 예약과 Redis Stream 전달을 구현했다. 분리 명령의 중간 실패, Lua 런타임 오류의 부분 쓰기, 복제 지연 후 승격, Cluster 키 편중 결과는 [실증 보고서](experiments-2026-10-22.md)에 기록한다. 본문의 기존 Phase 2 구현과 구분한다. 현재 4단계 [4-coupon_redisHA_kafka](../4-coupon_redisHA_kafka/README.md)는 Lua·Stream 없이 Phase 3에 Kafka ACK 확인과 보상, DB 유니크 제약을 더한 최소 구성이다.
 
 > Phase 1에서 Pessimistic Lock으로 정확성은 잡았다.  
 > 근데 p95가 2.32초, RPS 409. 이걸 Redis로 바꾸면 얼마나 달라질까?  

@@ -18,7 +18,7 @@
 
 ## 기존 Phase 1~3에서 출발하기
 
-아래 표는 후속 실험 전의 기준선이다. [실험 모듈](../4-coupon_experiments/README.md)은 다섯 경로, Lua 원자적 판정, DB 유일 제약, 요청 상태 조회, Outbox/Stream relay를 추가했다. 기존 Phase 1~3 파일은 그대로 보존했다.
+아래 표는 후속 실험 전의 기준선이다. 실험 모듈(2026-10-26 main에서 제거, 코드는 [커밋 dc0e901](https://github.com/joejaeyoung/Project-coupon_rush/tree/dc0e901/4-coupon_experiments))은 다섯 경로, Lua 원자적 판정, DB 유일 제약, 요청 상태 조회, Outbox/Stream relay를 추가했다. 기존 Phase 1~3 파일은 그대로 보존했다. 멘토링(2026-10-25) 뒤 정리한 현재 구현은 [4-coupon_redisHA_kafka](../4-coupon_redisHA_kafka/README.md)다.
 
 | 항목 | 코드로 확인한 사실 | 아직 보장하지 않는 것 |
 | --- | --- | --- |
@@ -203,7 +203,7 @@ Redis 우선 구조에서도 예약 A가 먼저 성공한 뒤 멈추고 예약 B
 
 ## 논의를 확인할 실험과 관측값
 
-아래는 실험을 설계할 때 정한 질문·관측 항목이다. 이에 대응하는 구현과 실행 결과는 [2026-10-22 실증 보고서](experiments-2026-10-22.md), 재현 명령은 [실험 모듈](../4-coupon_experiments/README.md)에 남겼다. 기존 [벤치마크](benchmark-2026-09-12.md)는 당시 정상 부하의 비교 근거로 보존한다. 모든 관측 항목을 운영 수준으로 수집한 것은 아니며, 실제 측정 범위와 미검증 범위는 보고서를 기준으로 판단한다.
+아래는 실험을 설계할 때 정한 질문·관측 항목이다. 이에 대응하는 구현과 실행 결과는 [2026-10-22 실증 보고서](experiments-2026-10-22.md), 재현 명령은 실험 모듈(2026-10-26 main에서 제거, 코드는 [커밋 dc0e901](https://github.com/joejaeyoung/Project-coupon_rush/tree/dc0e901/4-coupon_experiments))에 남겼다. 기존 [벤치마크](benchmark-2026-09-12.md)는 당시 정상 부하의 비교 근거로 보존한다. 모든 관측 항목을 운영 수준으로 수집한 것은 아니며, 실제 측정 범위와 미검증 범위는 보고서를 기준으로 판단한다.
 
 | 실험 | 재현 방법 | 확인할 값·판정 기준 |
 | --- | --- | --- |
