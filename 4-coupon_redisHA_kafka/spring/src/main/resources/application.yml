@@ -12,18 +12,16 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    # 발급 핫패스는 DB를 보지 않는다 — 요청마다 Session을 여는 OSIV는 끈다. DTO 변환은 @Transactional 안에서 끝난다
+    # 발급 핫패스는 DB를 보지 않는다 — 요청마다 Session을 여는 OSIV는 끈다
     open-in-view: false
 
-  # ── Redis: 기본값 localhost:6379. 컨테이너에서는 SPRING_DATA_REDIS_HOST/PORT 환경변수로 덮어쓴다 ──
-
-  # ── Kafka ──────────────────────────────────────────────────
+  # ── Redis·Kafka: 기본값 localhost:6379 / localhost:9092. 포트가 겹치면 SPRING_DATA_REDIS_PORT 같은 환경변수로 덮어쓴다 (README 실행) ──
   kafka:
-    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: localhost:9092
     consumer:
       group-id: coupon-group
       auto-offset-reset: earliest
-      # false: @KafkaListener가 정상 종료된 뒤 Offset 커밋 → DB INSERT 실패 시 Kafka가 재전송 (at-least-once)
+      # false: @KafkaListener가 정상 종료된 뒤 offset 커밋. 예외로 끝나면 컨테이너가 같은 레코드를 재시도한다 (기본 10회, 그 뒤 건너뜀)
       enable-auto-commit: false
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
@@ -33,8 +31,10 @@ spring:
       # 발급 API는 브로커 ACK(acks=all)를 받은 뒤에야 202를 돌려준다. 실패하면 Redis 예약을 되돌린다.
       acks: all
       properties:
+        # 재시도 중 같은 배치가 브로커에 두 번 쓰이지 않게(PID·시퀀스). 클라이언트 기본값이지만 acks=all과 짝이라 명시
         enable.idempotence: true
-        # 포기 시점을 분명히 한다 — producer가 재시도를 끝낸 뒤에야 예약을 되돌리므로 되돌린 예약의 이벤트가 뒤늦게 도착하지 않는다
+        # 포기 시점을 분명히 한다 — 되돌린 뒤에 producer가 재시도를 이어가지 않는다.
+        # 브로커가 받았는데 ACK만 유실된 이벤트는 뒤늦게 소비될 수 있고, 그건 Consumer의 총량 조건부 UPDATE가 막는다
         delivery.timeout.ms: 10000
         request.timeout.ms: 5000
         max.block.ms: 5000

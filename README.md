@@ -54,12 +54,12 @@ Lua를 뺀 이유와 `MULTI/EXEC`로는 판정을 묶지 못하는 이유는 [�
 
 ## 측정 결과
 
-k6 1,000 VU `shared-iterations`, 재고 100, 2026-10-25, Apple Silicon 1대에 앱·인프라 동거. 동작 확인용이며 9월 수치와 직접 비교하지 않습니다. 성공 응답에는 Kafka ACK 대기가 포함됩니다.
+k6 1,000 VU `per-vu-iterations`(VU당 1회, 서로 다른 사용자 1,000명), 재고 100, 2026-10-26, Apple Silicon 1대에 앱·인프라 동거. 동작 확인용이며 9월 수치와 직접 비교하지 않습니다. 성공 응답에는 Kafka ACK 대기가 포함됩니다.
 
 | 지표 | Phase 4 |
 | --- | ---: |
-| HTTP 응답 p95 / 평균 | 183.24 / 105.40 ms |
-| HTTP 요청 처리량 | 5,040 req/s |
+| HTTP 응답 p95 / 평균 | 177.73 / 54.06 ms |
+| HTTP 요청 처리량 | 2,394 req/s |
 | 접수 / 탈락 / 초과 발급 | 100 / 900 / 0 |
 | Redis 명령 수 (요청 1,000건) | 1,600 — MGET 1,000 · SADD/DECR 400 · INCR/SREM 200 |
 | Redis users = DB rows = issued_quantity | 100 = 100 = 100 |
@@ -316,7 +316,7 @@ JUnit은 `CountDownLatch`로 작업 시작을 맞추고, Phase 3은 Awaitility�
 | --- | --- | --- |
 | Redis HA | 단일 노드 + AOF. 복제 지연 중 승인된 예약 손실은 [실증 보고서](docs/experiments-2026-10-22.md)에서 재현 | primary/replica·Sentinel 구성, 앱 자동 연결 전환, `WAIT` 비용 측정 |
 | 예약과 발행 사이의 창 | SADD→DECR 사이, DECR→ACK 사이에 죽으면 보상이 돌지 못함 | `users` 집합과 DB 발급 내역을 대조하는 정리 작업 |
-| 실패 메시지 | Consumer가 적용할 수 없는 이벤트는 로그 후 건너뜀 | DLT, 독성 메시지 한도 |
+| 실패 메시지 | 적용할 수 없는 이벤트는 로그 후 건너뜀. DB 쓰기 예외는 컨테이너가 10회 재시도한 뒤 건너뜀 | DLT, 독성 메시지 한도 |
 | 실패 응답 지연 | Kafka 중단 시 503까지 10초 | 타임아웃과 오판 사이의 기준 |
 | 요청 원장 | 없음. 접수 뒤 결과는 DB 조회로만 확인 | request/pending 토픽 분리, 요청 ID별 상태 조회 (멘토 제안) |
 

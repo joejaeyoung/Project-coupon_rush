@@ -12,9 +12,9 @@ const BASE_URL  = 'http://localhost:8080';
 export const options = {
   scenarios: {
     concurrent_users: {
-      executor: 'shared-iterations',
+      executor: 'per-vu-iterations', // VU마다 정확히 1회 — userId = __VU 이므로 서로 다른 사용자 USERS명
       vus: USERS,
-      iterations: USERS,
+      iterations: 1,
       maxDuration: '30s',
     },
   },

@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
 
     /** 빈 본문·타입 불일치·userId 누락 — 읽을 수 없는 요청 본문은 모두 같은 400 */
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiResponse<Void>> handleUnreadableBody(HttpMessageNotReadableException e) {
+    public ResponseEntity<ApiResponse<Void>> handleUnreadableBody() {
         return handleCouponException(new CouponException(CouponErrorCode.INVALID_REQUEST));
     }
 }

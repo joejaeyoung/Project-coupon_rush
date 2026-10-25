@@ -24,7 +24,7 @@ sequenceDiagram
         R-->>API: SADD=0 / DECR<0 (INCR·SREM 보상)
         API-->>C: 409
     else 예약 성공
-        API->>K: send(couponId, event) — acks=all ACK 대기 (포기 시점은 producer 설정: max.block 5s + delivery.timeout 10s)
+        API->>K: send(couponId, event) — acks=all ACK 대기 (포기 시점은 producer 설정: max.block 5s 또는 delivery.timeout 10s)
         alt ACK
             API-->>C: 202 Accepted
             K->>CS: coupon-issue
@@ -86,11 +86,11 @@ sequenceDiagram
 
 ```bash
 docker compose up -d --wait                       # MySQL 3306 · Redis 6379 · Kafka 9092
-cd spring && ./gradlew bootRun
+(cd spring && ./gradlew bootRun)                  # 별도 터미널
 ./reset-coupon.sh 1 100                           # DB 쿠폰 생성 + Redis 재고 초기화
 k6 run -e COUPON_ID=1 -e USERS=1000 k6/concurrent-issue.js
 ./report.sh 1                                     # Redis users == DB rows == issued_qty 대조
-cd spring && ./gradlew test                       # 동시 1,000명 · 동일 사용자 100회 · 발행 실패 보상 · 400 포맷 (인프라 필요)
+(cd spring && ./gradlew test)                     # 동시 1,000명 · 동일 사용자 100회 · 발행 실패 보상 · 400 포맷 (인프라 필요)
 ```
 
 호스트 6379를 다른 컨테이너가 쓰고 있으면 override로 포트만 바꾼다:
@@ -98,22 +98,23 @@ cd spring && ./gradlew test                       # 동시 1,000명 · 동일 �
 ```bash
 printf 'services:\n  redis:\n    ports: !override\n      - "6380:6379"\n' > /tmp/redis-port.yml
 docker compose -f docker-compose.yml -f /tmp/redis-port.yml up -d --wait
-SPRING_DATA_REDIS_PORT=6380 ./gradlew bootRun     # 테스트도 같은 환경변수로
+(cd spring && SPRING_DATA_REDIS_PORT=6380 ./gradlew bootRun)   # 테스트도 같은 환경변수로
 ```
 
-## 측정 — 2026-10-25
+## 측정 — 2026-10-25 · 10-26
 
-k6 1,000 VU `shared-iterations`, 재고 100, Apple Silicon 1대에 앱·인프라 동거. 절대 성능이 아니라 동작 확인용.
+k6 1,000 VU, 재고 100, Apple Silicon 1대에 앱·인프라 동거. 절대 성능이 아니라 동작 확인용.
+앞 세 열은 `shared-iterations`(총 1,000회), 마지막 열은 리뷰에서 바꾼 `per-vu-iterations`(VU당 정확히 1회 → 서로 다른 사용자 1,000명 보장)다. executor가 다르면 VU 기동이 섞인 처리량은 비교할 수 없다.
 
-| 항목 | 리팩토링 전 | 리팩토링 3회 후 | 뼈대만 |
-| --- | ---: | ---: | ---: |
-| 처리량 | 3,878 req/s | 3,966 req/s | 5,040 req/s |
-| 응답 p95 / 평균 | 211.96 / 154.38 ms | 210.09 / 127.84 ms | 183.24 / 105.40 ms |
-| 발급 성공 / 정상 탈락 / 초과 발급 | 100 / 900 / 0 | 100 / 900 / 0 | 100 / 900 / 0 |
-| Redis 명령 수 (요청 1,000건, `INFO commandstats`) | 5,800 (계산) | 1,540 | 1,600 (MGET 1,000 · SADD/DECR 400 · INCR/SREM 200) |
-| Redis users = DB rows = issued_quantity | 100 = 100 = 100 | 100 = 100 = 100 | 100 = 100 = 100 |
+| 항목 | 리팩토링 전 | 리팩토링 3회 후 | 뼈대만 | 리뷰 반영 (per-vu) |
+| --- | ---: | ---: | ---: | ---: |
+| 처리량 | 3,878 req/s | 3,966 req/s | 5,040 req/s | 2,394 req/s |
+| 응답 p95 / 평균 | 211.96 / 154.38 ms | 210.09 / 127.84 ms | 183.24 / 105.40 ms | 177.73 / 54.06 ms |
+| 발급 성공 / 정상 탈락 / 초과 발급 | 100 / 900 / 0 | 100 / 900 / 0 | 100 / 900 / 0 | 100 / 900 / 0 |
+| Redis 명령 수 (요청 1,000건, `INFO commandstats`) | 5,800 (계산) | 1,540 | 1,600 | 1,600 (MGET 1,000 · SADD/DECR 400 · INCR/SREM 200) |
+| Redis users = DB rows = issued_quantity | 100 = 100 = 100 | 100 = 100 = 100 | 100 = 100 = 100 | 100 = 100 = 100 |
 
-세 열은 같은 날 같은 기계지만 실행 간 편차가 있다. 성공 100건의 응답에는 Kafka ACK 대기가 포함된다(p95 ≈ 185 ms).
+같은 기계라도 실행 간 편차가 있다. 성공 100건의 응답에는 Kafka ACK 대기가 포함된다(p95 ≈ 180 ms).
 
 **Kafka 중단 실험** — `docker stop kafka` 후 재고 5 쿠폰에 요청 1건: 10.0초 뒤 503(`delivery.timeout.ms=10000`), Redis `stock=5 · users=0`으로 되돌아갔다.
 
@@ -121,5 +122,6 @@ k6 1,000 VU `shared-iterations`, 재고 100, Apple Silicon 1대에 앱·인프�
 
 - **SADD 뒤 DECR 전 크래시** — 그 사용자만 `users`에 남아 재시도가 DUPLICATED가 된다(재고는 그대로). 닫으려면 Lua나 outbox가 필요하다.
 - **DECR 뒤 ACK 전 크래시** — 보상이 돌지 못해 재고 1·사용자 1이 샌다. 확률은 낮지만 0이 아니다. 복구는 `users` 집합과 DB 발급 내역을 대조하는 정리 작업(설계도 3단계)의 몫이다.
+- **Consumer 재시도 한도** — DB 쓰기가 예외로 끝나면 컨테이너(DefaultErrorHandler 기본값)가 같은 레코드를 10회 다시 넣고, 그 뒤엔 로그만 남기고 건너뛴다. DLT가 없어 DB 장애가 길면 그 이벤트는 사라진다.
 - **실패 응답 지연** — Kafka가 죽어 있으면 503까지 10초 걸린다. 더 줄이면 일시 지연을 실패로 오판한다.
 - **Redis 복제** — 비동기라 primary 장애 시 승인된 예약이 사라질 수 있다. `WAIT`·스냅샷 복구는 위 피드백 표의 세 포인트까지만.

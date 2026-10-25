@@ -25,8 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 /**
- * 실제 MySQL·Redis·Kafka가 떠 있어야 한다 (docker compose up -d mysql redis kafka).
+ * 실제 MySQL·Redis·Kafka가 떠 있어야 한다 (docker compose up -d --wait).
  * 발급 판정은 Redis에서 동기로 끝나지만 DB 저장은 Kafka Consumer가 하므로 await로 기다린다.
+ * 테스트 클래스마다 별도 컨텍스트(Consumer 포함)가 떠서 같은 그룹에 Consumer가 여러 개일 수 있다 — 단일 파티션이라 결과는 같다.
+ * count()는 전체 행이므로 setUp의 deleteAllInBatch에 의존한다.
  */
 @SpringBootTest
 class CouponConcurrencyTest {

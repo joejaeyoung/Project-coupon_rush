@@ -4,7 +4,7 @@ import com.example.coupon.exception.CouponErrorCode;
 import com.example.coupon.exception.CouponException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.Map;
  *   발급자 집합 : coupon:{couponId}:users
  *   발급 기간   : coupon:{couponId}:startDate / coupon:{couponId}:endDate
  */
-@Service
+@Component
 @RequiredArgsConstructor
 public class CouponRedisService {
 
@@ -68,7 +68,7 @@ public class CouponRedisService {
      *
      * 명령 각각은 원자적이지만 둘 사이는 아니다. 재고가 음수가 되면 INCR·SREM으로 되돌린다.
      * SADD 뒤 DECR 전에 프로세스가 죽으면 그 사용자만 users에 남는다(재고는 그대로).
-     * 이 창을 닫으려면 Lua나 outbox가 필요한데, 복잡도를 이유로 두지 않는다 (README 참고).
+     * 이 창을 닫으려면 Lua나 outbox가 필요한데, 복잡도를 이유로 두지 않는다 (README "남은 한계").
      */
     public void checkAndIssue(Long couponId, Long userId) {
         Long added = redisTemplate.opsForSet().add(usersKey(couponId), String.valueOf(userId));

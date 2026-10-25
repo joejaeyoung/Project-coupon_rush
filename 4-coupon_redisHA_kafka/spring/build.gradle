@@ -23,10 +23,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.kafka:spring-kafka'
 
-	//DB
+	// DB
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
-	//Lombok
+	// Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
