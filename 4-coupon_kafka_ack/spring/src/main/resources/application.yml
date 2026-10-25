@@ -12,6 +12,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    # 발급 핫패스는 DB를 보지 않는다 — 요청마다 Session을 여는 OSIV는 끈다. DTO 변환은 @Transactional 안에서 끝난다
+    open-in-view: false
 
   # ── Redis: 기본값 localhost:6379. 컨테이너에서는 SPRING_DATA_REDIS_HOST/PORT 환경변수로 덮어쓴다 ──
 

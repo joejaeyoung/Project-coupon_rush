@@ -1,20 +1,10 @@
 package com.example.coupon.event;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 /**
- * 쿠폰 발급 이벤트.
- *
- * CouponKafkaProducer → Kafka "coupon-issue" → CouponKafkaConsumer
+ * 쿠폰 발급 이벤트. CouponKafkaProducer → Kafka "coupon-issue" → CouponKafkaConsumer
+ * spring-kafka의 JsonSerializer/JsonDeserializer가 record와 LocalDateTime을 그대로 다룬다.
  */
-@Getter
-@NoArgsConstructor  // Kafka JSON 역직렬화용
-@AllArgsConstructor
-public class CouponIssueEvent {
-
-    private Long couponId;
-    private Long userId;
-    private String issuedAt;
+public record CouponIssueEvent(Long couponId, Long userId, LocalDateTime issuedAt) {
 }

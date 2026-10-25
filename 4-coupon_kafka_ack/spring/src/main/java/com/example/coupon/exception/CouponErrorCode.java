@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum CouponErrorCode {
 
-    INVALID_REQUEST("userId는 필수입니다.", HttpStatus.BAD_REQUEST),
+    INVALID_REQUEST("요청 본문이 올바르지 않습니다. userId는 필수입니다.", HttpStatus.BAD_REQUEST),
     NOT_AVAILABLE("발급 기간이 아닙니다.", HttpStatus.BAD_REQUEST),
     NOT_FOUND("쿠폰을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     EXHAUSTED("쿠폰이 모두 소진되었습니다.", HttpStatus.CONFLICT),
