@@ -42,10 +42,7 @@ public class CouponService {
      * DB 저장은 CouponKafkaConsumer가 비동기로 처리한다. Phase 3와 달리 "Kafka에 갔는지"를 응답 전에 확정하므로
      * 발행 실패가 재고 누수로 남지 않는다. 비동기 구간은 로그 외에 남는 게 없으니 실패는 반드시 기록한다.
      */
-    public void issueCoupon(Long couponId, Long userId) {
-        if (userId == null) {
-            throw new CouponException(CouponErrorCode.INVALID_REQUEST);
-        }
+    public void issueCoupon(Long couponId, long userId) {
         couponRedisService.validatePeriod(couponId);
         couponRedisService.checkAndIssue(couponId, userId);
         try {
