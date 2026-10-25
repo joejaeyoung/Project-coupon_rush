@@ -1,7 +1,6 @@
 package com.example.coupon.service;
 
-import com.example.coupon.domain.coupon.Coupon;
-import com.example.coupon.domain.issuedcoupon.IssuedCoupon;
+import com.example.coupon.domain.IssuedCoupon;
 import com.example.coupon.event.CouponIssueEvent;
 import com.example.coupon.repository.CouponRepository;
 import com.example.coupon.repository.IssuedCouponRepository;
@@ -12,12 +11,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Kafka Consumer — "coupon-issue" 이벤트를 받아 MySQL에 발급을 확정 저장한다.
+ * "coupon-issue" 이벤트를 받아 MySQL에 발급을 확정 저장한다.
  *
  * Kafka 재전송으로 같은 이벤트가 두 번 올 수 있다(at-least-once). 먼저 발급 여부를 확인해 건너뛰고,
  * 그래도 겹치면 issued_coupon의 (coupon_id, user_id) 유니크 제약이 막는다.
- * 총량은 coupon.issued_quantity < total_quantity 조건부 UPDATE가 게이트다 — 발행 타임아웃 후 Redis를 되돌렸는데
- * 이벤트가 뒤늦게 도착한 경우가 여기서 걸린다. 적용할 수 없는 이벤트는 모두 로그를 남기고 건너뛴다.
+ * 총량은 issued_quantity < total_quantity 조건부 UPDATE가 게이트다 — 발행 타임아웃 후 Redis를 되돌렸는데
+ * 이벤트가 뒤늦게 도착한 경우가 여기서 걸린다. 적용할 수 없는 이벤트는 로그를 남기고 건너뛴다.
  * enable-auto-commit=false 이므로 이 메서드가 예외로 끝나면 Offset이 커밋되지 않아 Kafka가 재전송한다.
  */
 @Slf4j
@@ -39,7 +38,6 @@ public class CouponKafkaConsumer {
             log.warn("DB에서 발급 거부(총량 초과 또는 쿠폰 없음) — couponId={}, userId={}", event.couponId(), event.userId());
             return;
         }
-        Coupon coupon = couponRepository.findById(event.couponId()).orElseThrow(); // UPDATE가 1이면 반드시 있다
-        issuedCouponRepository.save(IssuedCoupon.issue(coupon, event.userId(), event.issuedAt()));
+        issuedCouponRepository.save(new IssuedCoupon(event.couponId(), event.userId(), event.issuedAt()));
     }
 }
