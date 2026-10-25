@@ -35,7 +35,7 @@ public class CouponService {
     /**
      * 선착순 쿠폰 발급.
      *
-     *   1. 기간 검증 — Redis
+     *   1. 기간·소진 선확인 — Redis MGET 한 번 (소진 뒤 요청은 여기서 끝난다)
      *   2. 중복 확인 + 재고 차감 — Redis (SADD → DECR)
      *   3. Kafka 발행 — 브로커 ACK까지 기다린다. 실패하면 2번을 되돌리고 503.
      *
@@ -43,7 +43,7 @@ public class CouponService {
      * 발행 실패가 재고 누수로 남지 않는다. 비동기 구간은 로그 외에 남는 게 없으니 실패는 반드시 기록한다.
      */
     public void issueCoupon(Long couponId, long userId) {
-        couponRedisService.validatePeriod(couponId);
+        couponRedisService.validateIssuable(couponId);
         couponRedisService.checkAndIssue(couponId, userId);
         try {
             couponKafkaProducer.publish(couponId, userId);
