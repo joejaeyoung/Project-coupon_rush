@@ -36,7 +36,7 @@ public class Coupon {
     private Integer maxDiscountAmount;  // nullable
 
     private Integer totalQuantity;      // 총 발급 수량
-    private Integer issuedQuantity;     // 현재 발급 수량 (Kafka Consumer가 증가시킨다)
+    private Integer issuedQuantity = 0; // 현재 발급 수량 — Kafka Consumer의 조건부 UPDATE만 올린다 (빌더에서 제외)
 
     private Integer validDays;          // 발급 후 유효 일수
     private LocalDateTime startDate;    // 발급 시작일
@@ -45,7 +45,7 @@ public class Coupon {
     @Builder
     public Coupon(String name, String description, CouponType couponType, CouponStatus status,
                   Integer discountValue, Integer minOrderAmount, Integer maxDiscountAmount,
-                  Integer totalQuantity, Integer issuedQuantity, Integer validDays,
+                  Integer totalQuantity, Integer validDays,
                   LocalDateTime startDate, LocalDateTime endDate) {
         this.name = name;
         this.description = description;
@@ -55,7 +55,6 @@ public class Coupon {
         this.minOrderAmount = minOrderAmount;
         this.maxDiscountAmount = maxDiscountAmount;
         this.totalQuantity = totalQuantity;
-        this.issuedQuantity = issuedQuantity == null ? 0 : issuedQuantity;
         this.validDays = validDays;
         this.startDate = startDate;
         this.endDate = endDate;
