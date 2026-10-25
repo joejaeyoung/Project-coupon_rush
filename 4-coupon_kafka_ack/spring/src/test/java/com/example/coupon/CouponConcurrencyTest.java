@@ -1,8 +1,6 @@
 package com.example.coupon;
 
 import com.example.coupon.domain.coupon.Coupon;
-import com.example.coupon.domain.coupon.CouponStatus;
-import com.example.coupon.domain.coupon.CouponType;
 import com.example.coupon.exception.CouponException;
 import com.example.coupon.repository.CouponRepository;
 import com.example.coupon.repository.IssuedCouponRepository;
@@ -15,10 +13,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.concurrent.CountDownLatch;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Future;
+import java.util.function.IntToLongFunction;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -43,95 +44,53 @@ class CouponConcurrencyTest {
 
     @BeforeEach
     void setUp() {
-        issuedCouponRepository.deleteAll();
-        couponId = saveCoupon(100);
+        issuedCouponRepository.deleteAllInBatch();
+        couponId = couponRepository.save(Coupon.builder()
+                .totalQuantity(100)
+                .validDays(30)
+                .startDate(LocalDateTime.now().minusDays(1))
+                .endDate(LocalDateTime.now().plusDays(1))
+                .build()).getId();
         couponService.initStock(couponId);
     }
 
     @Test
     @DisplayName("1000명 동시 요청 시 정확히 100개만 발급된다")
-    void 천명_동시_요청_100개_발급() throws InterruptedException {
-        int totalUsers = 1000;
-        ExecutorService executor = Executors.newFixedThreadPool(32);
-        CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch doneLatch = new CountDownLatch(totalUsers);
-        AtomicInteger successCount = new AtomicInteger();
-        AtomicInteger failCount = new AtomicInteger();
-
-        for (int i = 0; i < totalUsers; i++) {
-            long userId = i + 1;
-            executor.submit(() -> {
-                try {
-                    startLatch.await();
-                    couponService.issueCoupon(couponId, userId);
-                    successCount.incrementAndGet();
-                } catch (CouponException e) {
-                    failCount.incrementAndGet(); // EXHAUSTED — 정상 탈락
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } finally {
-                    doneLatch.countDown();
-                }
-            });
-        }
-        startLatch.countDown();
-        doneLatch.await();
-        executor.shutdown();
-
-        // Redis 판정은 동기 — 응답 시점에 확정
-        assertThat(successCount.get()).isEqualTo(100);
-        assertThat(successCount.get() + failCount.get()).isEqualTo(totalUsers);
-
-        // DB 저장은 Kafka Consumer 비동기
-        awaitIssuedCount(100);
+    void 천명_동시_요청_100개_발급() throws Exception {
+        assertThat(issueConcurrently(1000, i -> i + 1)).isEqualTo(100);  // Redis 판정은 동기 — 응답 시점에 확정
+        awaitIssuedCount(100);                                            // DB 저장은 Kafka Consumer 비동기
         assertThat(couponRepository.findById(couponId).orElseThrow().getIssuedQuantity()).isEqualTo(100);
     }
 
     @Test
     @DisplayName("동일 사용자가 100번 동시 요청해도 1번만 발급된다")
-    void 동일_사용자_중복_발급_방지() throws InterruptedException {
-        int requestCount = 100;
-        long sameUserId = 9999L;
-        ExecutorService executor = Executors.newFixedThreadPool(32);
-        CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch doneLatch = new CountDownLatch(requestCount);
-        AtomicInteger successCount = new AtomicInteger();
-
-        for (int i = 0; i < requestCount; i++) {
-            executor.submit(() -> {
-                try {
-                    startLatch.await();
-                    couponService.issueCoupon(couponId, sameUserId);
-                    successCount.incrementAndGet();
-                } catch (CouponException e) {
-                    // DUPLICATED — 기대한 동작
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } finally {
-                    doneLatch.countDown();
-                }
-            });
-        }
-        startLatch.countDown();
-        doneLatch.await();
-        executor.shutdown();
-
-        assertThat(successCount.get()).isEqualTo(1);
+    void 동일_사용자_중복_발급_방지() throws Exception {
+        assertThat(issueConcurrently(100, i -> 9999L)).isEqualTo(1);
         awaitIssuedCount(1);
     }
 
-    private Long saveCoupon(int totalQuantity) {
-        return couponRepository.save(Coupon.builder()
-                .name("test")
-                .description("선착순 테스트 쿠폰")
-                .couponType(CouponType.FIXED_AMOUNT)
-                .status(CouponStatus.ACTIVE)
-                .discountValue(1000)
-                .totalQuantity(totalQuantity)
-                .validDays(30)
-                .startDate(LocalDateTime.now().minusDays(1))
-                .endDate(LocalDateTime.now().plusDays(1))
-                .build()).getId();
+    /** n개 요청을 32스레드로 동시에 보내고 CouponException 없이 끝난 요청 수를 돌려준다. 그 외 예외는 테스트 실패 */
+    private long issueConcurrently(int requests, IntToLongFunction userIdOf) throws Exception {
+        ExecutorService pool = Executors.newFixedThreadPool(32);
+        try {
+            List<Callable<Boolean>> tasks = IntStream.range(0, requests).<Callable<Boolean>>mapToObj(i -> () -> {
+                try {
+                    couponService.issueCoupon(couponId, userIdOf.applyAsLong(i));
+                    return true;
+                } catch (CouponException e) {
+                    return false; // EXHAUSTED · DUPLICATED — 정상 탈락
+                }
+            }).toList();
+            long success = 0;
+            for (Future<Boolean> result : pool.invokeAll(tasks)) {
+                if (result.get()) {
+                    success++;
+                }
+            }
+            return success;
+        } finally {
+            pool.shutdown();
+        }
     }
 
     private void awaitIssuedCount(long expected) {
