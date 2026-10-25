@@ -7,6 +7,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -27,23 +29,32 @@ public class CouponRedisService {
     private String startDateKey(Long couponId) { return "coupon:" + couponId + ":startDate"; }
     private String endDateKey(Long couponId)   { return "coupon:" + couponId + ":endDate"; }
 
-    /** 재고·기간을 Redis에 올린다. 발급 핫패스는 이후 DB를 보지 않는다 */
+    /** 재고·기간을 Redis에 올린다 (MSET 한 번). 발급 핫패스는 이후 DB를 보지 않는다 */
     public void initStock(Long couponId, int totalQuantity, LocalDateTime startDate, LocalDateTime endDate) {
-        redisTemplate.opsForValue().set(stockKey(couponId), String.valueOf(totalQuantity));
-        redisTemplate.opsForValue().set(startDateKey(couponId), startDate.toString());
-        redisTemplate.opsForValue().set(endDateKey(couponId), endDate.toString());
+        redisTemplate.opsForValue().multiSet(Map.of(
+                stockKey(couponId), String.valueOf(totalQuantity),
+                startDateKey(couponId), startDate.toString(),
+                endDateKey(couponId), endDate.toString()));
     }
 
-    /** 발급 기간 검증. 키가 없으면 initStock 미호출이므로 NOT_FOUND */
-    public void validatePeriod(Long couponId) {
-        String start = redisTemplate.opsForValue().get(startDateKey(couponId));
-        String end = redisTemplate.opsForValue().get(endDateKey(couponId));
-        if (start == null || end == null) {
+    /**
+     * 발급 가능 여부 선확인 — 기간과 재고를 MGET 한 번으로 읽는다.
+     * 재고는 미리보기일 뿐이고 판정의 권위는 checkAndIssue의 SADD → DECR이다 (여기서 남아 보여도 거기서 질 수 있다).
+     * 소진 뒤 들어오는 요청(부하의 대부분)이 SADD·DECR·INCR·SREM 네 번 대신 한 번으로 끝난다.
+     * 키가 없으면 initStock 미호출이므로 NOT_FOUND.
+     */
+    public void validateIssuable(Long couponId) {
+        List<String> values = redisTemplate.opsForValue().multiGet(
+                List.of(startDateKey(couponId), endDateKey(couponId), stockKey(couponId)));
+        if (values == null || values.contains(null)) {
             throw new CouponException(CouponErrorCode.NOT_FOUND);
         }
         LocalDateTime now = LocalDateTime.now();
-        if (LocalDateTime.parse(start).isAfter(now) || LocalDateTime.parse(end).isBefore(now)) {
+        if (LocalDateTime.parse(values.get(0)).isAfter(now) || LocalDateTime.parse(values.get(1)).isBefore(now)) {
             throw new CouponException(CouponErrorCode.NOT_AVAILABLE);
+        }
+        if (Integer.parseInt(values.get(2)) <= 0) {
+            throw new CouponException(CouponErrorCode.EXHAUSTED);
         }
     }
 
