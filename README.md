@@ -23,18 +23,27 @@ Phase 3와 같은 흐름(Redis 판정 → Kafka → Consumer가 DB 저장)이지
 
 ```mermaid
 flowchart LR
-    A["발급 요청 · userId"] --> M["Redis MGET<br/>기간 · 재고 선확인"]
+    A["Client<br/>발급 요청 · userId"] --> M["Redis MGET<br/>기간 · 재고 선확인"]
     M -->|"통과"| R["SADD users → DECR stock<br/>WAIT 1 · replica 수신 확인"]
     R -->|"통과"| P["Producer.send · acks=all<br/>브로커 ACK 대기"]
     P -->|"ACK"| S["202 접수"]
     P -.->|"실패 · 타임아웃"| C["INCR · SREM 보상 → 503"]
     P --> K["Kafka · coupon-issue"]
     K --> N["Consumer<br/>발급 여부 확인 → 총량 조건부 UPDATE → INSERT"]
-    N --> D["DB 커밋 후 offset 커밋"]
-    M -->|"소진 · 기간 외"| F["409 · 400 · 503"]
+    N -->|"조건부 UPDATE → INSERT"| DB[("MySQL issued_coupon")]
+    DB --> D["DB 커밋 후 offset 커밋"]
+    S -->|"이후 별도 GET"| Q["발급 상태 조회 API"]
+    Q -->|"issued_coupon 존재 조회"| DB
+    DB -->|"존재 / 없음"| Q
+    Q -->|"ISSUED / NOT_CONFIRMED"| A
+    M -->|"소진 · 기간 외"| F["400 · 404 · 409 · 503"]
     R -->|"중복 · 소진 · 복제 안 됨"| F
     style P fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
 ```
+
+**`202`는 Kafka 접수 확인이며 DB 발급 완료 응답은 아닙니다.** 클라이언트는 `GET /api/coupons/{couponId}/issues/users/{userId}`로 MySQL 발급 기록을 확인할 수 있습니다. `ISSUED`는 기록이 있다는 뜻이고 `NOT_CONFIRMED`는 조회 시점에 기록이 없다는 뜻입니다. 처리 중과 최종 실패는 구분하지 못합니다. Consumer의 DB 커밋과 HTTP 응답 순서는 고정되지 않습니다. Kafka ACK만 유실되면 보상 후 `503`을 받아도 DB 발급이 진행될 수 있고, 보상 중 Redis 장애가 나면 예약이 남을 수 있습니다. 현재 Kafka는 단일 브로커입니다.
+
+4번 작업의 **컴포넌트 배치, 초기화·발급·failover 시퀀스, 실제 응답 JSON**은 [전체 흐름 README](4-coupon_redisHA_kafka/README.md#전체-아키텍처)에, 각 단계의 거절·보상·재시도와 남는 한계는 [장애 처리 표](4-coupon_redisHA_kafka/README.md#장애-처리)에 정리했습니다.
 
 | Phase 3와 다른 점 | 구현 | 코드 |
 | --- | --- | --- |
@@ -43,7 +52,8 @@ flowchart LR
 | 소진 뒤 요청은 1 RTT | `MGET`으로 기간·재고 선확인. 소진 뒤 요청은 SADD·DECR·보상 없이 409 | [CouponRedisService](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/service/CouponRedisService.java) |
 | DB 최종 방어 | `(coupon_id, user_id)` 유니크 제약 + `issued_quantity < total_quantity` 조건부 UPDATE가 게이트 | [IssuedCoupon](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/domain/IssuedCoupon.java) · [Consumer](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/service/CouponKafkaConsumer.java) |
 | Redis HA | primary·replica·Sentinel 3. Lettuce가 Sentinel에게 primary를 묻고 failover 뒤 자동으로 옮겨 붙습니다. 다시 승인되기까지 WAIT 켜면 10.5 s, 끄면 4.9 s | [compose](4-coupon_redisHA_kafka/docker-compose.yml) · [failover.sh](4-coupon_redisHA_kafka/failover.sh) |
-| 뼈대만 | API는 발급·재고 조회·재고 초기화 셋. 할인·사용·목록 기능과 모니터링 스택은 뺐습니다 | [모듈 README](4-coupon_redisHA_kafka/README.md) |
+| 발급 완료 조회 | 발급 요청과 별도 GET으로 MySQL의 `(coupon_id, user_id)` 기록을 확인. 클라이언트는 간격을 두고 제한된 횟수만 조회 | [Controller](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/api/CouponController.java) · [조회 흐름](4-coupon_redisHA_kafka/README.md#3-클라이언트의-최종-발급-확인) |
+| 뼈대만 | API는 발급·발급 완료 조회·재고 조회·재고 초기화 넷. 할인·사용·목록 기능과 모니터링 스택은 뺐습니다 | [모듈 README](4-coupon_redisHA_kafka/README.md) |
 
 | 멘토링 피드백 (2026-10-25) | 반영 |
 | --- | --- |
@@ -414,9 +424,9 @@ JUnit은 `CountDownLatch`로 작업 시작을 맞추고, Phase 3은 Awaitility�
 | --- | --- | --- |
 | Redis HA | primary·replica·Sentinel 3 + `WAIT`. failover 뒤 WAIT가 통과할 때까지 10.5 s 공백, WAIT가 공유 커넥션을 막음 | replica 2대 이상, WAIT 전용 커넥션, 서버 쪽 `min-replicas-to-write`와 비교, Cluster |
 | 예약과 발행 사이의 창 | SADD→DECR 사이, DECR→ACK 사이에 죽으면 보상이 돌지 못함 | `users` 집합과 DB 발급 내역을 대조하는 정리 작업 |
-| 실패 메시지 | 적용할 수 없는 이벤트는 로그 후 건너뜀. DB 쓰기 예외는 컨테이너가 10회 재시도한 뒤 건너뜀 | DLT, 독성 메시지 한도 |
+| 실패 메시지 | 적용할 수 없는 이벤트는 로그 후 건너뜀. DB 쓰기 예외는 기본 오류 처리기의 재시도 소진 후 건너뜀 | DLT, 독성 메시지 한도 |
 | 실패 응답 지연 | Kafka 중단 시 503까지 10초 | 타임아웃과 오판 사이의 기준 |
-| 요청 원장 | 없음. 접수 뒤 결과는 DB 조회로만 확인 | request/pending 토픽 분리, 요청 ID별 상태 조회 (멘토 제안) |
+| 요청 원장 | 없음. 발급 완료 여부는 별도 MySQL 조회 API로 확인. 기록이 없으면 처리 중·실패를 구분할 수 없음 | request/pending 토픽 분리, 요청 ID별 상태 조회 (멘토 제안) |
 
 모든 측정은 한 머신의 공유 자원에서 수행했으며, 운영 용량이나 모든 장애 조합의 무손실을 보장하지 않습니다.
 

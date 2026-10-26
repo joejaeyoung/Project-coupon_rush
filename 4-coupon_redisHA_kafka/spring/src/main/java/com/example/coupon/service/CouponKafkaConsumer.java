@@ -16,9 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
  * 재처리로 같은 이벤트가 두 번 올 수 있다(at-least-once). 먼저 발급 여부를 확인해 건너뛰고,
  * 그래도 겹치면 issued_coupon의 (coupon_id, user_id) 유니크 제약이 막는다.
  * 총량은 issued_quantity < total_quantity 조건부 UPDATE가 게이트다 — 발행 타임아웃 후 Redis를 되돌렸는데
- * 이벤트가 뒤늦게 도착한 경우가 여기서 걸린다. 적용할 수 없는 이벤트는 로그를 남기고 건너뛴다.
+ * 이벤트가 뒤늦게 도착해도 총량 초과는 막는다. 단, 재고가 남으면 503을 받은 사용자도 발급될 수 있다.
+ * 적용할 수 없는 이벤트는 로그를 남기고 건너뛰며 Redis 예약을 보상하지 않는다.
  * enable-auto-commit=false 이므로 이 메서드가 예외로 끝나면 offset을 커밋하지 않고 컨테이너(DefaultErrorHandler)가
- * 같은 레코드를 다시 넣는다 — 기본 10회, 그 뒤엔 로그만 남기고 건너뛴다(DLT 없음, README "남은 한계").
+ * 실패 레코드를 기본 정책에 따라 다시 전달한다. 재시도 소진 후 별도 DLT 없이 건너뛸 수 있다.
+ * DB 커밋과 offset 커밋은 별개이므로 그 사이 종료되면 이미 저장한 이벤트도 재전달될 수 있다.
  */
 @Slf4j
 @Component
@@ -36,10 +38,12 @@ public class CouponKafkaConsumer {
             log.info("이미 발급된 이벤트 건너뜀 — couponId={}, userId={}", event.couponId(), event.userId());
             return;
         }
+        // 반환값은 남은 재고가 아닌 변경 행 수다. 0이면 INSERT 없이 정상 종료하여 소비를 진행한다.
         if (couponRepository.incrementIssuedQuantity(event.couponId()) == 0) {
             log.warn("DB에서 발급 거부(총량 초과 또는 쿠폰 없음) — couponId={}, userId={}", event.couponId(), event.userId());
             return;
         }
+        // 프록시의 트랜잭션 커밋까지 끝난 뒤 컨테이너가 offset을 관리한다. 수동 acknowledge는 하지 않는다.
         issuedCouponRepository.save(new IssuedCoupon(event.couponId(), event.userId(), event.issuedAt()));
     }
 }

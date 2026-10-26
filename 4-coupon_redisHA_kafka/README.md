@@ -1,48 +1,269 @@
-# Phase 4 `4-coupon_redisHA_kafka` — Redis(Sentinel) 판정 → Kafka ACK 확인 → DB. 뼈대만
+# Phase 4 — Redis HA 예약 → Kafka 접수 → MySQL 발급 저장
 
-선착순 쿠폰 발급의 최소 구성이다. 발급 판정은 Redis, 영속화는 Kafka 뒤의 Consumer, 그리고 "Kafka에 갔는지"를 응답 전에 확정한다.
-브로커 ACK(`acks=all`)를 받으면 202, 못 받으면 Redis 예약을 되돌리고 503.
+**클라이언트는 Redis 예약·복제 확인과 Kafka 브로커 ACK가 끝나면 `202 Accepted`를 받습니다. 최종 DB 저장은 Consumer가 별도로 수행합니다.** 클라이언트는 이후 발급 상태 조회 API로 MySQL에 발급 기록이 생겼는지 확인합니다. `202`는 DB 발급 완료를 뜻하지 않으며, HTTP 응답과 Consumer의 DB 커밋 중 어느 쪽이 먼저 끝나는지는 고정되지 않습니다.
 
-처음엔 Lua 한 번으로 예약과 이벤트 기록을 묶고 Redis Stream을 outbox로 쓰는 버전을 만들었다(커밋 `2432d73`).
-멘토링(2026-10-25)에서 "KV outbox는 복잡해지고, 어차피 있는 Kafka를 쓰면 된다"는 피드백을 받아 Stream·Lua를 걷어냈고,
-리팩토링 3회 뒤 발급 경로와 무관한 것(모니터링 스택, 할인·사용·조회 기능, 미사용 엔티티)을 전부 뺐다.
+[전체 아키텍처](#전체-아키텍처) · [요청과 응답](#요청과-응답) · [장애 처리](#장애-처리) · [Redis HA 실험](#redis-ha--2026-10-26) · [실행](#실행) · [남은 한계](#남은-한계)
 
-`redisHA`: Redis는 primary 1 · replica 1 · Sentinel 3이다. 앱은 Sentinel에게 primary를 묻고 failover 뒤 자동으로 옮겨 붙는다. 예약은 replica가 받은 뒤(`WAIT`)에만 승인한다 — 끄면 failover 때 승인된 예약이 사라지는 것을 실험으로 확인했다 ([Redis HA](#redis-ha--2026-10-26)).
+## 전체 아키텍처
+
+Controller·Service·Producer·Consumer는 **하나의 Spring Boot 프로세스** 안에 있습니다. HTTP 발급 경로는 Redis와 Kafka에 접근하고, Consumer가 MySQL에 최종 발급 내역을 저장합니다. 별도 조회 API는 MySQL의 발급 기록을 읽습니다. Sentinel은 primary 주소 탐색·승격을 담당하며 Redis 명령을 대신 전달하는 프록시는 아닙니다.
+
+```mermaid
+flowchart LR
+    Client["Client / k6"]
+    subgraph App["Spring Boot :8080 · 단일 프로세스"]
+        API["Controller → CouponService"]
+        RS["CouponRedisService"]
+        P["CouponKafkaProducer"]
+        C["CouponKafkaConsumer"]
+    end
+    subgraph HA["Redis HA · 양쪽 AOF"]
+        S["Sentinel 3대<br/>:26379 ~ :26381 · quorum 2"]
+        R["현재 primary<br/>초기 :6381"]
+        RR["replica<br/>초기 :6382"]
+    end
+    K["Kafka :9092 · 단일 브로커<br/>coupon-issue · key=couponId"]
+    DB[("MySQL :3306<br/>coupon / issued_coupon")]
+    Client -->|"① POST issue · userId"| API
+    API -->|"② 기간·재고·중복 판정"| RS
+    RS -.->|"연결 시 primary 탐색 / 전환"| S
+    S -.->|"감시 / 장애 시 승격"| R
+    S -.-> RR
+    RS -->|"MGET → SADD → DECR → WAIT"| R
+    R -->|"비동기 복제"| RR
+    RR -.->|"복제 ACK · WAIT 결과에 반영"| R
+    API -->|"③ 예약 성공 시 publish"| P
+    P -->|"이벤트 전송"| K
+    K -->|"브로커 ACK"| P
+    API -->|"④ ACK 확인 후 202"| Client
+    K -->|"⑤ Consumer poll로 수신"| C
+    C -->|"⑥ 중복 조회 → 조건부 UPDATE → INSERT / 커밋"| DB
+    C -->|"⑦ 처리 후 컨테이너가 offset 커밋"| K
+    Client -->|"⑧ GET 발급 상태 · couponId/userId"| API
+    API -->|"⑨ issued_coupon 존재 조회"| DB
+    DB -->|"⑩ ISSUED 또는 NOT_CONFIRMED"| API
+    API -->|"⑪ 200 · 조회 결과"| Client
+    API -.->|"초기화 API에서 쿠폰 조회"| DB
+```
+
+| 저장 위치 | 데이터와 의미 |
+| --- | --- |
+| Redis | `coupon:{id}:stock`(예약 가능 수량), `users`(예약 사용자 집합), `startDate`·`endDate`(기간). `users`는 DB 저장 완료 목록이 아닙니다 |
+| Kafka | `coupon-issue`에 `{couponId, userId, issuedAt}` JSON 저장. 키는 `couponId`이며, `issuedAt`은 Producer가 이벤트를 만든 시각입니다 |
+| MySQL | `coupon.issued_quantity`는 최종 발급 수량, `issued_coupon`은 사용자별 최종 발급 기록. 같은 트랜잭션에서 갱신합니다 |
+
+`acks=all`은 현재 ISR의 ACK를 기다리는 설정입니다. 이 Compose는 **Kafka 단일 브로커**이므로 Kafka 복제본 장애 전환까지 구성한 것은 아닙니다. Redis의 `WAIT 1 1000`은 앞선 쓰기의 복제 수신 확인이며 디스크 영속화나 모든 장애에서의 무손실을 보장하지 않습니다.
+
+## 요청과 응답
+
+### 1. 실험 준비: DB 쿠폰 → Redis 초기화
+
+`./reset-coupon.sh 1 100`은 DB 쿠폰을 생성하거나 수량을 초기화하고, 해당 쿠폰의 DB 발급 기록과 Redis 키를 삭제한 뒤 아래 API를 호출합니다. 이전 요청·Consumer 처리가 끝난 상태에서 실행합니다.
+
+```mermaid
+sequenceDiagram
+    participant O as 운영자 / reset-coupon.sh
+    participant API as 초기화 API
+    participant DB as MySQL
+    participant R as Redis primary
+    O->>API: POST /api/coupons/1/stock/init
+    API->>DB: findById(1)
+    DB-->>API: totalQuantity, startDate, endDate
+    API->>R: MSET stock, startDate, endDate
+    R-->>API: 쓰기 완료
+    API-->>O: 200 · 재고가 초기화되었습니다.
+```
+
+**초기화 API 자체는 `users`를 삭제하지 않고 `issued_quantity`도 차감하지 않습니다.** DB의 총량을 그대로 Redis에 덮어쓰므로 진행 중인 쿠폰의 복구 API로 사용할 수 없습니다. 해당 API에는 `WAIT`도 없습니다.
+
+### 2. 발급 요청: Redis 예약 → Kafka ACK → 202
 
 ```mermaid
 sequenceDiagram
     participant C as Client
-    participant API as CouponService
-    participant R as Redis (Sentinel이 가리키는 primary)
+    participant API as Controller / CouponService
+    participant R as Redis primary
     participant K as Kafka
-    participant CS as CouponKafkaConsumer
+    participant CS as Consumer
     participant DB as MySQL
 
-    C->>API: POST /api/coupons/{id}/issue {userId}
-    API->>R: MGET 기간·재고 선확인 → SADD users → DECR stock → WAIT 1 (replica 수신 확인)
-    alt 중복 / 소진 / 복제 안 됨
-        R-->>API: SADD=0 / DECR<0 / WAIT=0 (INCR·SREM 보상)
-        API-->>C: 409 · 409 · 503
-    else 예약 성공
-        API->>K: send(couponId, event) — acks=all ACK 대기 (포기 시점은 producer 설정: max.block 5s 또는 delivery.timeout 10s)
-        alt ACK
-            API-->>C: 202 Accepted
-            K->>CS: coupon-issue
-            CS->>DB: 발급 여부 확인 → issued_quantity+1 (총량 조건부) → INSERT → 커밋 → 그다음 offset 커밋
-        else 실패·타임아웃
-            API->>R: INCR stock · SREM users (보상)
-            API-->>C: 503 ISSUE_FAILED
+    C->>API: POST /api/coupons/1/issue · {"userId":42}
+    API->>R: MGET startDate, endDate, stock
+    R-->>API: 기간과 잔여 수량 (선확인)
+    Note over API,R: 미초기화 404 / 기간 외 400 / 재고 0 이하 409로 종료
+    API->>R: SADD users 42
+    R-->>API: 1이면 신규 예약, 0이면 중복 409
+    API->>R: DECR stock (신규 예약만)
+    R-->>API: 차감 후 수량
+    Note over API,R: 음수면 INCR + SREM 보상 후 409
+    API->>R: WAIT 1 1000
+    R-->>API: 앞선 쓰기를 확인한 replica 수
+    alt replica 수 부족
+        API->>R: INCR stock → SREM users 42
+        API-->>C: 보상 성공 후 503 · REPLICATION_TIMEOUT
+    else 복제 확인 성공
+        API->>K: send(key=1, event).join() · acks=all
+        alt 브로커 ACK 수신
+            K-->>API: 전송 Future 성공
+            API-->>C: 202 · 발급 요청 접수
+        else 발행 예외 / 타임아웃
+            API->>R: INCR stock → SREM users 42
+            API-->>C: 보상 성공 후 503 · ISSUE_FAILED
+        end
+    end
+    opt Kafka에 기록된 이벤트 소비 (HTTP 응답과 독립)
+        K-->>CS: poll 결과 · CouponIssueEvent
+        CS->>DB: SELECT 기존 발급 여부
+        Note over CS,DB: 이미 있으면 INFO 로그 후 정상 종료
+        CS->>DB: UPDATE issued_quantity + 1 WHERE issued_quantity < total_quantity
+        DB-->>CS: 변경 행 수 (0이면 WARN 로그 후 정상 종료)
+        CS->>DB: 변경 행 1건이면 issued_coupon INSERT + 트랜잭션 COMMIT
+        DB-->>CS: 커밋 완료
+        CS->>K: 리스너 처리 후 컨테이너의 offset 커밋
+    end
+```
+
+`MGET`은 빠른 탈락을 위한 사전 조회입니다. 동시 요청이 모두 같은 재고를 읽을 수 있으므로 실제 예약은 `SADD` 반환값과 `DECR` 결과로 판정합니다. 선확인을 먼저 하므로 이미 소진된 쿠폰에 대한 중복 요청도 `DUPLICATED` 대신 `EXHAUSTED`가 될 수 있습니다.
+
+DB 트랜잭션과 Kafka offset 커밋은 별개입니다. DB 저장 후 offset 커밋 전에 종료되면 이벤트가 다시 전달될 수 있어, Consumer는 기존 발급 조회와 DB 유니크 제약으로 중복을 방어합니다. offset은 Kafka 자동 커밋 대신 Spring 리스너 컨테이너가 관리하며, 레코드별 수동 ACK나 DB·Kafka 통합 트랜잭션은 설정하지 않았습니다.
+
+### 3. 클라이언트의 최종 발급 확인
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant API as 발급 / 조회 API
+    participant K as Kafka
+    participant W as Consumer
+    participant DB as MySQL issued_coupon
+    C->>API: POST /api/coupons/1/issue {"userId":42}
+    API->>K: 발급 이벤트 전송 · ACK 대기
+    K-->>API: 브로커 ACK
+    API-->>C: 202 · 접수 (최종 발급 여부 미확정)
+    par 비동기 저장
+        K-->>W: 발급 이벤트
+        W->>DB: 발급 기록 INSERT + 트랜잭션 커밋
+    and 클라이언트의 제한된 횟수 조회
+        loop ISSUED 확인 또는 조회 횟수 소진까지
+            C->>API: GET /api/coupons/1/issues/users/42
+            API->>DB: (coupon_id=1, user_id=42) 존재 조회
+            DB-->>API: 존재 / 없음
+            alt 기록 존재
+                API-->>C: 200 · ISSUED
+            else 기록 없음
+                API-->>C: 200 · NOT_CONFIRMED
+            end
         end
     end
 ```
+
+발급 조회는 **해당 쿠폰·사용자의 MySQL 발급 기록**을 읽습니다. `ISSUED`는 DB에 기록이 있다는 뜻입니다. `NOT_CONFIRMED`는 조회 시점에 기록이 없다는 뜻이며, 처리 중·최종 거부·이벤트 유실을 구분하지 않습니다. 이 API는 POST별 요청 ID나 이력을 추적하지 않습니다. 같은 쿠폰·사용자의 기존 발급 기록이 있으면 어떤 POST 뒤에 조회해도 `ISSUED`입니다. 조회 실패로 MySQL에 접근할 수 없으면 `503 STORE_UNAVAILABLE`입니다.
+
+클라이언트는 `202`를 받은 뒤 간격을 두고 제한된 횟수만 조회합니다. 끝까지 `NOT_CONFIRMED`이면 발급 실패로 확정하지 말고 **결과 확인 불가**로 표시합니다. 조회를 반복하면 MySQL 읽기 부하가 늘어나므로 실제 서비스에서는 호출 간격·최대 횟수를 정해야 합니다. 이 저장소에는 클라이언트 폴링 코드가 포함되어 있지 않습니다.
+
+### 4. API 계약과 호출 예시
+
+| 요청 | 접근 대상 | 성공 응답의 `data` |
+| --- | --- | --- |
+| `POST /api/coupons/{id}/issue` + `{"userId":42}` | Redis → Kafka | `202`, `"쿠폰 발급 요청이 접수되었습니다."` |
+| `GET /api/coupons/{id}/issues/users/{userId}` | MySQL `issued_coupon` 존재 조회 | `200`, `"ISSUED"` 또는 `"NOT_CONFIRMED"` |
+| `GET /api/coupons/{id}/stock` | Redis `GET stock` | `200`, 정수 잔여 예약 수량 |
+| `POST /api/coupons/{id}/stock/init` | MySQL 조회 → Redis `MSET` | `200`, `"재고가 초기화되었습니다."` |
+
+```bash
+curl -i -X POST http://localhost:8080/api/coupons/1/issue \
+  -H 'Content-Type: application/json' -d '{"userId":42}'
+curl -i http://localhost:8080/api/coupons/1/issues/users/42
+curl -i http://localhost:8080/api/coupons/1/stock
+```
+
+접수 성공 (`202`):
+
+```json
+{"success":true,"data":"쿠폰 발급 요청이 접수되었습니다.","message":null}
+```
+
+DB에 발급 기록이 있을 때 조회 응답 (`200`):
+
+```json
+{"success":true,"data":"ISSUED","message":null}
+```
+
+아직 발급 기록이 없을 때 조회 응답 (`200`):
+
+```json
+{"success":true,"data":"NOT_CONFIRMED","message":null}
+```
+
+재고 소진 (`409`):
+
+```json
+{"success":false,"data":null,"message":"쿠폰이 모두 소진되었습니다."}
+```
+
+아래 장애 표의 `EXHAUSTED` 같은 이름은 **내부 에러 enum 이름**입니다. 에러 응답에는 별도 `code` 필드 없이 `message`만 들어갑니다. `ISSUED`·`NOT_CONFIRMED`는 조회 API의 `data` 값입니다. 실험용 `report.sh`는 수량을 비교할 뿐 불일치를 자동으로 복구하지 않습니다.
+
+## 장애 처리
+
+### 요청 처리 중 거절·장애
+
+| 발생 지점 / 조건 | 현재 코드의 처리 | 클라이언트 응답 |
+| --- | --- | --- |
+| JSON 오류·`userId` 누락 | 역직렬화 단계에서 거절, Redis/Kafka 호출 없음 | `400 INVALID_REQUEST` |
+| Redis 기간·재고 키 없음 | DB로 대체 조회하지 않고 종료 | `404 NOT_FOUND` |
+| 발급 기간 외 | 쓰기 없이 종료 | `400 NOT_AVAILABLE` |
+| MGET 재고 ≤ 0 | 쓰기 없이 종료 | `409 EXHAUSTED` |
+| SADD = 0 | 기존 예약 유지, DECR 실행 안 함 | `409 DUPLICATED` |
+| DECR < 0 | `INCR stock` → `SREM users` 보상 | 보상 성공 시 `409 EXHAUSTED` |
+| WAIT 결과 < 1 | 같은 보상 후 Kafka 발행 생략 | 보상 성공 시 `503 REPLICATION_TIMEOUT` |
+| Redis 연결·명령 실패 | `DataAccessException` 또는 WAIT의 `CompletionException`을 저장소 오류로 변환. 중간 쓰기는 남을 수 있음 | `503 STORE_UNAVAILABLE` |
+| Kafka 전송 예외·ACK 타임아웃 | 예약 보상 후 WARN 로그. `max.block.ms=5000`, `delivery.timeout.ms=10000` 등으로 대기 제한 | 보상 성공 시 `503 ISSUE_FAILED` |
+| 보상 중 Redis 실패 | INCR/SREM 사이에서 중단될 수 있음. 별도 재시도·복구 원장 없음 | `DataAccessException`이면 `503 STORE_UNAVAILABLE`; 원래 실패 응답보다 먼저 전파됨 |
+
+**Kafka ACK를 못 받았다고 이벤트가 없다고 단정할 수 없습니다.** 브로커가 기록한 뒤 ACK만 유실됐다면 API는 예약을 보상하고 `503`을 반환해도 Consumer가 발급할 수 있습니다. DB 총량 가드는 초과 발급만 막으며, 실패 응답을 받은 사용자의 발급을 취소하거나 접수한 모든 사용자에게 발급을 보장하지는 않습니다.
+
+### 접수 이후 Consumer·인프라 장애
+
+| 상황 | 구현된 처리 | 남는 상태 / 한계 |
+| --- | --- | --- |
+| 동일 이벤트 재전달 | 기존 발급이면 INFO 로그 후 종료. 경합은 `(coupon_id, user_id)` 유니크 제약으로 방어 | INSERT 실패 시 같은 트랜잭션의 수량 증가도 롤백 |
+| DB 총량 소진·쿠폰 없음 | 조건부 UPDATE가 0행이면 WARN 로그 후 정상 종료 | 이벤트 재시도·Redis 보상 없음. `202` 이후에도 최종 발급이 없을 수 있음 |
+| DB 쓰기 예외 | DB 트랜잭션 롤백 후 컨테이너 기본 오류 처리기로 재전달 | 별도 재시도 정책·DLT 미설정. 기본 복구 처리가 레코드를 건너뛰면 자동 DB 반영은 끝남 |
+| API 프로세스가 예약 중 종료 | 예외 핸들러와 보상이 실행되지 않음 | SADD만 남거나 재고까지 차감된 예약이 남음. 자동 대조·복구 작업 없음 |
+| Redis primary 장애 | Sentinel 감지·승격 → Lettuce가 새 primary로 연결 | 연결 중단은 503. 승격 후에도 replica가 없으면 WAIT 실패로 503 |
+| 복제 지연 | WAIT로 수신 확인되지 않은 예약을 보상하고 거절 | WAIT를 끄면 승인한 예약이 failover 때 소실될 수 있음 |
+| Kafka 브로커 장애 | Producer 타임아웃 후 예약 보상, Consumer 처리 지연 | 단일 브로커라 다른 브로커로 자동 전환하지 않음 |
+
+```mermaid
+sequenceDiagram
+    participant API as Spring / Lettuce
+    participant P as 기존 primary
+    participant S as Sentinel 3대
+    participant R as 기존 replica
+    Note over P: primary 중단
+    S->>P: 장애 감지 (down-after 2000ms 설정)
+    S->>R: 장애 판단·선출 후 primary 승격
+    S-->>API: primary 변경 정보
+    API->>R: 새 primary로 발급 요청
+    R-->>API: replica가 없으면 WAIT 결과 부족
+    Note over API,R: 예약 보상 후 503 · REPLICATION_TIMEOUT
+    Note over P: 기존 노드 재기동
+    S->>P: 새 primary의 replica로 재구성
+    R->>P: 동기화 / 복제
+    API->>R: 다음 발급 요청 · WAIT 1
+    R-->>API: replica 수신 확인
+    Note over API: 이후 Kafka ACK까지 성공하면 202 재개
+```
+
+위 처리는 현재 코드의 경로 설명입니다. 아래 날짜가 붙은 수치는 기존 실험 기록이며, 문서 갱신 과정에서 장애 실험을 다시 실행한 결과는 아닙니다.
 
 ## 구성
 
 | 파일 | 역할 |
 | --- | --- |
-| `api/CouponController` | `POST /{id}/issue`(202) · `GET /{id}/stock` · `POST /{id}/stock/init` |
+| `api/CouponController` · `CouponIssueStatus` | `POST /{id}/issue`(202) · `GET /{id}/issues/users/{userId}`(DB 발급 조회) · `GET /{id}/stock` · `POST /{id}/stock/init` |
 | `api/CouponIssueRequest` · `ApiResponse` · `exception/*` | `userId` 필수 검증(compact 생성자), 공통 응답, 에러 코드 → HTTP 상태. 저장소 연결 실패(`DataAccessException`)·복제 미확인은 503 |
-| `service/CouponService` | 선확인 → 예약 → 발행. 발행 실패 시 `rollback` + 503 + WARN 로그 |
+| `service/CouponService` | 선확인 → 예약 → 발행. 발행 실패 시 `rollback` + 503 + WARN 로그. 별도 조회에서 DB 발급 기록 확인 |
 | `service/CouponRedisService` | `coupon:{id}:stock / users / startDate / endDate`. MGET 선확인, SADD → DECR → WAIT(replica 수신 확인), INCR + SREM 보상 |
 | `service/CouponKafkaProducer` | `send().join()` — 브로커 ACK 대기. 타임아웃은 yml만 소유 |
 | `service/CouponKafkaConsumer` | 발급 여부 확인 → `issued_quantity < total_quantity` 조건부 UPDATE → INSERT. `@Transactional` 뒤 offset 커밋 |
@@ -69,7 +290,7 @@ sequenceDiagram
 | 1. 발급 확정 — Redis 발급 기록 + Outbox를 함께 확정 후 응답 | Outbox 없음. 대신 Kafka ACK를 **동기로** 확인한 뒤 응답. 응답 지연에 ACK 시간이 포함된다 |
 | 2. Relay → Kafka → Consumer, DB 커밋 후 offset 커밋 | Relay 없음(API가 직접 발행). Consumer의 "DB 커밋 → offset 커밋" 순서는 동일(`enable-auto-commit=false` + `@Transactional`) |
 | 3. DB 확인 후 Outbox 정리 | 해당 없음 |
-| 4. 조회 API의 Redis 캐시 | 조회 API 자체를 두지 않았다 |
+| 4. 조회 API의 Redis 캐시 | 발급 완료 확인용 MySQL 조회 API를 추가했다. Redis 캐시는 없다 |
 
 설계도의 열린 질문 "Lua 없이 발급 기록과 Outbox를 함께 확정하는 방법"에 대한 답:
 `MULTI/EXEC`는 쓰기 묶음은 원자적으로 만들지만 **판정**(중복이면 차감하지 않는다)을 묶지 못한다. 중복 사용자도 DECR이 실행되고 INCR로 되돌려야 하며,
@@ -156,12 +377,14 @@ k6 1,000 VU, 재고 100, Apple Silicon 1대에 앱·인프라 동거. 절대 성
 
 ## 남은 한계
 
+- **조회만으로 실패 확정 불가** — `NOT_CONFIRMED`는 DB 기록 부재만 뜻한다. 처리 중·Consumer 거부·이벤트 유실을 구분하려면 요청별 상태 저장이 필요하다. 반복 조회는 MySQL 읽기 부하를 늘린다.
 - **SADD 뒤 DECR 전 크래시** — 그 사용자만 `users`에 남아 재시도가 DUPLICATED가 된다(재고는 그대로). 닫으려면 Lua나 outbox가 필요하다.
 - **DECR 뒤 ACK 전 크래시** — 보상이 돌지 못해 재고 1·사용자 1이 샌다. 확률은 낮지만 0이 아니다. 복구는 `users` 집합과 DB 발급 내역을 대조하는 정리 작업(설계도 3단계)의 몫이다.
-- **Consumer 재시도 한도** — DB 쓰기가 예외로 끝나면 컨테이너(DefaultErrorHandler 기본값)가 같은 레코드를 10회 다시 넣고, 그 뒤엔 로그만 남기고 건너뛴다. DLT가 없어 DB 장애가 길면 그 이벤트는 사라진다.
+- **Consumer 재시도 한도** — DB 쓰기가 예외로 끝나면 컨테이너(DefaultErrorHandler 기본값)가 실패 레코드를 기본 정책에 따라 재전달하고, 한도를 소진하면 로그를 남기고 건너뛴다. DLT가 없어 DB 장애가 길면 그 이벤트는 사라진다.
+- **ACK 불확실성과 보상 실패** — 503 이후에도 Kafka에 남은 이벤트가 DB에 저장될 수 있다. INCR·SREM도 별도 명령이며, 보상 중 장애나 보상 쓰기의 복제 유실을 자동 복구하지 않는다.
 - **실패 응답 지연** — Kafka가 죽어 있으면 503까지 10초 걸린다. 더 줄이면 일시 지연을 실패로 오판한다.
 - **failover 뒤 승인 공백** — WAIT 1이면 replica가 돌아올 때까지(실측 10.5 s) 모든 발급이 503이다. replica를 2대 두면 한 대 장애에서 공백이 사라진다.
-- **WAIT가 공유 커넥션을 막는다** — replica가 없거나 느리면 요청당 timeout만큼 직렬화된다. WAIT만 별도 커넥션(풀)으로 빼면 풀린다.
+- **WAIT가 공유 커넥션을 막는다** — replica가 없거나 느리면 요청당 timeout만큼 직렬화된다. 커넥션을 분리하려면 예약 쓰기와 WAIT가 같은 커넥션을 사용하도록 함께 설계해야 한다.
 - **failover 중 요청 대기** — Lettuce는 끊긴 동안 명령을 쌓아 뒀다가 새 primary로 보낸다. 첫 요청이 5~6 s 걸렸다. `disconnectedBehavior=REJECT_COMMANDS`나 짧은 command timeout으로 빨리 실패시키는 선택이 있다.
 - **WAIT를 끄면 승인 예약 소실** — 위 실험대로 Redis가 잊은 사용자와 202만 받은 사용자가 생긴다. 복구는 Redis `users`와 DB 발급 내역을 대조하는 정리 작업의 몫이다.
 - **Sentinel 토폴로지는 로컬용** — 네임스페이스 공유는 Docker Desktop에서 호스트의 앱을 붙이기 위한 트릭이다. 실제 배포에서는 Sentinel이 announce하는 주소가 앱에서 그대로 닿아야 한다.

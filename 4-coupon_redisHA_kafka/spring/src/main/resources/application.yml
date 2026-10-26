@@ -28,7 +28,8 @@ spring:
     consumer:
       group-id: coupon-group
       auto-offset-reset: earliest
-      # false: @KafkaListener가 정상 종료된 뒤 offset 커밋. 예외로 끝나면 컨테이너가 같은 레코드를 재시도한다 (기본 10회, 그 뒤 건너뜀)
+      # Kafka 자동 커밋을 끄고 리스너 컨테이너가 offset을 관리한다. ack-mode는 별도 지정하지 않는다.
+      # DB 트랜잭션과 offset 커밋은 별개다. 실패 재전달에 대비해 Consumer에서 중복을 검사한다.
       enable-auto-commit: false
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
@@ -36,12 +37,13 @@ spring:
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       # 발급 API는 브로커 ACK(acks=all)를 받은 뒤에야 202를 돌려준다. 실패하면 Redis 예약을 되돌린다.
+      # Compose는 단일 브로커이므로 이 설정만으로 Kafka 복제본 HA가 구성되지는 않는다.
       acks: all
       properties:
         # 재시도 중 같은 배치가 브로커에 두 번 쓰이지 않게(PID·시퀀스). 클라이언트 기본값이지만 acks=all과 짝이라 명시
         enable.idempotence: true
         # 포기 시점을 분명히 한다 — 되돌린 뒤에 producer가 재시도를 이어가지 않는다.
-        # 브로커가 받았는데 ACK만 유실된 이벤트는 뒤늦게 소비될 수 있고, 그건 Consumer의 총량 조건부 UPDATE가 막는다
+        # ACK만 유실된 이벤트는 보상·503 이후에도 소비될 수 있다. DB 총량 가드는 초과 발급만 막는다.
         delivery.timeout.ms: 10000
         request.timeout.ms: 5000
         max.block.ms: 5000
