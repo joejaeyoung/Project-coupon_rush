@@ -1,0 +1,524 @@
+{
+  "name": "ordering-delayed-first-RETRY_LATER",
+  "startedAt": "2026-10-22T10:16:48.467477+00:00",
+  "parameters": {
+    "strategy": "KAFKA_FIRST",
+    "stock": 10,
+    "coupons": 1,
+    "partitions": 1,
+    "workers": 3,
+    "ordering": "RETRY_LATER"
+  },
+  "http": [
+    {
+      "method": "POST",
+      "path": "/lab/runs",
+      "payload": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 3,
+        "ordering": "RETRY_LATER"
+      },
+      "startedAt": "2026-10-22T10:16:48.467494+00:00",
+      "status": 201,
+      "response": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+        "runId": "5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+        "strategy": "KAFKA_FIRST"
+      },
+      "durationMs": 42.108208,
+      "finishedAt": "2026-10-22T10:16:48.509608+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/5a2aa03c-d039-42ee-aa9c-3da0624d48d5/control",
+      "payload": {
+        "paused": true
+      },
+      "startedAt": "2026-10-22T10:16:48.509626+00:00",
+      "status": 200,
+      "response": {
+        "runId": "5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+        "workers": 3,
+        "paused": true
+      },
+      "durationMs": 4.774334,
+      "finishedAt": "2026-10-22T10:16:48.514407+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/5a2aa03c-d039-42ee-aa9c-3da0624d48d5/requests",
+      "payload": {
+        "requestId": "slow-first",
+        "userId": "slow-first",
+        "couponId": 1,
+        "processingDelayMs": 1000
+      },
+      "startedAt": "2026-10-22T10:16:48.514431+00:00",
+      "status": 202,
+      "response": {
+        "requestId": "slow-first",
+        "couponId": 1,
+        "userId": "slow-first",
+        "status": "PENDING",
+        "reason": null,
+        "partition": 0,
+        "offset": 0,
+        "reservationSeq": null,
+        "completionSeq": null,
+        "receivedAt": 1792664208515,
+        "completedAt": null,
+        "reserved": false,
+        "published": true,
+        "fault": null,
+        "faultConsumed": false,
+        "processingDelayMs": 1000,
+        "dbReserved": false,
+        "stage": "PENDING"
+      },
+      "durationMs": 1552.16925,
+      "finishedAt": "2026-10-22T10:16:50.066619+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/5a2aa03c-d039-42ee-aa9c-3da0624d48d5/requests",
+      "payload": {
+        "requestId": "fast-second",
+        "userId": "fast-second",
+        "couponId": 1
+      },
+      "startedAt": "2026-10-22T10:16:50.066639+00:00",
+      "status": 202,
+      "response": {
+        "requestId": "fast-second",
+        "couponId": 1,
+        "userId": "fast-second",
+        "status": "PENDING",
+        "reason": null,
+        "partition": 0,
+        "offset": 1,
+        "reservationSeq": null,
+        "completionSeq": null,
+        "receivedAt": 1792664210067,
+        "completedAt": null,
+        "reserved": false,
+        "published": true,
+        "fault": null,
+        "faultConsumed": false,
+        "processingDelayMs": 0,
+        "dbReserved": false,
+        "stage": "PENDING"
+      },
+      "durationMs": 19.839958,
+      "finishedAt": "2026-10-22T10:16:50.086484+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/5a2aa03c-d039-42ee-aa9c-3da0624d48d5/control",
+      "payload": {
+        "paused": false
+      },
+      "startedAt": "2026-10-22T10:16:50.086499+00:00",
+      "status": 200,
+      "response": {
+        "runId": "5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+        "workers": 3,
+        "paused": false
+      },
+      "durationMs": 4.187917,
+      "finishedAt": "2026-10-22T10:16:50.090693+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+      "payload": null,
+      "startedAt": "2026-10-22T10:16:50.090709+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 2,
+        "issued": 0
+      },
+      "durationMs": 7.985083,
+      "finishedAt": "2026-10-22T10:16:50.098699+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+      "payload": null,
+      "startedAt": "2026-10-22T10:16:50.249220+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 1,
+        "issued": 1
+      },
+      "durationMs": 7.336125,
+      "finishedAt": "2026-10-22T10:16:50.256589+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+      "payload": null,
+      "startedAt": "2026-10-22T10:16:50.411430+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 1,
+        "issued": 1
+      },
+      "durationMs": 7.641,
+      "finishedAt": "2026-10-22T10:16:50.419088+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+      "payload": null,
+      "startedAt": "2026-10-22T10:16:50.570873+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 1,
+        "issued": 1
+      },
+      "durationMs": 23.016875,
+      "finishedAt": "2026-10-22T10:16:50.593917+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+      "payload": null,
+      "startedAt": "2026-10-22T10:16:50.745526+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 1,
+        "issued": 1
+      },
+      "durationMs": 8.23875,
+      "finishedAt": "2026-10-22T10:16:50.753783+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+      "payload": null,
+      "startedAt": "2026-10-22T10:16:50.904251+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 1,
+        "issued": 1
+      },
+      "durationMs": 9.797209,
+      "finishedAt": "2026-10-22T10:16:50.914068+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+      "payload": null,
+      "startedAt": "2026-10-22T10:16:51.064246+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 1,
+        "issued": 1
+      },
+      "durationMs": 12.70725,
+      "finishedAt": "2026-10-22T10:16:51.076971+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+      "payload": null,
+      "startedAt": "2026-10-22T10:16:51.229278+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 0,
+        "issued": 2
+      },
+      "durationMs": 13.676916,
+      "finishedAt": "2026-10-22T10:16:51.242975+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/5a2aa03c-d039-42ee-aa9c-3da0624d48d5/control",
+      "payload": {
+        "paused": true,
+        "workers": 0
+      },
+      "startedAt": "2026-10-22T10:16:51.243124+00:00",
+      "status": 200,
+      "response": {
+        "runId": "5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+        "workers": 0,
+        "paused": true
+      },
+      "durationMs": 12.382708,
+      "finishedAt": "2026-10-22T10:16:51.255521+00:00"
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "settled",
+      "observedAt": "2026-10-22T10:16:51.243035+00:00",
+      "value": {
+        "runId": "5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+        "strategy": "KAFKA_FIRST",
+        "topic": "coupon-lab-5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+        "ordering": "RETRY_LATER",
+        "paused": false,
+        "workers": 3,
+        "partitions": 1,
+        "received": 2,
+        "accepted": 2,
+        "reserved": 2,
+        "issued": 2,
+        "rejected": 0,
+        "cancelled": 0,
+        "pending": 0,
+        "activeDbReservations": 0,
+        "ledgerIssued": 2,
+        "ledgerDuplicateUsers": 0,
+        "outboxPending": 0,
+        "unpublishedStreamReservations": 0,
+        "streamPel": 0,
+        "streamLag": 0,
+        "streamPending": 0,
+        "consumerErrors": 0,
+        "replays": 0,
+        "relayErrors": 0,
+        "perCoupon": [
+          {
+            "couponId": 1,
+            "total": 10,
+            "dbRemaining": 8,
+            "issued": 2,
+            "ledgerIssued": 2,
+            "redisStock": 8,
+            "redisUsers": 2
+          }
+        ],
+        "requests": [
+          {
+            "requestId": "slow-first",
+            "couponId": 1,
+            "userId": "slow-first",
+            "status": "ISSUED",
+            "reason": null,
+            "partition": 0,
+            "offset": 0,
+            "reservationSeq": 2,
+            "completionSeq": 2,
+            "receivedAt": 1792664208515,
+            "completedAt": 1792664211173,
+            "reserved": true,
+            "published": true,
+            "fault": null,
+            "faultConsumed": false,
+            "processingDelayMs": 1000,
+            "dbReserved": false
+          },
+          {
+            "requestId": "fast-second",
+            "couponId": 1,
+            "userId": "fast-second",
+            "status": "ISSUED",
+            "reason": null,
+            "partition": 0,
+            "offset": 1,
+            "reservationSeq": 1,
+            "completionSeq": 1,
+            "receivedAt": 1792664210067,
+            "completedAt": 1792664210146,
+            "reserved": true,
+            "published": true,
+            "fault": null,
+            "faultConsumed": false,
+            "processingDelayMs": 0,
+            "dbReserved": false
+          }
+        ]
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "first_appended_first",
+      "passed": true,
+      "actual": [
+        0,
+        1
+      ],
+      "expected": "first < second"
+    },
+    {
+      "name": "coupon_snapshot_present",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "coupon_1_no_oversell",
+      "passed": true,
+      "actual": 2,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_db_counter_conservation",
+      "passed": true,
+      "actual": {
+        "dbRemaining": 8,
+        "issued": 2
+      },
+      "expected": 10
+    },
+    {
+      "name": "coupon_1_db_stock_within_bounds",
+      "passed": true,
+      "actual": 8,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_request_state_matches_final_ledger",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "coupon_1_redis_stock_within_bounds",
+      "passed": true,
+      "actual": 8,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_redis_users_within_bounds",
+      "passed": true,
+      "actual": 2,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_redis_counter_conservation",
+      "passed": true,
+      "actual": {
+        "redisStock": 8,
+        "redisUsers": 2
+      },
+      "expected": 10
+    },
+    {
+      "name": "no_duplicate_issued_user_per_coupon",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "request_ids_unique",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "issued_count_matches_requests",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "issued_count_matches_final_database_ledger",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "no_duplicate_users_in_final_database_ledger",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "name": "expected_issued",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "all_requests_terminal",
+      "passed": true,
+      "actual": [],
+      "expected": []
+    }
+  ],
+  "expectedObservations": [
+    {
+      "name": "blocking_preserves_or_retry_later_reorders",
+      "passed": true,
+      "actual": [
+        2,
+        1
+      ],
+      "expected": "second < first"
+    }
+  ],
+  "metrics": {
+    "settledWaitMs": 1152.3254998028278,
+    "apiLatencyMs": {
+      "samples": 2,
+      "min": 19.839958,
+      "mean": 786.004604,
+      "p50": 19.839958,
+      "p95": 1552.16925,
+      "p99": 1552.16925,
+      "max": 1552.16925
+    },
+    "httpStatusCounts": {
+      "202": 2
+    },
+    "issuedEndToEndLatencyMs": {
+      "samples": 2,
+      "min": 79.0,
+      "mean": 1368.5,
+      "p50": 79.0,
+      "p95": 2658.0,
+      "p99": 2658.0,
+      "max": 2658.0
+    },
+    "allTerminalEndToEndLatencyMs": {
+      "samples": 2,
+      "min": 79.0,
+      "mean": 1368.5,
+      "p50": 79.0,
+      "p95": 2658.0,
+      "p99": 2658.0,
+      "max": 2658.0
+    },
+    "partitionRequestCounts": {
+      "0": 2
+    },
+    "issued": 2,
+    "totalRunIssuedIncludingWarmup": 2
+  },
+  "run": {
+    "couponIds": [
+      1
+    ],
+    "topic": "coupon-lab-5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+    "runId": "5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+    "strategy": "KAFKA_FIRST"
+  },
+  "finishedAt": "2026-10-22T10:16:51.255535+00:00",
+  "passed": true
+}

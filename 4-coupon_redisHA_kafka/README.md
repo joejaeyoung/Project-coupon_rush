@@ -60,7 +60,7 @@ sequenceDiagram
 | Lua 스크립트 단점? | Lua 제거. SADD → DECR 분리 + 보상으로 되돌림. 단점은 아래 정리 |
 | 비동기로 돌리면 남는 게 없다. 로그로 남겨라 | 발행 실패→보상, DB 총량 거부, 중복 건너뜀을 모두 WARN/INFO 로그로 남긴다 |
 | primary ↔ replica는 세 포인트만 | 구현·실험 ([Redis HA](#redis-ha--2026-10-26)): 비동기 유실 → 예약 직후 `WAIT`로 replica 수신을 확인한 뒤 승인 · 스냅샷 복구 → 양쪽 AOF, 옛 primary는 full resync · 복제 대기 비용 → 건강할 땐 19 µs, replica가 없으면 승인 정지 |
-| API ↔ MySQL 요청 원장 부하는 Kafka로 | request/pending 토픽 분리, wait→request→pending→done 상태 전이. **요청 원장이 있는 실험 모듈의 후속 과제**이며 이 모듈에는 원장이 없다 |
+| API ↔ MySQL 요청 원장 부하는 Kafka로 | request/pending 토픽 분리, wait→request→pending→done 상태 전이. **요청 원장이 있는 [실험 모듈](../5-coupon_experiments/README.md)의 후속 과제**이며 이 모듈에는 원장이 없다 |
 
 ### 공유한 설계도("발급부터 Outbox 정리까지")와의 대응
 

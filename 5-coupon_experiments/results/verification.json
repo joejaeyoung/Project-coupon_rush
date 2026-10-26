@@ -1,0 +1,166 @@
+{
+  "checkedAt": "2026-10-22T10:18:24.207373+00:00",
+  "suites": [
+    {
+      "directory": "correctness-v2",
+      "cases": 20,
+      "checksIncludingExpectedAnomalies": 360,
+      "jarSha256": {
+        "coupon-lab-0.0.1-SNAPSHOT.jar": "f71c55b931ffa0c411651fd3caabdac7304c00ef92f74375a89f1d8b3727e912"
+      },
+      "passed": true
+    },
+    {
+      "directory": "faults-v2",
+      "cases": 27,
+      "checksIncludingExpectedAnomalies": 476,
+      "jarSha256": {
+        "coupon-lab-0.0.1-SNAPSHOT.jar": "f71c55b931ffa0c411651fd3caabdac7304c00ef92f74375a89f1d8b3727e912"
+      },
+      "passed": true
+    },
+    {
+      "directory": "ordering",
+      "cases": 4,
+      "checksIncludingExpectedAnomalies": 111,
+      "jarSha256": {
+        "coupon-lab-0.0.1-SNAPSHOT.jar": "f71c55b931ffa0c411651fd3caabdac7304c00ef92f74375a89f1d8b3727e912"
+      },
+      "passed": true
+    },
+    {
+      "directory": "distribution",
+      "cases": 135,
+      "checksIncludingExpectedAnomalies": 18540,
+      "jarSha256": {
+        "coupon-lab-0.0.1-SNAPSHOT.jar": "f71c55b931ffa0c411651fd3caabdac7304c00ef92f74375a89f1d8b3727e912"
+      },
+      "passed": true
+    },
+    {
+      "directory": "ordering-final",
+      "cases": 4,
+      "checksIncludingExpectedAnomalies": 111,
+      "jarSha256": {
+        "coupon-lab-0.0.1-SNAPSHOT.jar": "76e2f4b281a27da2caa85d95e1487f1c078bfbb690c4a4e783bcf8ea34142c77"
+      },
+      "passed": true
+    }
+  ],
+  "experiments": [
+    {
+      "file": "api-scaling.json",
+      "passed": true
+    },
+    {
+      "file": "process-recovery.json",
+      "passed": true
+    },
+    {
+      "file": "process-recovery-final.json",
+      "passed": true
+    },
+    {
+      "file": "kafka-leader-failover.json",
+      "passed": true
+    },
+    {
+      "file": "kafka-outage-paths.json",
+      "passed": true
+    },
+    {
+      "file": "mysql-recovery.json",
+      "passed": true
+    },
+    {
+      "file": "coupon-failover.json",
+      "passed": true
+    },
+    {
+      "file": "redis-sentinel.json",
+      "passed": true
+    },
+    {
+      "file": "redis-failover.json",
+      "passed": true
+    },
+    {
+      "file": "lua-error-semantics.json",
+      "passed": true
+    },
+    {
+      "file": "partition-growth.json",
+      "passed": true
+    },
+    {
+      "file": "kafka-heap-recovery.json",
+      "passed": true
+    },
+    {
+      "file": "redis-cluster.json",
+      "passed": true
+    }
+  ],
+  "originalTestsPassed": 6,
+  "unitTests": [
+    {
+      "name": "com.example.couponlab.CommitBarrierTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-10-22T10:10:48.479Z"
+    },
+    {
+      "name": "com.example.couponlab.RetryingLookupTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-10-22T10:10:48.528Z"
+    }
+  ],
+  "localMarkdownLinksChecked": 136,
+  "currentJarSha256": "76e2f4b281a27da2caa85d95e1487f1c078bfbb690c4a4e783bcf8ea34142c77",
+  "measuredJarSha256": "f71c55b931ffa0c411651fd3caabdac7304c00ef92f74375a89f1d8b3727e912",
+  "measuredSourceArchive": "measured-backend-source.zip",
+  "measuredCompose": "compose-measured.yml",
+  "sourceSha256": {
+    "api-scaling.py": "d295b6f95c75f9f522b1c9d2870762d2b74d8ce43c6e95c791f5c053ef7f6cfc",
+    "app.py": "89398faac6788d5e7de4063df69d8ee6ae37ee9e2e81c0e04a07458c4a239f4f",
+    "compose.yml": "caac8f30ae82304216a51ef740e0fdfd9eb4b096ee308a1e52ec9f46c2b5bcc3",
+    "coupon-failover.py": "9b8322ed0012a2b65a1c1ffbce7e74fa47fd07849190dd44e7bd542c98abdb2c",
+    "ha-experiments.py": "86ce40a35d95cd83a50b920509e94babf6911ed071d1c2ec2a0e506a681fc67c",
+    "infra/cluster-experiments.py": "b0be838ef915a20f041587576d1d281ca8cca7a9a1ed67e1186e9600dd5e653e",
+    "infra/lab.py": "b02ccb71f0e37789ddec015a9088c37268f6a4275b6732fc3011c886829332f7",
+    "infra/sentinel-experiments.py": "1bb7a874b66a9f338bcf163c0472092fc13da7463889db8bdd05d1fa729e7d0c",
+    "kafka-outage-paths.py": "c066d245262bdcac59b80d871ccce2416c25111ab054ea77b93e3d839f5c4109",
+    "restart-experiments.py": "eb9a77dc37dfada237377d230464bca40192491dcd6ceda974201deab6c28df8",
+    "scripts/export_comparison.py": "4291d03e9043cf40d3767f5035e467e00210383c70b6c1b399d1bc514e24b15c",
+    "scripts/suite.py": "571609741c1d688ae79b7e6664da38e5760fff7a02583069dd70290be2d3fba2",
+    "semantics-experiments.py": "8ddc600037a7f4ccd526c2c6da626b5be3366b5234969c5d8c2374c1cd4f6a4e",
+    "spring/build.gradle": "7ebd0c90a37b50f759b6f92285765948a2817a0869b8adf5d4210e2fdb645ee2",
+    "spring/gradle/wrapper/gradle-wrapper.properties": "70fa201501995e6f45c0c475def71093f8115849344c48322ca997cfddba8534",
+    "spring/settings.gradle": "75795110f863c4396b945d8e4d77d238e1b5eb3b8a7bf8feb28fce5c0a2fe725",
+    "spring/src/main/java/com/example/couponlab/CommitBarrier.java": "d828492d89cb2d73ca98439d39031d796dfdde95ed28eb198d65fc9cf8b72af4",
+    "spring/src/main/java/com/example/couponlab/CouponLabApplication.java": "b69ef75c0da2432373965f2f443b3194e39167285e08644375c3e4499d6cf13e",
+    "spring/src/main/java/com/example/couponlab/KafkaTransport.java": "3820e60473a204e45630eed27197cff994d6912a78c772e2c42bae3c201f24e9",
+    "spring/src/main/java/com/example/couponlab/LabController.java": "4a21ca2736986f3d9f9e3d9ce921d8a55b6667ad3e60960fda10d14faf42731c",
+    "spring/src/main/java/com/example/couponlab/LabModel.java": "d5ea1e1efa85e67055e172a9a5337f5021af1c9800f98934b356630e34deafee",
+    "spring/src/main/java/com/example/couponlab/LabService.java": "7a05f0ac7040b9cd41f91c8b5187800c3564300ef7614d1329833506498e4185",
+    "spring/src/main/java/com/example/couponlab/LabStore.java": "84b9a14cc9e8f5f33f7bf611d170d4a41935a071be3ed09d4d721afd21c168c7",
+    "spring/src/main/java/com/example/couponlab/RedisReservations.java": "7a3abd1d4d666bf2a7fc9dc3207fe21c167213d13113427f8345be890de72b6a",
+    "spring/src/main/java/com/example/couponlab/RetryingLookup.java": "898db93dfed06be5a701c7a19a0301bb1be68e0db3a4177808d981c947bae6a9",
+    "spring/src/main/resources/application.properties": "3121516415a264db295a10bf47f1f0a744855b375daebf649ffd72bb34bb77c8",
+    "spring/src/test/java/com/example/couponlab/CommitBarrierTest.java": "8f669b8e22cbc3430a472eb6b305f734ae81b28856bbd4f89750fe07b95b11bc",
+    "spring/src/test/java/com/example/couponlab/RetryingLookupTest.java": "8b43dad8cc09b36a4a5a71423a2bba77cfb56e1f0d4a6c64b13ec8b8c4fb4135"
+  },
+  "preservedFailureArtifacts": [
+    "original-baselines.json:initialPhase3Attempt",
+    "process-recovery-initial-harness-failure.json",
+    "process-recovery-second-harness-failure.json",
+    "ordering-final-infra-failure/summary.json"
+  ],
+  "passed": true,
+  "pythonCompilationPassed": true,
+  "composeConfigurationValidated": true,
+  "gitWhitespaceCheckPassed": true
+}

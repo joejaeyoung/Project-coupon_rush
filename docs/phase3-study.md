@@ -1,7 +1,7 @@
 # Phase 3. Kafka로 비동기 Write-Back
 ## 선착순 쿠폰 시스템 구축기 (4) — DB 보호와 순서 보장
 
-> **2026-10-22 정리:** 이 문서는 구현 과정의 학습 예시와 당시 측정 기록을 포함한다. 기존 Phase 3은 Redis `SADD` → `DECR`을 별도 호출하며, `KafkaTemplate.send()`의 완료를 기다리지 않고 `202`를 반환한다. Lua, Outbox, DLT, 요청 상태 조회는 기존 Phase 3에 없다. 후속 실험 모듈(2026-10-26 main에서 제거, 코드는 [커밋 dc0e901](https://github.com/joejaeyoung/Project-coupon_rush/tree/dc0e901/4-coupon_experiments))에는 Lua·Outbox·Stream·상태 조회와 Kafka 우선 경로를 구현했다. DLT는 여전히 미구현이다. 현재 4단계 [4-coupon_redisHA_kafka](../4-coupon_redisHA_kafka/README.md)는 Lua·Stream 없이 Phase 3에 Kafka ACK 확인과 보상, DB 유니크 제약을 더한 최소 구성이다. 설계 질문은 [멘토링 논의안](mentoring-discussion.md), 측정·장애·순서 결과는 [실증 보고서](experiments-2026-10-22.md)를 기준으로 읽는다.
+> **2026-10-22 정리:** 이 문서는 구현 과정의 학습 예시와 당시 측정 기록을 포함한다. 기존 Phase 3은 Redis `SADD` → `DECR`을 별도 호출하며, `KafkaTemplate.send()`의 완료를 기다리지 않고 `202`를 반환한다. Lua, Outbox, DLT, 요청 상태 조회는 기존 Phase 3에 없다. 후속 [실험 모듈](../5-coupon_experiments/README.md)에는 Lua·Outbox·Stream·상태 조회와 Kafka 우선 경로를 구현했다. DLT는 여전히 미구현이다. 현재 4단계 [4-coupon_redisHA_kafka](../4-coupon_redisHA_kafka/README.md)는 Lua·Stream 없이 Phase 3에 Kafka ACK 확인과 보상, DB 유니크 제약을 더한 최소 구성이다. 설계 질문은 [멘토링 논의안](mentoring-discussion.md), 측정·장애·순서 결과는 [실증 보고서](experiments-2026-10-22.md)를 기준으로 읽는다.
 
 > Phase 2에서 Redis로 응답 속도를 잡았다.  
 > 그런데 1000명 중 100명만 성공하는 구조에서 DB는 여전히 순간 폭발을 맞는다.  
