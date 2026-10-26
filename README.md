@@ -21,25 +21,9 @@ DB 비관적 락 → Redis → Redis+Kafka의 세 단계 비교에서 시작한 
 
 Phase 3와 같은 흐름(Redis 판정 → Kafka → Consumer가 DB 저장)이지만, **"Kafka에 갔는지"를 응답 전에 확정**합니다. 브로커 ACK(`acks=all`)를 받으면 202, 못 받으면 Redis 예약을 되돌리고 503입니다. Redis는 primary·replica·Sentinel 3으로 구성했고, 예약은 replica가 받은 뒤(`WAIT`)에만 승인합니다.
 
-```mermaid
-flowchart LR
-    A["Client<br/>발급 요청 · userId"] --> M["Redis MGET<br/>기간 · 재고 선확인"]
-    M -->|"통과"| R["SADD users → DECR stock<br/>WAIT 1 · replica 수신 확인"]
-    R -->|"통과"| P["Producer.send · acks=all<br/>브로커 ACK 대기"]
-    P -->|"ACK"| S["202 접수"]
-    P -.->|"실패 · 타임아웃"| C["INCR · SREM 보상 → 503"]
-    P --> K["Kafka · coupon-issue"]
-    K --> N["Consumer<br/>발급 여부 확인 → 총량 조건부 UPDATE → INSERT"]
-    N -->|"조건부 UPDATE → INSERT"| DB[("MySQL issued_coupon")]
-    DB --> D["DB 커밋 후 offset 커밋"]
-    S -->|"이후 별도 GET"| Q["발급 상태 조회 API"]
-    Q -->|"issued_coupon 존재 조회"| DB
-    DB -->|"존재 / 없음"| Q
-    Q -->|"ISSUED / NOT_CONFIRMED"| A
-    M -->|"소진 · 기간 외"| F["400 · 404 · 409 · 503"]
-    R -->|"중복 · 소진 · 복제 안 됨"| F
-    style P fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
-```
+![Phase 4: Redis 예약과 Kafka ACK 뒤 202를 반환하고, Consumer의 DB 저장과 별도 발급 조회 API가 이어지는 전체 흐름](docs/assets/phase-4-architecture.svg)
+
+[SVG 원본](docs/assets/phase-4-architecture.svg)
 
 **`202`는 Kafka 접수 확인이며 DB 발급 완료 응답은 아닙니다.** 클라이언트는 `GET /api/coupons/{couponId}/issues/users/{userId}`로 MySQL 발급 기록을 확인할 수 있습니다. `ISSUED`는 기록이 있다는 뜻이고 `NOT_CONFIRMED`는 조회 시점에 기록이 없다는 뜻입니다. 처리 중과 최종 실패는 구분하지 못합니다. Consumer의 DB 커밋과 HTTP 응답 순서는 고정되지 않습니다. Kafka ACK만 유실되면 보상 후 `503`을 받아도 DB 발급이 진행될 수 있고, 보상 중 Redis 장애가 나면 예약이 남을 수 있습니다. 현재 Kafka는 단일 브로커입니다.
 

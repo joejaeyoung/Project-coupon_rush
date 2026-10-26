@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="610" viewBox="0 0 1500 610" role="img" aria-labelledby="title desc">
+<title id="title">Phase 4 issue result lookup</title>
+<desc id="desc">After receiving 202, a client calls a separate GET endpoint. The API checks whether an issued_coupon row exists in MySQL and responds ISSUED or NOT_CONFIRMED.</desc>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#748792"/></marker><marker id="accent-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#087F79"/></marker></defs>
+<rect width="1500" height="610" rx="24" fill="#F8F7F4"/>
+<text x="52" y="54" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="14" font-weight="750" fill="#087F79" text-anchor="start" letter-spacing="2">03  /  VERIFY</text>
+<text x="52" y="101" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="34" font-weight="750" fill="#193044" text-anchor="start">클라이언트가 최종 발급 여부를 따로 조회합니다</text>
+<text x="52" y="134" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="17" font-weight="450" fill="#5F7180" text-anchor="start">POST의 202는 접수 응답입니다. GET은 MySQL에 커밋된 발급 기록을 읽습니다.</text>
+<path d="M52 157 L1448 157" fill="none" stroke="#CAD4D8" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="52" y="214" width="315" height="170" rx="16" fill="#FFF0E9" stroke="#F1C5B3" stroke-width="1.5"/>
+<rect x="52" y="214" width="6" height="170" rx="3" fill="#D86742" stroke="#D86742" stroke-width="0"/>
+<text x="72" y="241" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="12" font-weight="750" fill="#D86742" text-anchor="start" letter-spacing="1.2">CLIENT</text>
+<text x="72" y="274" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="21" font-weight="700" fill="#193044" text-anchor="start">202를 받은 뒤</text>
+<text x="72" y="302" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">간격을 두고 GET 요청</text>
+<text x="72" y="325" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">couponId=1 · userId=42</text>
+<rect x="478" y="214" width="315" height="170" rx="16" fill="#EAF1FB" stroke="#C8D9EE" stroke-width="1.5"/>
+<rect x="478" y="214" width="6" height="170" rx="3" fill="#32629B" stroke="#32629B" stroke-width="0"/>
+<text x="498" y="241" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="12" font-weight="750" fill="#32629B" text-anchor="start" letter-spacing="1.2">SPRING BOOT</text>
+<text x="498" y="274" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="21" font-weight="700" fill="#193044" text-anchor="start">발급 상태 조회</text>
+<text x="498" y="302" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">GET /api/coupons/1/</text>
+<text x="498" y="325" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">issues/users/42</text>
+<rect x="904" y="214" width="315" height="170" rx="16" fill="#EAF1FB" stroke="#C8D9EE" stroke-width="1.5"/>
+<rect x="904" y="214" width="6" height="170" rx="3" fill="#32629B" stroke="#32629B" stroke-width="0"/>
+<text x="924" y="241" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="12" font-weight="750" fill="#32629B" text-anchor="start" letter-spacing="1.2">MYSQL</text>
+<text x="924" y="274" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="21" font-weight="700" fill="#193044" text-anchor="start">issued_coupon</text>
+<text x="924" y="302" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">coupon_id=1, user_id=42</text>
+<text x="924" y="325" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">존재 여부 조회</text>
+<path d="M367 298 L478 298" fill="none" stroke="#32629B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M793 298 L904 298" fill="none" stroke="#32629B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M1219 298 L1262 298" fill="none" stroke="#32629B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="1262" y="213" width="186" height="170" rx="16" fill="#FFFFFF" stroke="#D5DFDF" stroke-width="1.5"/>
+<rect x="1278" y="239" width="154" height="29" rx="14" fill="#E5F4F0" stroke="#E5F4F0" stroke-width="0"/>
+<text x="1355.0" y="259" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#087F79" text-anchor="middle">ISSUED</text>
+<rect x="1278" y="295" width="154" height="29" rx="14" fill="#FFF0E9" stroke="#FFF0E9" stroke-width="0"/>
+<text x="1355.0" y="315" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#D86742" text-anchor="middle">NOT_CONFIRMED</text>
+<text x="1355" y="364" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="14" font-weight="600" fill="#5F7180" text-anchor="middle">HTTP 200</text>
+<rect x="52" y="436" width="1396" height="92" rx="14" fill="#FFFFFF" stroke="#DDE4E4" stroke-width="1.5"/>
+<text x="80" y="471" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="17" font-weight="750" fill="#087F79" text-anchor="start">ISSUED</text>
+<text x="190" y="471" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="16" font-weight="500" fill="#193044" text-anchor="start">DB 발급 기록이 있음</text>
+<text x="600" y="471" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="17" font-weight="750" fill="#D86742" text-anchor="start">NOT_CONFIRMED</text>
+<text x="805" y="471" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="16" font-weight="500" fill="#193044" text-anchor="start">현재 기록 없음 · 처리 중과 실패를 구분하지 못함</text>
+<text x="80" y="505" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">정해 둔 횟수만 조회하고 끝까지 기록이 없으면 &#x27;결과 확인 불가&#x27;로 표시합니다.</text>
+</svg>

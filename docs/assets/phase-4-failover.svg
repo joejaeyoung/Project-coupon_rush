@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="660" viewBox="0 0 1500 660" role="img" aria-labelledby="title desc">
+<title id="title">Phase 4 Redis Sentinel failover</title>
+<desc id="desc">When the Redis primary fails, Sentinel promotes the replica and Lettuce reconnects. With WAIT 1, requests still receive 503 until a replica is available again. After the old primary returns as replica, ACKs can succeed and 202 responses resume.</desc>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#748792"/></marker><marker id="accent-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#087F79"/></marker></defs>
+<rect width="1500" height="660" rx="24" fill="#F8F7F4"/>
+<text x="52" y="54" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="14" font-weight="750" fill="#087F79" text-anchor="start" letter-spacing="2">04  /  REDIS HA</text>
+<text x="52" y="101" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="34" font-weight="750" fill="#193044" text-anchor="start">primary 승격과 발급 재개 사이에 공백이 있습니다</text>
+<text x="52" y="134" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="17" font-weight="450" fill="#5F7180" text-anchor="start">Sentinel이 새 primary를 찾아도 WAIT 1을 통과할 replica가 생겨야 202가 재개됩니다.</text>
+<path d="M52 157 L1448 157" fill="none" stroke="#CAD4D8" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="52" y="224" width="232" height="170" rx="16" fill="#FFF0E9" stroke="#D5DFDF" stroke-width="1.5"/>
+<rect x="52" y="224" width="6" height="170" rx="3" fill="#D86742" stroke="#D86742" stroke-width="0"/>
+<text x="72" y="251" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="12" font-weight="750" fill="#D86742" text-anchor="start" letter-spacing="1.2">01  FAILURE</text>
+<text x="72" y="284" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="20" font-weight="700" fill="#193044" text-anchor="start">primary 중단</text>
+<text x="72" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">기존 :6381 종료</text>
+<text x="72" y="335" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">접속 중 요청 503</text>
+<rect x="343" y="224" width="232" height="170" rx="16" fill="#F0ECF8" stroke="#D5DFDF" stroke-width="1.5"/>
+<rect x="343" y="224" width="6" height="170" rx="3" fill="#69529F" stroke="#69529F" stroke-width="0"/>
+<text x="363" y="251" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="12" font-weight="750" fill="#69529F" text-anchor="start" letter-spacing="1.2">02  SENTINEL</text>
+<text x="363" y="284" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="20" font-weight="700" fill="#193044" text-anchor="start">장애 판단</text>
+<text x="363" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">3대 감시 · quorum 2</text>
+<text x="363" y="335" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">down-after 2000ms 설정</text>
+<rect x="634" y="224" width="232" height="170" rx="16" fill="#E5F4F0" stroke="#D5DFDF" stroke-width="1.5"/>
+<rect x="634" y="224" width="6" height="170" rx="3" fill="#087F79" stroke="#087F79" stroke-width="0"/>
+<text x="654" y="251" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="12" font-weight="750" fill="#087F79" text-anchor="start" letter-spacing="1.2">03  REDIS</text>
+<text x="654" y="284" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="20" font-weight="700" fill="#193044" text-anchor="start">replica 승격</text>
+<text x="654" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">새 primary가 됨</text>
+<text x="654" y="335" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">Lettuce가 다시 연결</text>
+<rect x="925" y="224" width="232" height="170" rx="16" fill="#FFF0E9" stroke="#D5DFDF" stroke-width="1.5"/>
+<rect x="925" y="224" width="6" height="170" rx="3" fill="#D86742" stroke="#D86742" stroke-width="0"/>
+<text x="945" y="251" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="12" font-weight="750" fill="#D86742" text-anchor="start" letter-spacing="1.2">04  WAIT</text>
+<text x="945" y="284" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="20" font-weight="700" fill="#193044" text-anchor="start">복제본 부재</text>
+<text x="945" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">WAIT 1 결과 부족</text>
+<text x="945" y="335" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">예약 보상 후 503</text>
+<rect x="1216" y="224" width="232" height="170" rx="16" fill="#E5F4F0" stroke="#D5DFDF" stroke-width="1.5"/>
+<rect x="1216" y="224" width="6" height="170" rx="3" fill="#087F79" stroke="#087F79" stroke-width="0"/>
+<text x="1236" y="251" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="12" font-weight="750" fill="#087F79" text-anchor="start" letter-spacing="1.2">05  RECOVERY</text>
+<text x="1236" y="284" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="20" font-weight="700" fill="#193044" text-anchor="start">replica 복귀</text>
+<text x="1236" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">옛 primary가 재합류</text>
+<text x="1236" y="335" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">WAIT 성공 → 202</text>
+<path d="M284 309 L343 309" fill="none" stroke="#748792" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M575 309 L634 309" fill="none" stroke="#748792" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M866 309 L925 309" fill="none" stroke="#748792" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M1157 309 L1216 309" fill="none" stroke="#748792" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="52" y="444" width="1396" height="115" rx="16" fill="#FFFFFF" stroke="#DDE4E4" stroke-width="1.5"/>
+<rect x="80" y="467" width="188" height="29" rx="14" fill="#FFF0E9" stroke="#FFF0E9" stroke-width="0"/>
+<text x="174.0" y="487" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#D86742" text-anchor="middle">승격 완료 ≠ 발급 재개</text>
+<text x="291" y="488" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="17" font-weight="500" fill="#193044" text-anchor="start">WAIT는 replica의 수신을 확인합니다. 승격 직후에는 보낼 replica가 없어 503을 반환합니다.</text>
+<text x="80" y="530" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">기존 failover 실험: WAIT 1에서 다시 202가 나올 때까지 약 10.5초 (로컬 측정).</text>
+</svg>
