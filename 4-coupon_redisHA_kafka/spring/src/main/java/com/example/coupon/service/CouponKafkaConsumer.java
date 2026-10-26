@@ -38,11 +38,13 @@ public class CouponKafkaConsumer {
             log.info("이미 발급된 이벤트 건너뜀 — couponId={}, userId={}", event.couponId(), event.userId());
             return;
         }
+
         // 반환값은 남은 재고가 아닌 변경 행 수다. 0이면 INSERT 없이 정상 종료하여 소비를 진행한다.
         if (couponRepository.incrementIssuedQuantity(event.couponId()) == 0) {
             log.warn("DB에서 발급 거부(총량 초과 또는 쿠폰 없음) — couponId={}, userId={}", event.couponId(), event.userId());
             return;
         }
+
         // 프록시의 트랜잭션 커밋까지 끝난 뒤 컨테이너가 offset을 관리한다. 수동 acknowledge는 하지 않는다.
         issuedCouponRepository.save(new IssuedCoupon(event.couponId(), event.userId(), event.issuedAt()));
     }

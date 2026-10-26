@@ -23,6 +23,7 @@ public class CouponController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ApiResponse<String> issueCoupon(@PathVariable Long couponId, @RequestBody CouponIssueRequest request) {
         couponService.issueCoupon(couponId, request.userId());
+
         return ApiResponse.ok("쿠폰 발급 요청이 접수되었습니다.");
     }
 
@@ -34,6 +35,7 @@ public class CouponController {
     public ApiResponse<CouponIssueStatus> getIssueStatus(@PathVariable Long couponId, @PathVariable Long userId) {
         CouponIssueStatus status = couponService.isIssued(couponId, userId)
                 ? CouponIssueStatus.ISSUED : CouponIssueStatus.NOT_CONFIRMED;
+
         return ApiResponse.ok(status);
     }
 
@@ -47,6 +49,7 @@ public class CouponController {
     @PostMapping("/{couponId}/stock/init")
     public ApiResponse<String> initStock(@PathVariable Long couponId) {
         couponService.initStock(couponId);
+
         return ApiResponse.ok("재고가 초기화되었습니다.");
     }
 }

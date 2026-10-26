@@ -59,13 +59,17 @@ public class CouponRedisService {
     public void validateIssuable(Long couponId) {
         List<String> values = redisTemplate.opsForValue().multiGet(
                 List.of(startDateKey(couponId), endDateKey(couponId), stockKey(couponId)));
+
+
         if (values == null || values.contains(null)) {
             throw new CouponException(CouponErrorCode.NOT_FOUND); // initStock 미호출
         }
+
         LocalDateTime now = LocalDateTime.now();
         if (LocalDateTime.parse(values.get(0)).isAfter(now) || LocalDateTime.parse(values.get(1)).isBefore(now)) {
             throw new CouponException(CouponErrorCode.NOT_AVAILABLE);
         }
+
         if (Integer.parseInt(values.get(2)) <= 0) {
             throw new CouponException(CouponErrorCode.EXHAUSTED);
         }
@@ -73,9 +77,11 @@ public class CouponRedisService {
 
     public int getStock(Long couponId) {
         String stock = redisTemplate.opsForValue().get(stockKey(couponId));
+
         if (stock == null) {
             throw new CouponException(CouponErrorCode.NOT_FOUND);
         }
+
         return Integer.parseInt(stock);
     }
 
@@ -88,15 +94,18 @@ public class CouponRedisService {
      */
     public void checkAndIssue(Long couponId, Long userId) {
         Long added = redisTemplate.opsForSet().add(usersKey(couponId), String.valueOf(userId));
+
         if (added == null || added == 0) {
             throw new CouponException(CouponErrorCode.DUPLICATED);
         }
+
         // SADD 성공자만 차감한다. 선확인 이후 경합으로 재고가 음수가 되면 이 요청 몫을 되돌린다.
         Long remaining = redisTemplate.opsForValue().decrement(stockKey(couponId));
         if (remaining == null || remaining < 0) {
             rollback(couponId, userId);
             throw new CouponException(CouponErrorCode.EXHAUSTED);
         }
+
         // false(복제 수 부족)일 때만 여기서 보상한다. WAIT가 예외를 던지면 자동 보상되지 않는다.
         if (!replicated()) {
             rollback(couponId, userId);

@@ -35,6 +35,7 @@ public class CouponService {
         // 예약 내부의 재고 부족·복제 미확인은 RedisService가 보상한다.
         // 이 호출 자체의 연결 예외는 아래 Kafka 실패 catch에 들어오지 않는다.
         couponRedisService.checkAndIssue(couponId, userId);
+
         try {
             couponKafkaProducer.publish(couponId, userId);
         } catch (RuntimeException e) {
@@ -61,6 +62,7 @@ public class CouponService {
     public void initStock(Long couponId) {
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new CouponException(CouponErrorCode.NOT_FOUND));
+
         couponRedisService.initStock(couponId, coupon.getTotalQuantity(), coupon.getStartDate(), coupon.getEndDate());
     }
 }
