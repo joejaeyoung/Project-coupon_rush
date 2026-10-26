@@ -2,111 +2,96 @@
 
 # Coupon Rush
 
-**쿠폰 발급의 원자성·전달 실패·처리 순서를 다섯 가지 경로로 구현하고 실제 장애와 부하로 비교했습니다.**
+**선착순 쿠폰 발급을 DB 락 → Redis → Redis+Kafka → Kafka ACK 확인·보상의 네 단계로 구현하고, 같은 부하로 비교했습니다.**
 
 ![Java 17](https://img.shields.io/badge/Java-17-334155?style=flat-square)
 ![Spring Boot 3.4.1](https://img.shields.io/badge/Spring_Boot-3.4.1-6DB33F?style=flat-square)
 ![Redis 7](https://img.shields.io/badge/Redis-7-DC382D?style=flat-square)
-![Kafka 3.8.1](https://img.shields.io/badge/Kafka-3.8.1-231F20?style=flat-square)
+![Kafka 3.7.1](https://img.shields.io/badge/Kafka-3.7.1-231F20?style=flat-square)
 
-[최신 구현](#최신-구현) · [실험 결과](#실험-결과) · [실험 실행](#실험-실행) · [기존 세 단계](#기존-phase-13) · [남은 과제](#남은-과제)
+[최신 구현](#최신-구현) · [측정 결과](#측정-결과) · [실행](#실행) · [기존 세 단계](#기존-phase-13) · [남은 과제](#남은-과제)
 
 </div>
 
-DB 비관적 락 → Redis → Redis+Kafka의 세 단계 비교에서 시작한 개인 프로젝트입니다. 2026년 10월에는 **Redis 앞단·Kafka 앞단·DB Outbox·Redis Streams**를 독립 실험 모듈에 구현했습니다. 정상 발급 수뿐 아니라 예약 후 미발행, 중복 재처리, 완료 순서, 장애 전환 중 승인된 쓰기의 손실을 관찰했습니다.
+DB 비관적 락 → Redis → Redis+Kafka의 세 단계 비교에서 시작한 개인 프로젝트입니다. 2026년 10월에 다섯 경로(Redis 앞단·Kafka 앞단·DB Outbox·Redis Streams)를 독립 실험 모듈로 구현해 장애·순서·분포를 관찰했고([실증 보고서](docs/experiments-2026-10-22.md)), 그 결과를 들고 간 멘토링(2026-10-25)에서 "KV outbox는 복잡해진다, 어차피 있는 Kafka를 써라"는 피드백을 받았습니다. 그래서 4단계는 실험 모듈이 아니라 **Phase 3에 브로커 ACK 확인과 보상만 더한 최소 구성**으로 정리했습니다.
 
-**현재 구현 기준은 `4-coupon_experiments/`입니다.** 기존 `1-coupon_db_lock/`·`2-coupon_redis/`·`3-coupon_redis_kafka/`는 비교 기준선으로 보존합니다. 아래 9월 수치와 10월 실험은 처리 경계·환경·응답 의미가 다릅니다.
+**현재 구현 기준은 `4-coupon_redisHA_kafka/`입니다.** 기존 `1-coupon_db_lock/`·`2-coupon_redis/`·`3-coupon_redis_kafka/`는 비교 기준선으로 보존합니다. 실험 모듈 `4-coupon_experiments/`는 main에서 제거했고, 코드·결과 파일은 커밋 [`dc0e901`](https://github.com/joejaeyoung/Project-coupon_rush/tree/dc0e901/4-coupon_experiments)에 남아 있습니다.
 
 ## 최신 구현
 
-| 경로 | 예약·전달 방식 | 장애 후 처리 |
-| --- | --- | --- |
-| **SPLIT_REDIS** | 개별 SADD·DECR → Kafka → DB | 미발행 예약은 같은 요청 ID로 재시도 |
-| **LUA_REDIS** | Lua로 중복·재고·요청 ID·순번 판정 → Kafka → DB | Redis 내부 원자성 이후에도 외부 발행 공백은 남음 |
-| **KAFKA_FIRST** | Kafka ACK → Consumer의 Lua 예약 → DB | 로그에 기록된 요청을 Consumer가 다시 처리 |
-| **DB_OUTBOX** | DB 예약·재고·Outbox 동시 커밋 → relay → Kafka | 커밋된 전달 기록으로 자동 재개 |
-| **REDIS_STREAM** | 같은 슬롯의 Lua 예약·XADD → relay → Kafka | 같은 consumer 이름의 PEL부터 복구, Kafka ACK 후 XACK |
-
-모든 경로는 **동기식 MySQL 요청 원장**을 먼저 기록하고, 최종 발급에는 DB 총량 제한·유일 제약을 적용합니다. Kafka 앞단도 DB를 전혀 거치지 않는 구조가 아닙니다. 요청 ID별 결과는 상태 API에서 조회합니다. DB Outbox만 예약 시 DB 재고를 차감하고, 나머지는 최종 발급 트랜잭션에서 DB 재고도 차감합니다.
+Phase 3와 같은 흐름(Redis 판정 → Kafka → Consumer가 DB 저장)이지만, **"Kafka에 갔는지"를 응답 전에 확정**합니다. 브로커 ACK(`acks=all`)를 받으면 202, 못 받으면 Redis 예약을 되돌리고 503입니다. Redis는 primary·replica·Sentinel 3으로 구성했고, 예약은 replica가 받은 뒤(`WAIT`)에만 승인합니다.
 
 ```mermaid
 flowchart LR
-    A["발급 요청 · requestId"] --> J["MySQL 요청 원장"]
-    J --> R["Redis 예약<br/>SPLIT / LUA"]
-    J --> O["DB 예약 + Outbox<br/>같은 트랜잭션"]
-    J --> S["Lua 예약 + XADD<br/>같은 hash slot"]
-    J -->|"KAFKA_FIRST"| K["Kafka · couponId 키"]
-    R --> K
-    O -->|"relay"| K
-    S -->|"relay · ACK 후 XACK"| K
-    K --> C["Consumer<br/>Kafka-first는 여기서 Lua 예약"]
-    C --> D["DB 발급 · 상태 확정<br/>총량 제한 + 유일 제약"]
-    D --> B["Commit Barrier<br/>미완료 offset을 넘지 않는 commitSync"]
+    A["발급 요청 · userId"] --> M["Redis MGET<br/>기간 · 재고 선확인"]
+    M -->|"통과"| R["SADD users → DECR stock<br/>WAIT 1 · replica 수신 확인"]
+    R -->|"통과"| P["Producer.send · acks=all<br/>브로커 ACK 대기"]
+    P -->|"ACK"| S["202 접수"]
+    P -.->|"실패 · 타임아웃"| C["INCR · SREM 보상 → 503"]
+    P --> K["Kafka · coupon-issue"]
+    K --> N["Consumer<br/>발급 여부 확인 → 총량 조건부 UPDATE → INSERT"]
+    N --> D["DB 커밋 후 offset 커밋"]
+    M -->|"소진 · 기간 외"| F["409 · 400 · 503"]
+    R -->|"중복 · 소진 · 복제 안 됨"| F
+    style P fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
 ```
 
-| 기술 키워드 | 구현한 내용 | 코드 |
+| Phase 3와 다른 점 | 구현 | 코드 |
 | --- | --- | --- |
-| **Lua·Hash Slot** | 중복·재고·요청 ID 원자 예약, `{runId:couponId}` 키 배치, Stream 기록 | [RedisReservations](4-coupon_experiments/spring/src/main/java/com/example/couponlab/RedisReservations.java) |
-| **트랜잭션·Outbox** | 예약·전달 기록 동시 커밋, 유일 제약, 발급·취소의 요청 행 잠금, 종료 상태 재검사 | [LabStore](4-coupon_experiments/spring/src/main/java/com/example/couponlab/LabStore.java) |
-| **재처리·순서** | BLOCKING/RETRY_LATER, 직접 commitSync, 재할당 시 안전한 commit | [KafkaTransport](4-coupon_experiments/spring/src/main/java/com/example/couponlab/KafkaTransport.java), [CommitBarrier](4-coupon_experiments/spring/src/main/java/com/example/couponlab/CommitBarrier.java) |
-| **장애 복구** | Outbox 재발행, Stream PEL 복구, 직접 전송 경로의 동일 ID 재시도 | [LabService](4-coupon_experiments/spring/src/main/java/com/example/couponlab/LabService.java) |
-| **HA·분포 실험** | Kafka 3노드 RF3/minISR2, Redis primary/replica·Sentinel, Cluster 3 master | [Compose](4-coupon_experiments/compose.yml), [실험 인프라](4-coupon_experiments/infra/README.md) |
+| 브로커 ACK 확인 | `send().join()`. 포기 시점은 `delivery.timeout.ms`(10 s) 등 producer 설정만 소유 | [Producer](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/service/CouponKafkaProducer.java) · [설정](4-coupon_redisHA_kafka/spring/src/main/resources/application.yml) |
+| 발행 실패 보상 | `INCR`·`SREM`으로 예약을 되돌리고 `503 ISSUE_FAILED`, WARN 로그 | [CouponService](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/service/CouponService.java) |
+| 소진 뒤 요청은 1 RTT | `MGET`으로 기간·재고 선확인. 소진 뒤 요청은 SADD·DECR·보상 없이 409 | [CouponRedisService](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/service/CouponRedisService.java) |
+| DB 최종 방어 | `(coupon_id, user_id)` 유니크 제약 + `issued_quantity < total_quantity` 조건부 UPDATE가 게이트 | [IssuedCoupon](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/domain/IssuedCoupon.java) · [Consumer](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/service/CouponKafkaConsumer.java) |
+| Redis HA | primary·replica·Sentinel 3. Lettuce가 Sentinel에게 primary를 묻고 failover 뒤 자동으로 옮겨 붙습니다. 다시 승인되기까지 WAIT 켜면 10.5 s, 끄면 4.9 s | [compose](4-coupon_redisHA_kafka/docker-compose.yml) · [failover.sh](4-coupon_redisHA_kafka/failover.sh) |
+| 뼈대만 | API는 발급·재고 조회·재고 초기화 셋. 할인·사용·목록 기능과 모니터링 스택은 뺐습니다 | [모듈 README](4-coupon_redisHA_kafka/README.md) |
 
-## 실험 결과
+| 멘토링 피드백 (2026-10-25) | 반영 |
+| --- | --- |
+| Redis Stream(KV) outbox는 복잡해진다. 어차피 Kafka가 있으니 있는 걸 써라 | Stream·relay·Lua 제거. API가 Kafka에 직접 발행하고 ACK를 확인 |
+| 비동기로 돌리면 남는 게 없다. 로그로 남겨라 | 발행 실패·DB 총량 거부·중복 건너뜀을 WARN/INFO 로그로 |
+| Redis primary↔replica는 세 포인트만 (비동기 유실 · 스냅샷 복구 · 복제 대기) | primary·replica·Sentinel 3 구성, 예약 직후 `WAIT`로 replica 수신 확인, 양쪽 AOF. failover·복제 지연 실험으로 WAIT 유무의 차이를 확인했습니다 |
 
-다음은 **2026-10-22에 저장한 실행 결과**입니다. 소스·JAR 변경 전 성능 측정과 복구 후 회귀 검증을 나눴습니다. [전체 실증 보고서](docs/experiments-2026-10-22.md)에 환경·시나리오·해석 범위가 있습니다.
+Lua를 뺀 이유와 `MULTI/EXEC`로는 판정을 묶지 못하는 이유는 [모듈 README](4-coupon_redisHA_kafka/README.md#lua-스크립트의-단점-멘토-질문)에 있습니다.
 
-| 검증 | 저장된 결과 | 원본 |
-| --- | --- | --- |
-| 복구 후 정상·중복·요청 ID | 20/20 케이스 통과 | [정상 결과](4-coupon_experiments/results/recovery-2026-10-22/correctness/summary.json) |
-| 복구 후 예외·재처리·취소 | 27/27 케이스 통과 | [장애 결과](4-coupon_experiments/results/recovery-2026-10-22/faults/summary.json) |
-| 복구 후 순서·Consumer 재할당 | 4/4 케이스 통과 | [순서 결과](4-coupon_experiments/results/recovery-2026-10-22/ordering/summary.json) |
-| 실제 JVM 종료·재기동 | 다섯 경로의 기대한 복구 결과 확인 | [프로세스 복구](4-coupon_experiments/results/recovery-2026-10-22/process-recovery.json) |
-| 키 분포·파티션·Consumer 비교 | 135/135 조합, 측정 40,500건·warmup 2,700건 | [분포 결과](4-coupon_experiments/results/distribution/summary.json) |
-| 실제 API JVM 1개·2개 비교 | 8/8, 측정 8,000건·warmup 160건 | [API 확장](4-coupon_experiments/results/api-scaling.json) |
-| Redis Cluster 분포 | 18회·Lua 예약 216,000건 대조 | [Cluster 결과](4-coupon_experiments/results/redis-cluster.json) |
-| 실제 Kafka 장애 | 리더 종료·2노드 중단 후 재시도/자동 복구 비교 | [리더 장애](4-coupon_experiments/results/kafka-leader-failover.json), [다섯 경로](4-coupon_experiments/results/kafka-outage-paths.json) |
-| Redis 장애 | Sentinel 자동 승격, 복제 지연 중 승인 쓰기·예약 손실 반례 | [Sentinel](4-coupon_experiments/results/redis-sentinel.json), [예약 손실](4-coupon_experiments/results/coupon-failover.json) |
+## 측정 결과
 
-**PASS는 정상 동작의 검증 또는 의도한 실패의 재현을 뜻합니다.** Redis 승인 쓰기 손실과 완료 순서 역전을 재현한 결과까지 포함하므로, 모든 장애에서 무손실·엄격한 선착순을 보장한다는 뜻은 아닙니다.
+k6 1,000 VU `per-vu-iterations`(VU당 1회, 서로 다른 사용자 1,000명), 재고 100, 2026-10-26, Apple Silicon 1대에 앱·인프라 동거. 동작 확인용이며 9월 수치와 직접 비교하지 않습니다. 성공 응답에는 Kafka ACK 대기가 포함됩니다.
 
-기술적으로 확인한 차이는 다음과 같습니다.
+| 지표 | Phase 4 |
+| --- | ---: |
+| HTTP 응답 p95 / 평균 | 177.73 / 54.06 ms |
+| HTTP 요청 처리량 | 2,394 req/s |
+| 접수 / 탈락 / 초과 발급 | 100 / 900 / 0 |
+| Redis 명령 수 (요청 1,000건) | 1,600 — MGET 1,000 · SADD/DECR 400 · INCR/SREM 200 |
+| Redis users = DB rows = issued_quantity | 100 = 100 = 100 |
 
-- Lua 원자 예약 후에도 Kafka 발행 전에 중단될 수 있습니다. Outbox·Stream의 자동 재개와 동일 ID를 이용한 명시적 재시도를 비교했습니다.
-- Kafka append 순서, API 원장 기록 순서, 최종 발급 완료 순서는 다를 수 있습니다. 안전한 offset commit과 완료 순서 보장은 별도입니다.
-- 여러 쿠폰은 파티션·노드로 분산할 수 있지만, 같은 쿠폰 키는 한 파티션·슬롯에 집중됩니다. 수동 증설만으로 인기 쿠폰이 분할되지는 않았습니다.
-- Sentinel 자동 승격을 확인했습니다. Spring 클라이언트 자동 전환은 검증하지 않았고, Cluster는 replica 없이 분포를 비교했습니다.
+**Kafka 중단 실험** — `docker stop kafka` 후 재고 5 쿠폰에 요청 1건: 10.0초 뒤 503, Redis `stock=5 · users=0`으로 되돌아갔습니다. Phase 3라면 재고만 줄고 사용자는 "이미 발급"으로 남았을 상황입니다.
 
-**2026-10-23 게시 전 재검증:** Java 테스트 9개·Python 테스트 3개와 `bootJar`가 통과했습니다. 재빌드 JAR SHA-256은 복구 후 기록과 같았습니다. [게시 검증 기록](docs/publication-verification-2026-10-23.md). 장애·부하 실험은 이날 재실행하지 않았습니다.
+**Redis failover 실험** (`failover.sh`) — primary를 kill한 뒤 다시 202가 나오기까지 WAIT를 켜면 10.5초(옛 primary가 replica로 돌아와야 통과), 끄면 4.9초. 복제 지연 중에는 WAIT가 승인 자체를 거절해 소실 0, 끄면 승인된 5건이 사라지고 5명이 202만 받고 쿠폰을 못 받았습니다. 건강한 replica에서 WAIT 비용은 호출당 19 µs였습니다. 상세는 [모듈 README](4-coupon_redisHA_kafka/README.md#redis-ha--2026-10-26).
 
-## 실험 실행
+JUnit 4건(동시 1,000명 → 100 · 동일 사용자 100회 → 1 · 발행 실패 보상 · 잘못된 본문 400)은 실제 MySQL·Redis·Kafka를 띄우고 실행합니다.
 
-JDK 17, Docker Compose, Python 3가 필요합니다. 모든 실험 포트는 localhost에 바인딩합니다. 같은 checkout과 다른 checkout의 실험도 Compose 프로젝트·포트를 공유하므로 한 번에 하나만 실행합니다.
+## 실행
+
+JDK 17, Docker Compose, k6가 필요합니다. 네 단계는 컨테이너 이름과 호스트 포트를 공유하므로 한 번에 하나만 실행합니다.
 
 ```bash
 git clone https://github.com/joejaeyoung/Project-coupon_rush.git
-cd Project-coupon_rush/4-coupon_experiments
-python3 infra/lab.py up
-python3 app.py start --build
-python3 scripts/suite.py --scenario correctness --output results/reproduction-correctness
-python3 scripts/suite.py --scenario faults --output results/reproduction-faults
-python3 scripts/suite.py --scenario ordering --output results/reproduction-ordering
+cd Project-coupon_rush/4-coupon_redisHA_kafka
+docker compose up -d --wait              # MySQL 3306 · Redis 6381/6382 + Sentinel 26379~26381 · Kafka 9092
+(cd spring && ./gradlew bootRun)
+./reset-coupon.sh 1 100                  # DB 쿠폰 생성 + Redis 재고 초기화
+k6 run -e COUPON_ID=1 -e USERS=1000 k6/concurrent-issue.js
+./report.sh 1                            # Redis users == DB rows == issued_qty 대조
+./failover.sh                            # primary kill → 다시 승인까지 (lag: 복제 지연 중 승인 소실)
+(cd spring && ./gradlew test)            # bootRun을 끈 뒤
 ```
 
-인프라를 사용하지 않는 회귀 검증:
-
-```bash
-cd spring
-./gradlew test bootJar --no-daemon
-cd ..
-python3 -m unittest discover -s tests -v
-```
-
-노드 종료·네트워크 분리 실험은 [실험 안내](4-coupon_experiments/README.md)와 [인프라 제어 범위](4-coupon_experiments/infra/README.md)를 읽고 순서대로 실행합니다. 일반 종료는 `python3 app.py stop` 후 `python3 infra/lab.py down`이며, 볼륨은 보존합니다. 기존 결과를 보존하려면 새 출력 경로를 지정합니다.
+Redis는 6381/6382를 쓰므로 6379를 점유한 다른 컨테이너와 겹치지 않습니다.
 
 ## 기존 Phase 1~3
 
-2026년 5~9월에 구현한 세 기준선입니다. 후속 실험 모듈의 Lua·Outbox·직접 commit·HA 구성을 기존 Phase 3에 소급 적용하지 않았습니다.
+2026년 5~9월에 구현한 세 기준선입니다. Phase 4는 Phase 3 코드를 바탕으로 만들었고, 세 기준선의 코드는 바꾸지 않았습니다.
 
 | 단계 | 판정·저장 | 성공 응답 |
 | --- | --- | --- |
@@ -331,30 +316,29 @@ JUnit은 `CountDownLatch`로 작업 시작을 맞추고, Phase 3은 Awaitility�
 
 ## 남은 과제
 
-| 주제 | 현재 확인한 범위 | 남은 구현·검증 |
+| 주제 | 현재 | 남은 구현·검증 |
 | --- | --- | --- |
-| 실패 메시지 | blocking/deferred 재시도 | DLT, 독성 메시지 한도, 재주입·순서 정책 |
-| 확장 | 수동 Consumer 변경·API JVM 1개/2개 | Lag 기반 자동 확장·축소, 독립 호스트의 반복·지속 부하 |
-| Relay 소유권 | 단일 활성 relay, 같은 consumer 이름으로 PEL 복구 | Outbox claim/lease·리더 선출, Streams XAUTOCLAIM 경쟁 |
-| Redis 장애 | Sentinel 자동 승격, Cluster 슬롯 분포, 예약 손실 반례 | 앱 자동 연결 전환, replica 포함 Cluster HA, 전체 예약 재구축 |
-| 인기 쿠폰 | 단일 키 집중과 여러 쿠폰 분산 비교 | 재고 버킷·중복 판정·엄격한 순위 병합 |
-| 운영 자원 | 유한한 실행과 수동 종료 | 전역 worker 제한, 대기열 상한, 토픽·키·요청 정보 보존 정책 |
+| Redis HA | primary·replica·Sentinel 3 + `WAIT`. failover 뒤 WAIT가 통과할 때까지 10.5 s 공백, WAIT가 공유 커넥션을 막음 | replica 2대 이상, WAIT 전용 커넥션, 서버 쪽 `min-replicas-to-write`와 비교, Cluster |
+| 예약과 발행 사이의 창 | SADD→DECR 사이, DECR→ACK 사이에 죽으면 보상이 돌지 못함 | `users` 집합과 DB 발급 내역을 대조하는 정리 작업 |
+| 실패 메시지 | 적용할 수 없는 이벤트는 로그 후 건너뜀. DB 쓰기 예외는 컨테이너가 10회 재시도한 뒤 건너뜀 | DLT, 독성 메시지 한도 |
+| 실패 응답 지연 | Kafka 중단 시 503까지 10초 | 타임아웃과 오판 사이의 기준 |
+| 요청 원장 | 없음. 접수 뒤 결과는 DB 조회로만 확인 | request/pending 토픽 분리, 요청 ID별 상태 조회 (멘토 제안) |
 
-Kafka 2노드 중단은 broker와 controller 과반수를 함께 잃는 조건입니다. 이 결과를 min ISR만의 효과로 해석하지 않습니다. 모든 측정은 한 머신의 공유 자원에서 수행했으며, 운영 용량이나 모든 장애 조합의 무손실을 보장하지 않습니다.
+모든 측정은 한 머신의 공유 자원에서 수행했으며, 운영 용량이나 모든 장애 조합의 무손실을 보장하지 않습니다.
 
 ## 문서와 디렉터리
 
 | 경로 | 내용 |
 | --- | --- |
-| [4-coupon_experiments](4-coupon_experiments/README.md) | 최신 다섯 경로, API·드라이버·재현 방법 |
-| [실증 보고서](docs/experiments-2026-10-22.md) | 10월 구현·관측·실패 반례·버전별 검증 |
-| [게시 검증](docs/publication-verification-2026-10-23.md) | 최신 원격 main 통합·테스트·JAR 해시 확인 |
+| [4-coupon_redisHA_kafka](4-coupon_redisHA_kafka/README.md) | 현재 구현. 설계·멘토링 피드백 반영·측정·남은 한계 |
+| [실증 보고서](docs/experiments-2026-10-22.md) | 10월 실험 모듈의 다섯 경로 관측·실패 반례 (코드는 커밋 `dc0e901`) |
+| [게시 검증](docs/publication-verification-2026-10-23.md) | 실험 모듈 게시 당시의 테스트·JAR 해시 확인 (이력) |
 | [멘토링 논의안](docs/mentoring-discussion.md) | 처리 위치·동시성·확장·HA·순서의 질문과 근거 |
 | [9월 측정 기록](docs/benchmark-2026-09-12.md) | 기존 세 단계의 HTTP 벤치마크 |
 | [단계별 학습](docs/phase1-study.md) · [Redis](docs/phase2-study.md) · [Kafka](docs/phase3-study.md) | 기존 Phase의 설계·구현 과정 |
 | [Redis 학습](docs/redis_study.md) · [Kafka 학습](docs/kafka_study.md) · [계획](docs/plan.md) | 학습 예시와 현재 구현의 구분 |
 | [모니터링](docs/monitoring.md) · [브라우저 테스트](load-test.html) | 기존 Phase의 관측·직접 호출 |
 
-Java 17 · Spring Boot 3.4.1 · JDBC/JPA · MySQL 8 · Redis 7 · Kafka 3.8.1(최신 실험) / 3.7.1(기존 기준선) · Docker Compose · Python · k6 · JUnit 5.
+Java 17 · Spring Boot 3.4.1 · JPA · MySQL 8 · Redis 7 · Kafka 3.7.1 · Docker Compose · k6 · JUnit 5.
 
 SW마에스트로 멘토링 [과제 명세](ASSIGNMENT.md)에서 시작한 개인 학습·실증 프로젝트입니다.

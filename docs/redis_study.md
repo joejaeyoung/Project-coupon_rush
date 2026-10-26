@@ -3,7 +3,7 @@
 
 > 2026-10-22 보완: 현재 구현과 학습용 예제를 구분하고 원자성·영속성 설명을 정정했다. 다섯 가지 멘토링 키워드와 미결정 설계는 [멘토링 논의안](mentoring-discussion.md)에 정리한다.
 
-> 실제 재현: Lua 예약·Stream relay는 [실험 모듈](../4-coupon_experiments/README.md), Lua 오류의 부분 쓰기·Redis 승격 시 쓰기 손실·Sentinel·Cluster 편중 부하는 [실증 보고서](experiments-2026-10-22.md)를 참고한다. 이 문서의 기존 Phase 2/3 설명과 구분한다.
+> 실제 재현: Lua 예약·Stream relay는 실험 모듈(2026-10-26 main에서 제거, 코드는 [커밋 dc0e901](https://github.com/joejaeyoung/Project-coupon_rush/tree/dc0e901/4-coupon_experiments)), Lua 오류의 부분 쓰기·Redis 승격 시 쓰기 손실·Sentinel·Cluster 편중 부하는 [실증 보고서](experiments-2026-10-22.md)를 참고한다. 이 문서의 기존 Phase 2/3 설명과 구분한다. 현재 4단계 [4-coupon_redisHA_kafka](../4-coupon_redisHA_kafka/README.md)는 Lua·Stream 없이 Phase 3에 Kafka ACK 확인과 보상, DB 유니크 제약을 더한 최소 구성이다. Redis는 Sentinel HA 구성이며 예약은 replica 수신(`WAIT`)을 확인한 뒤 승인한다.
 
 ---
 

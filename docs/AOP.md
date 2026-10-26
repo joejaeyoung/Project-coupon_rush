@@ -136,7 +136,7 @@ public class CouponService {
 
 ## 커스텀 AOP 작성 예시
 
-Phase 4에서 읽기/쓰기 DataSource를 분리할 때 직접 AOP를 작성한다:
+계획에만 있는 Read Replica 단계에서 읽기/쓰기 DataSource를 분리한다면 직접 AOP를 작성한다 (현재 Phase 4 `4-coupon_redisHA_kafka`에는 없다):
 
 ```java
 @Aspect
