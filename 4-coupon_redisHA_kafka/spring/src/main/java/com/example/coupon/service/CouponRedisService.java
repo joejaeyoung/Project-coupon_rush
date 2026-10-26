@@ -125,7 +125,9 @@ public class CouponRedisService {
 
     /**
      * 이 커넥션의 앞선 쓰기(SADD·DECR)가 replica에 닿을 때까지 기다린다 — Redis WAIT.
-     * Spring Data에는 WAIT가 없어 Lettuce 커맨드를 직접 쓴다. WAIT는 응답이 올 때까지 공유 커넥션을 막으므로
+     * Spring Data에는 WAIT 전용 메서드가 없지만 RedisConnection.execute("WAIT", ...)로 원시 명령을 보낼 수 있다.
+     * 여기서는 Object 결과를 해석하는 대신 Lettuce의 waitForReplication()으로 Long 결과를 직접 받는다.
+     * WAIT는 응답이 올 때까지 공유 커넥션을 막으므로
      * replica가 느리거나 죽어 있으면 모든 요청이 timeout만큼 직렬화된다 — 그게 "복제될 때까지 primary를 세우는" 비용이다.
      * 현재 기본 공유 native connection을 전제로 한다. 풀로 변경할 때는 SADD·DECR·WAIT를
      * 같은 연결에 묶어야 한다. WAIT만 다른 연결로 보내면 원래 예약 쓰기의 복제를 확인하지 못한다.

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="880" viewBox="0 0 1600 880" role="img" aria-labelledby="title desc">
+<title id="title">Coupon Rush Kafka topic structure</title>
+<desc id="desc">The current application sends every coupon issue event to one coupon-issue topic. With the default single partition, all coupon keys share partition 0 on one broker. More partitions would route equal coupon IDs to the same partition.</desc>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#748792"/></marker><marker id="accent-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#087F79"/></marker></defs>
+<rect width="1600" height="880" rx="24" fill="#F8F7F4"/>
+<text x="52" y="54" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="14" font-weight="750" fill="#087F79" text-anchor="start" letter-spacing="2">COUPON RUSH  /  KAFKA</text>
+<text x="52" y="101" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="34" font-weight="750" fill="#193044" text-anchor="start">쿠폰마다 토픽을 만들지 않습니다</text>
+<text x="52" y="134" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="17" font-weight="450" fill="#5F7180" text-anchor="start">현재 구조: coupon-issue 토픽 1개 · 파티션 1개 · 브로커 1대</text>
+<path d="M52 157 L1548 157" fill="none" stroke="#CAD4D8" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="52" y="235" width="350" height="205" rx="16" fill="#E5F4F0" stroke="#B9DCD4" stroke-width="1.5"/>
+<rect x="52" y="235" width="6" height="205" rx="3" fill="#087F79" stroke="#087F79" stroke-width="0"/>
+<text x="72" y="262" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="12" font-weight="750" fill="#087F79" text-anchor="start" letter-spacing="1.2">PRODUCER</text>
+<text x="72" y="295" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="23" font-weight="700" fill="#193044" text-anchor="start">발급 이벤트 발행</text>
+<text x="72" y="323" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">topic = coupon-issue</text>
+<text x="72" y="346" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">key = String(couponId)</text>
+<text x="72" y="369" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">value = {couponId, userId, issuedAt}</text>
+<text x="72" y="392" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">send(...).join()으로 브로커 ACK 대기</text>
+<path d="M402 338 L470 338" fill="none" stroke="#087F79" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#accent-arrow)"/>
+<rect x="470" y="202" width="660" height="430" rx="20" fill="#FFFFFF" stroke="#CBD9D6" stroke-width="1.5"/>
+<text x="500" y="240" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="14" font-weight="750" fill="#69529F" text-anchor="start" letter-spacing="1.2">KAFKA BROKER  1대</text>
+<text x="500" y="278" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="26" font-weight="750" fill="#193044" text-anchor="start">topic: coupon-issue</text>
+<rect x="928" y="250" width="160" height="29" rx="14" fill="#F0ECF8" stroke="#F0ECF8" stroke-width="0"/>
+<text x="1008.0" y="270" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#69529F" text-anchor="middle">복제 계수 1</text>
+<rect x="500" y="305" width="600" height="286" rx="16" fill="#F0ECF8" stroke="#D5C9EB" stroke-width="1.5"/>
+<text x="524" y="342" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="22" font-weight="700" fill="#69529F" text-anchor="start">partition 0</text>
+<text x="524" y="370" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="14" font-weight="450" fill="#5F7180" text-anchor="start">아래 레코드는 구조 설명용 예시</text>
+<rect x="523" y="390" width="554" height="50" rx="9" fill="#FFFFFF" stroke="#DDD6EB" stroke-width="1.5"/>
+<text x="541" y="422" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#69529F" text-anchor="start">offset 0</text>
+<text x="650" y="422" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="650" fill="#193044" text-anchor="start">key=101</text>
+<text x="768" y="422" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="14" font-weight="450" fill="#5F7180" text-anchor="start">{couponId: 101, userId: 7, ...}</text>
+<rect x="523" y="453" width="554" height="50" rx="9" fill="#FFFFFF" stroke="#DDD6EB" stroke-width="1.5"/>
+<text x="541" y="485" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#69529F" text-anchor="start">offset 1</text>
+<text x="650" y="485" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="650" fill="#193044" text-anchor="start">key=202</text>
+<text x="768" y="485" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="14" font-weight="450" fill="#5F7180" text-anchor="start">{couponId: 202, userId: 9, ...}</text>
+<rect x="523" y="516" width="554" height="50" rx="9" fill="#FFFFFF" stroke="#DDD6EB" stroke-width="1.5"/>
+<text x="541" y="548" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#69529F" text-anchor="start">offset 2</text>
+<text x="650" y="548" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="650" fill="#193044" text-anchor="start">key=101</text>
+<text x="768" y="548" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="14" font-weight="450" fill="#5F7180" text-anchor="start">{couponId: 101, userId: 8, ...}</text>
+<path d="M1130 338 L1198 338" fill="none" stroke="#087F79" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#accent-arrow)"/>
+<rect x="1198" y="235" width="350" height="205" rx="16" fill="#EAF1FB" stroke="#C8D9EE" stroke-width="1.5"/>
+<rect x="1198" y="235" width="6" height="205" rx="3" fill="#32629B" stroke="#32629B" stroke-width="0"/>
+<text x="1218" y="262" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="12" font-weight="750" fill="#32629B" text-anchor="start" letter-spacing="1.2">CONSUMER</text>
+<text x="1218" y="295" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="23" font-weight="700" fill="#193044" text-anchor="start">coupon-group</text>
+<text x="1218" y="323" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">@KafkaListener(coupon-issue)</text>
+<text x="1218" y="346" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">현재는 partition 0을 읽음</text>
+<text x="1218" y="369" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">중복·총량 확인 후 DB 저장</text>
+<text x="1218" y="392" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">처리 뒤 offset 관리</text>
+<path d="M1373 440 L1373 479" fill="none" stroke="#087F79" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#accent-arrow)"/>
+<rect x="1198" y="479" width="350" height="130" rx="16" fill="#FFFFFF" stroke="#DDE4E4" stroke-width="1.5"/>
+<rect x="1198" y="479" width="6" height="130" rx="3" fill="#32629B" stroke="#32629B" stroke-width="0"/>
+<text x="1218" y="506" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="12" font-weight="750" fill="#32629B" text-anchor="start" letter-spacing="1.2">MYSQL</text>
+<text x="1218" y="539" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="22" font-weight="700" fill="#193044" text-anchor="start">최종 발급 기록</text>
+<text x="1218" y="567" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">coupon 수량 갱신</text>
+<text x="1218" y="590" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="15" font-weight="450" fill="#5F7180" text-anchor="start">issued_coupon 행 저장</text>
+<rect x="52" y="663" width="1496" height="154" rx="16" fill="#FFFFFF" stroke="#DDE4E4" stroke-width="1.5"/>
+<rect x="76" y="679" width="153" height="29" rx="14" fill="#FFF0E9" stroke="#FFF0E9" stroke-width="0"/>
+<text x="152.5" y="699" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#D86742" text-anchor="middle">현재 설정 아님</text>
+<text x="249" y="700" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="19" font-weight="700" fill="#193044" text-anchor="start">파티션을 늘리면 key=couponId의 해시로 파티션을 선택합니다</text>
+<text x="76" y="737" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="16" font-weight="700" fill="#087F79" text-anchor="start">같은 쿠폰 ID → 항상 같은 파티션</text>
+<text x="76" y="768" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="16" font-weight="450" fill="#5F7180" text-anchor="start">다른 쿠폰 ID → 다른 파티션일 수도, 같은 파티션일 수도 있음</text>
+<rect x="948" y="730" width="178" height="53" rx="10" fill="#F0ECF8" stroke="#D5C9EB" stroke-width="1.5"/>
+<text x="1037" y="763" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="16" font-weight="700" fill="#69529F" text-anchor="middle">partition 0</text>
+<rect x="1148" y="730" width="178" height="53" rx="10" fill="#F0ECF8" stroke="#D5C9EB" stroke-width="1.5"/>
+<text x="1237" y="763" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="16" font-weight="700" fill="#69529F" text-anchor="middle">partition 1</text>
+<rect x="1348" y="730" width="178" height="53" rx="10" fill="#F0ECF8" stroke="#D5C9EB" stroke-width="1.5"/>
+<text x="1437" y="763" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif" font-size="16" font-weight="700" fill="#69529F" text-anchor="middle">partition 2</text>
+</svg>

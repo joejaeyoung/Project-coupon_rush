@@ -232,9 +232,63 @@ def failover():
     d.save("phase-4-failover.svg")
 
 
+def kafka_topic():
+    d = Diagram(1600, 880, "Coupon Rush Kafka topic structure", "The current application sends every coupon issue event to one coupon-issue topic. With the default single partition, all coupon keys share partition 0 on one broker. More partitions would route equal coupon IDs to the same partition.")
+    d.header("COUPON RUSH  /  KAFKA", "쿠폰마다 토픽을 만들지 않습니다", "현재 구조: coupon-issue 토픽 1개 · 파티션 1개 · 브로커 1대")
+
+    d.card(52, 235, 350, 205, "PRODUCER", "발급 이벤트 발행", (
+        "topic = coupon-issue",
+        "key = String(couponId)",
+        "value = {couponId, userId, issuedAt}",
+        "send(...).join()으로 브로커 ACK 대기",
+    ), TEAL_LIGHT, "#B9DCD4", TEAL, 23)
+    d.path([(402, 338), (470, 338)], TEAL)
+
+    d.rect(470, 202, 660, 430, "#FFFFFF", "#CBD9D6", 20)
+    d.text(500, 240, "KAFKA BROKER  1대", 14, VIOLET, 750, spacing=1.2)
+    d.text(500, 278, "topic: coupon-issue", 26, INK, 750)
+    d.pill(928, 250, 160, "복제 계수 1", VIOLET, VIOLET_LIGHT)
+    d.rect(500, 305, 600, 286, VIOLET_LIGHT, "#D5C9EB", 16)
+    d.text(524, 342, "partition 0", 22, VIOLET, 700)
+    d.text(524, 370, "아래 레코드는 구조 설명용 예시", 14, MUTED, 450)
+    for y, offset, key, value in (
+        (390, "0", "101", "{couponId: 101, userId: 7, ...}"),
+        (453, "1", "202", "{couponId: 202, userId: 9, ...}"),
+        (516, "2", "101", "{couponId: 101, userId: 8, ...}"),
+    ):
+        d.rect(523, y, 554, 50, "#FFFFFF", "#DDD6EB", 9)
+        d.text(541, y + 32, f"offset {offset}", 15, VIOLET, 700)
+        d.text(650, y + 32, f"key={key}", 15, INK, 650)
+        d.text(768, y + 32, value, 14, MUTED, 450)
+
+    d.path([(1130, 338), (1198, 338)], TEAL)
+    d.card(1198, 235, 350, 205, "CONSUMER", "coupon-group", (
+        "@KafkaListener(coupon-issue)",
+        "현재는 partition 0을 읽음",
+        "중복·총량 확인 후 DB 저장",
+        "처리 뒤 offset 관리",
+    ), BLUE_LIGHT, "#C8D9EE", BLUE, 23)
+    d.path([(1373, 440), (1373, 479)], TEAL)
+    d.card(1198, 479, 350, 130, "MYSQL", "최종 발급 기록", (
+        "coupon 수량 갱신",
+        "issued_coupon 행 저장",
+    ), "#FFFFFF", "#DDE4E4", BLUE, 22)
+
+    d.rect(52, 663, 1496, 154, "#FFFFFF", "#DDE4E4", 16)
+    d.pill(76, 679, 153, "현재 설정 아님", ORANGE, ORANGE_LIGHT)
+    d.text(249, 700, "파티션을 늘리면 key=couponId의 해시로 파티션을 선택합니다", 19, INK, 700)
+    d.text(76, 737, "같은 쿠폰 ID → 항상 같은 파티션", 16, TEAL, 700)
+    d.text(76, 768, "다른 쿠폰 ID → 다른 파티션일 수도, 같은 파티션일 수도 있음", 16, MUTED, 450)
+    for x, label in ((948, "partition 0"), (1148, "partition 1"), (1348, "partition 2")):
+        d.rect(x, 730, 178, 53, VIOLET_LIGHT, "#D5C9EB", 10)
+        d.text(x + 89, 763, label, 16, VIOLET, 700, "middle")
+    d.save("phase-4-kafka-topic.svg")
+
+
 if __name__ == "__main__":
     architecture()
     init()
     issue()
     status()
     failover()
+    kafka_topic()

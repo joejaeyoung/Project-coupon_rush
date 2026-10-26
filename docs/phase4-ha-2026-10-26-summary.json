@@ -1,0 +1,408 @@
+{
+  "commit": "f0ba9524e13819b89cda58d3d6e391e2ef6c05a9",
+  "date": "2026-10-26",
+  "baseline": [
+    {
+      "trial": 1,
+      "coupon_id": 261026001,
+      "statuses": {
+        "202": 100,
+        "409": 900
+      },
+      "duration_ms": {
+        "avg": 60.44627699999999,
+        "min": 3.284,
+        "med": 59.687,
+        "max": 145.258,
+        "p(90)": 103.64980000000001,
+        "p(95)": 112.185,
+        "thresholds": {
+          "p(95)<300": false
+        }
+      },
+      "request_rate": 3953.741227636651
+    },
+    {
+      "trial": 2,
+      "coupon_id": 261026002,
+      "statuses": {
+        "202": 100,
+        "409": 900
+      },
+      "duration_ms": {
+        "p(90)": 74.3716,
+        "p(95)": 80.20269999999996,
+        "avg": 64.38783699999999,
+        "min": 19.726,
+        "med": 66.7235,
+        "max": 95.576,
+        "thresholds": {
+          "p(95)<300": false
+        }
+      },
+      "request_rate": 8748.064490731425
+    },
+    {
+      "trial": 3,
+      "coupon_id": 261026003,
+      "statuses": {
+        "202": 100,
+        "409": 900
+      },
+      "duration_ms": {
+        "avg": 33.56024099999998,
+        "min": 4.461,
+        "med": 33.903999999999996,
+        "max": 95.57,
+        "p(90)": 75.4945,
+        "p(95)": 78.78104999999998,
+        "thresholds": {
+          "p(95)<300": false
+        }
+      },
+      "request_rate": 3929.211328702103
+    }
+  ],
+  "scenarios": {
+    "sustained-wait1": {
+      "stats": {
+        "requests": 600,
+        "status_counts": {
+          "202": 484,
+          "503": 116
+        },
+        "mean_ms": 2700.64,
+        "p95_ms": 17635.15,
+        "max_ms": 19077.86
+      },
+      "comparison": {
+        "accepted": 484,
+        "redis_users": 484,
+        "db_users": 484,
+        "accepted_missing_redis": [],
+        "accepted_missing_db": [],
+        "redis_without_db": [],
+        "db_without_redis": [],
+        "db_without_202": [],
+        "stock": "516",
+        "db_quantities": [
+          1000,
+          484
+        ]
+      },
+      "pre_kill_accepted": 100,
+      "pre_kill_lost_redis": [],
+      "faults": [
+        {
+          "t": 0.0795,
+          "kind": "initialized",
+          "cid": 261026010,
+          "quantity": 1000,
+          "primary": 6381
+        },
+        {
+          "t": 5.2545,
+          "kind": "primary_killed",
+          "container": "redis-primary",
+          "port": 6381
+        },
+        {
+          "t": 8.5288,
+          "kind": "sentinel_primary_changed",
+          "port": 6382
+        },
+        {
+          "t": 13.2676,
+          "kind": "old_primary_restarted",
+          "container": "redis-primary"
+        }
+      ],
+      "first_202_after_kill_s": 24.02,
+      "sentinel_switch_s": 3.2743,
+      "error_bodies": {
+        "예약이 복제본에 반영되지 않아 취소했습니다. 잠시 후 다시 시도해 주세요.": 18,
+        "저장소에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.": 98
+      }
+    },
+    "sustained-wait0": {
+      "stats": {
+        "requests": 600,
+        "status_counts": {
+          "202": 502,
+          "503": 98
+        },
+        "mean_ms": 12.78,
+        "p95_ms": 6.06,
+        "max_ms": 4907.79
+      },
+      "comparison": {
+        "accepted": 502,
+        "redis_users": 502,
+        "db_users": 502,
+        "accepted_missing_redis": [],
+        "accepted_missing_db": [],
+        "redis_without_db": [],
+        "db_without_redis": [],
+        "db_without_202": [],
+        "stock": "498",
+        "db_quantities": [
+          1000,
+          502
+        ]
+      },
+      "pre_kill_accepted": 100,
+      "pre_kill_lost_redis": [],
+      "faults": [
+        {
+          "t": 0.1237,
+          "kind": "initialized",
+          "cid": 261026013,
+          "quantity": 1000,
+          "primary": 6382
+        },
+        {
+          "t": 5.2934,
+          "kind": "primary_killed",
+          "container": "redis-replica",
+          "port": 6382
+        },
+        {
+          "t": 8.1303,
+          "kind": "sentinel_primary_changed",
+          "port": 6381
+        },
+        {
+          "t": 13.3166,
+          "kind": "old_primary_restarted",
+          "container": "redis-replica"
+        }
+      ],
+      "first_202_after_kill_s": 4.913,
+      "sentinel_switch_s": 2.8369,
+      "error_bodies": {
+        "저장소에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.": 98
+      }
+    },
+    "lag-wait1": {
+      "stats": {
+        "requests": 21,
+        "status_counts": {
+          "503": 6,
+          "202": 10,
+          "409": 5
+        },
+        "mean_ms": 246.43,
+        "p95_ms": 1017.22,
+        "max_ms": 1064.03
+      },
+      "comparison": {
+        "accepted": 10,
+        "redis_users": 10,
+        "db_users": 10,
+        "accepted_missing_redis": [],
+        "accepted_missing_db": [],
+        "redis_without_db": [],
+        "db_without_redis": [],
+        "db_without_202": [],
+        "stock": "0",
+        "db_quantities": [
+          10,
+          10
+        ]
+      },
+      "pre_kill_accepted": 0,
+      "pre_kill_lost_redis": [],
+      "faults": [
+        {
+          "t": 0.0599,
+          "kind": "initialized",
+          "cid": 261026011,
+          "quantity": 10,
+          "primary": 6382
+        },
+        {
+          "t": 0.2,
+          "kind": "replication_disconnected",
+          "primary": 6382,
+          "replica": 6381
+        },
+        {
+          "t": 6.0175,
+          "kind": "lag_requests",
+          "stats": {
+            "requests": 5,
+            "status_counts": {
+              "503": 5
+            },
+            "mean_ms": 1023.43,
+            "p95_ms": 1064.03,
+            "max_ms": 1064.03
+          },
+          "primary_stock": "10"
+        },
+        {
+          "t": 6.0579,
+          "kind": "primary_killed",
+          "container": "redis-replica",
+          "port": 6382
+        },
+        {
+          "t": 9.3428,
+          "kind": "replica_promoted",
+          "port": 6381,
+          "elapsed_s": 3.285
+        },
+        {
+          "t": 9.4631,
+          "kind": "no_replica_probe",
+          "status": 503,
+          "body": {
+            "success": false,
+            "data": null,
+            "message": "저장소에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요."
+          }
+        },
+        {
+          "t": 9.5264,
+          "kind": "old_primary_restarted",
+          "container": "redis-replica"
+        },
+        {
+          "t": 15.3572,
+          "kind": "replication_restored",
+          "primary": 6381
+        }
+      ],
+      "promotion_s": 3.285,
+      "error_bodies": {
+        "예약이 복제본에 반영되지 않아 취소했습니다. 잠시 후 다시 시도해 주세요.": 5,
+        "저장소에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.": 1
+      }
+    },
+    "lag-wait0": {
+      "stats": {
+        "requests": 21,
+        "status_counts": {
+          "202": 15,
+          "503": 1,
+          "409": 5
+        },
+        "mean_ms": 6.98,
+        "p95_ms": 8.91,
+        "max_ms": 55.85
+      },
+      "comparison": {
+        "accepted": 15,
+        "redis_users": 10,
+        "db_users": 10,
+        "accepted_missing_redis": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "accepted_missing_db": [
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "redis_without_db": [
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "db_without_redis": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "db_without_202": [],
+        "stock": "0",
+        "db_quantities": [
+          10,
+          10
+        ]
+      },
+      "pre_kill_accepted": 5,
+      "pre_kill_lost_redis": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "faults": [
+        {
+          "t": 0.3783,
+          "kind": "initialized",
+          "cid": 261026012,
+          "quantity": 10,
+          "primary": 6381
+        },
+        {
+          "t": 0.5202,
+          "kind": "replication_disconnected",
+          "primary": 6381,
+          "replica": 6382
+        },
+        {
+          "t": 1.3061,
+          "kind": "lag_requests",
+          "stats": {
+            "requests": 5,
+            "status_counts": {
+              "202": 5
+            },
+            "mean_ms": 14.89,
+            "p95_ms": 55.85,
+            "max_ms": 55.85
+          },
+          "primary_stock": "5"
+        },
+        {
+          "t": 1.3422,
+          "kind": "primary_killed",
+          "container": "redis-primary",
+          "port": 6381
+        },
+        {
+          "t": 4.7748,
+          "kind": "replica_promoted",
+          "port": 6382,
+          "elapsed_s": 3.433
+        },
+        {
+          "t": 4.8902,
+          "kind": "no_replica_probe",
+          "status": 503,
+          "body": {
+            "success": false,
+            "data": null,
+            "message": "저장소에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요."
+          }
+        },
+        {
+          "t": 4.9667,
+          "kind": "old_primary_restarted",
+          "container": "redis-primary"
+        },
+        {
+          "t": 21.2237,
+          "kind": "replication_restored",
+          "primary": 6382
+        }
+      ],
+      "promotion_s": 3.433,
+      "error_bodies": {
+        "저장소에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.": 1
+      }
+    }
+  }
+}

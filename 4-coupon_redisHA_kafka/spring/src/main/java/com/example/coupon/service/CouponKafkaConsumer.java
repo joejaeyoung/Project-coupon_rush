@@ -15,12 +15,23 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * 재처리로 같은 이벤트가 두 번 올 수 있다(at-least-once). 먼저 발급 여부를 확인해 건너뛰고,
  * 그래도 겹치면 issued_coupon의 (coupon_id, user_id) 유니크 제약이 막는다.
+ *
  * 총량은 issued_quantity < total_quantity 조건부 UPDATE가 게이트다 — 발행 타임아웃 후 Redis를 되돌렸는데
  * 이벤트가 뒤늦게 도착해도 총량 초과는 막는다. 단, 재고가 남으면 503을 받은 사용자도 발급될 수 있다.
- * 적용할 수 없는 이벤트는 로그를 남기고 건너뛰며 Redis 예약을 보상하지 않는다.
- * enable-auto-commit=false 이므로 이 메서드가 예외로 끝나면 offset을 커밋하지 않고 컨테이너(DefaultErrorHandler)가
- * 실패 레코드를 기본 정책에 따라 다시 전달한다. 재시도 소진 후 별도 DLT 없이 건너뛸 수 있다.
- * DB 커밋과 offset 커밋은 별개이므로 그 사이 종료되면 이미 저장한 이벤트도 재전달될 수 있다.
+ *
+ * API는 Kafka 발행 전에 Redis의 coupon:{id}:users 집합에 userId를 추가(SADD)하고
+ * coupon:{id}:stock을 1 감소(DECR)시킨다. 여기서 이 두 변경을 "Redis 예약"이라고 부른다.
+ * Consumer는 이미 DB에 발급된 사용자이거나 DB 수량이 소진됐거나 쿠폰이 없으면 로그를 남기고 종료한다.
+ * 이때 Redis stock을 다시 증가(INCR)시키거나 users에서 userId를 제거(SREM)하지 않는다.
+ * 특히 DB가 발급을 거부한 경우 Redis에는 차감된 재고와 사용자 ID가 남아 재시도가 중복으로 거절될 수 있다.
+ *
+ * enable-auto-commit=false는 Kafka 클라이언트의 주기적 offset 자동 커밋을 끈다.
+ * offset은 이 메서드가 직접 커밋하지 않는다. @KafkaListener를 실행하는 Spring Kafka 컨테이너가
+ * 기본 AckMode.BATCH에 따라 poll로 가져온 레코드들의 처리 후 커밋한다.
+ *
+ * 이 메서드가 예외를 던지면 DefaultErrorHandler가 실패 레코드를 재전달한다. 기본 재시도 소진 후에는
+ * 별도 DLT 없이 오류를 기록하고 건너뛰며, 그 레코드의 offset도 이후 커밋될 수 있다.
+ * @Transactional의 DB 커밋과 Kafka offset 커밋은 별개다. DB 커밋 뒤 offset 커밋 전 종료되면 재전달될 수 있다.
  */
 @Slf4j
 @Component
@@ -45,7 +56,7 @@ public class CouponKafkaConsumer {
             return;
         }
 
-        // 프록시의 트랜잭션 커밋까지 끝난 뒤 컨테이너가 offset을 관리한다. 수동 acknowledge는 하지 않는다.
+        // 이 메서드는 DB 트랜잭션만 처리한다. Kafka offset 커밋은 리스너 컨테이너가 맡는다.
         issuedCouponRepository.save(new IssuedCoupon(event.couponId(), event.userId(), event.issuedAt()));
     }
 }

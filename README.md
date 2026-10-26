@@ -53,7 +53,7 @@ flowchart LR
 | 발행 실패 보상 | `INCR`·`SREM`으로 예약을 되돌리고 `503 ISSUE_FAILED`, WARN 로그 | [CouponService](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/service/CouponService.java) |
 | 소진 뒤 요청은 1 RTT | `MGET`으로 기간·재고 선확인. 소진 뒤 요청은 SADD·DECR·보상 없이 409 | [CouponRedisService](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/service/CouponRedisService.java) |
 | DB 최종 방어 | `(coupon_id, user_id)` 유니크 제약 + `issued_quantity < total_quantity` 조건부 UPDATE가 게이트 | [IssuedCoupon](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/domain/IssuedCoupon.java) · [Consumer](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/service/CouponKafkaConsumer.java) |
-| Redis HA | primary·replica·Sentinel 3. Lettuce가 Sentinel에게 primary를 묻고 failover 뒤 자동으로 옮겨 붙습니다. 다시 승인되기까지 WAIT 켜면 10.5 s, 끄면 4.9 s | [compose](4-coupon_redisHA_kafka/docker-compose.yml) · [failover.sh](4-coupon_redisHA_kafka/failover.sh) |
+| Redis HA | primary·replica·Sentinel 3. 지속 부하 실험에서 WAIT=1은 장애 후 주소 전환 3.27초, 첫 202까지 24.02초. replica 재구성까지 신규 접수가 지연됨 | [compose](4-coupon_redisHA_kafka/docker-compose.yml) · [실험 상세](4-coupon_redisHA_kafka/README.md#redis-ha--2026-10-26) |
 | 발급 완료 조회 | 발급 요청과 별도 GET으로 MySQL의 `(coupon_id, user_id)` 기록을 확인. 클라이언트는 간격을 두고 제한된 횟수만 조회 | [Controller](4-coupon_redisHA_kafka/spring/src/main/java/com/example/coupon/api/CouponController.java) · [조회 흐름](4-coupon_redisHA_kafka/README.md#3-클라이언트의-최종-발급-확인) |
 | 뼈대만 | API는 발급·발급 완료 조회·재고 조회·재고 초기화 넷. 할인·사용·목록 기능과 모니터링 스택은 뺐습니다 | [모듈 README](4-coupon_redisHA_kafka/README.md) |
 
@@ -61,25 +61,35 @@ flowchart LR
 | --- | --- |
 | Redis Stream(KV) outbox는 복잡해진다. 어차피 Kafka가 있으니 있는 걸 써라 | Stream·relay·Lua 제거. API가 Kafka에 직접 발행하고 ACK를 확인 |
 | 비동기로 돌리면 남는 게 없다. 로그로 남겨라 | 발행 실패·DB 총량 거부·중복 건너뜀을 WARN/INFO 로그로 |
-| Redis primary↔replica는 세 포인트만 (비동기 유실 · 스냅샷 복구 · 복제 대기) | primary·replica·Sentinel 3 구성, 예약 직후 `WAIT`로 replica 수신 확인, 양쪽 AOF. failover·복제 지연 실험으로 WAIT 유무의 차이를 확인했습니다 |
+| Redis primary↔replica는 세 포인트만 (비동기 유실 · 복구 · 복제 대기) | 비동기 예약 유실, 재기동 노드의 replica 편입·full resync, WAIT 수신 확인과 접수 지연을 검증했습니다. MySQL 스냅샷으로 Redis를 재구축한 것은 아닙니다 |
 
 Lua를 뺀 이유와 `MULTI/EXEC`로는 판정을 묶지 못하는 이유는 [모듈 README](4-coupon_redisHA_kafka/README.md#lua-스크립트의-단점-멘토-질문)에 있습니다.
 
 ## 측정 결과
 
-k6 1,000 VU `per-vu-iterations`(VU당 1회, 서로 다른 사용자 1,000명), 재고 100, 2026-10-26, Apple Silicon 1대에 앱·인프라 동거. 동작 확인용이며 9월 수치와 직접 비교하지 않습니다. 성공 응답에는 Kafka ACK 대기가 포함됩니다.
+2026-10-26 저녁, 커밋 `f0ba952`에서 코드 변경 없이 실행했습니다. Apple Silicon 1대의 공유 자원에서 관측한 결과이며 운영 용량 측정은 아닙니다. [집계 JSON](docs/phase4-ha-2026-10-26-summary.json) · [조건·타임라인·사용자별 대조](4-coupon_redisHA_kafka/README.md#추가-부하장애-실험--2026-10-26-저녁)
 
-| 지표 | Phase 4 |
-| --- | ---: |
-| HTTP 응답 p95 / 평균 | 177.73 / 54.06 ms |
-| HTTP 요청 처리량 | 2,394 req/s |
-| 접수 / 탈락 / 초과 발급 | 100 / 900 / 0 |
-| Redis 명령 수 (요청 1,000건) | 1,600 — MGET 1,000 · SADD/DECR 400 · INCR/SREM 200 |
-| Redis users = DB rows = issued_quantity | 100 = 100 = 100 |
+**정상 부하:** 기본 WAIT=1, k6 1,000 VU `per-vu-iterations`(각 1회), 재고 100으로 3회 실행했습니다. 매회 **202 100건 / 409 900건 / 5xx 0건**, Redis와 DB의 발급 사용자 집합이 일치했습니다. HTTP p95는 순서대로 **112.19 / 80.20 / 78.78 ms**였습니다. 재고 소진 409도 k6 실패 지표에 포함되므로 서버 장애와 구분해야 합니다.
+
+**지속 부하 중 primary 종료:** 30초 동안 초당 20개 작업 제출, 총 600건, 재고 1,000개. 시작 5초 후 primary를 종료하고 장애 약 8초 뒤 기존 노드를 재시작했습니다. Spring은 실험 중 계속 실행했습니다.
+
+| 지표 | WAIT=1 (기본) | WAIT=0 (복제 확인 생략) |
+| --- | ---: | ---: |
+| 202 접수 / 503 | 484 / 116 | 502 / 98 |
+| 장애 → Sentinel primary 주소 전환 | 3.274초 | 2.837초 |
+| 장애 → 첫 202 응답 | 24.020초 | 4.913초 |
+| 장애 전 202 예약 유실 | 0 / 100건 | 0 / 100건 |
+| 최종 Redis users / DB 발급 | 484 / 484 | 502 / 502 |
+
+**3.27초와 24.02초 모두 장애 발생부터 잰 시간입니다.** WAIT=1에서는 승격 후 replica가 0대가 되어, 기존 노드 재시작(약 +8초) → Sentinel의 replica 편입(약 +18.4초) → 복제 완료(약 +24초)를 기다렸습니다. Redis 프로세스 기동에 20초가 걸린 것이 아닙니다. 202 재개 전에는 503과 요청 대기가 발생했습니다.
+
+**복제 단절 후 primary 종료:** WAIT=1은 미복제 요청 5건을 모두 503으로 거절했습니다. 접수 0건이므로 이 실험으로 데이터 보존을 입증할 수는 없습니다. WAIT=0은 5건 모두 202를 반환했고, 승격 후 그 5건의 Redis 예약이 유실됐습니다. MySQL 발급은 유지됐으나 Redis 재고가 되살아나 추가 접수를 받았고, 나중에 202를 받은 5명은 DB 총량 가드에 걸려 미발급됐습니다. 조회 API의 `NOT_CONFIRMED`와 Consumer 거부 로그도 확인했습니다.
+
+여기서 WAIT=0은 앱의 `wait-replicas=0`으로 Redis WAIT 호출을 생략한 설정입니다. 비동기 복제는 계속됩니다. **이번 정상 복제·WAIT=1 실험에서 접수 데이터가 보존됐다는 결과를 모든 장애에서의 무손실 보장으로 일반화하지 않습니다.** WAIT는 replica 수신 확인이며 디스크 fsync 보장이 아닙니다. [Redis 공식 문서](https://redis.io/docs/latest/commands/wait/)
 
 **Kafka 중단 실험** — `docker stop kafka` 후 재고 5 쿠폰에 요청 1건: 10.0초 뒤 503, Redis `stock=5 · users=0`으로 되돌아갔습니다. Phase 3라면 재고만 줄고 사용자는 "이미 발급"으로 남았을 상황입니다.
 
-**Redis failover 실험** (`failover.sh`) — primary를 kill한 뒤 다시 202가 나오기까지 WAIT를 켜면 10.5초(옛 primary가 replica로 돌아와야 통과), 끄면 4.9초. 복제 지연 중에는 WAIT가 승인 자체를 거절해 소실 0, 끄면 승인된 5건이 사라지고 5명이 202만 받고 쿠폰을 못 받았습니다. 건강한 replica에서 WAIT 비용은 호출당 19 µs였습니다. 상세는 [모듈 README](4-coupon_redisHA_kafka/README.md#redis-ha--2026-10-26).
+이전 `failover.sh` 실험의 10.5초 / 4.9초 결과와 WAIT 비용 측정은 [이전 실험 기록](4-coupon_redisHA_kafka/README.md#이전-실험-기록--다른-부하재시작-조건)에 남겼습니다. 당시에는 기존 노드를 장애 5초 뒤 재시작했으므로 이번 지속 부하와 실행 조건이 다릅니다. 위 추가 실험에서 Kafka 중단이나 JUnit을 다시 실행한 것은 아닙니다.
 
 JUnit 4건(동시 1,000명 → 100 · 동일 사용자 100회 → 1 · 발행 실패 보상 · 잘못된 본문 400)은 실제 MySQL·Redis·Kafka를 띄우고 실행합니다.
 
@@ -422,9 +432,11 @@ JUnit은 `CountDownLatch`로 작업 시작을 맞추고, Phase 3은 Awaitility�
 
 ## 남은 과제
 
+**이번 Redis HA 과제는 primary 1대 + replica 1대 + Sentinel 구성에서 마무리합니다.** 자동 장애 전환·비동기 예약 유실·WAIT 수신 확인과 접수 지연을 실험한 범위입니다. replica 추가는 단일 primary 장애 후에도 복제 확인을 유지하며 신규 접수를 이어가야 한다는 요구가 생길 때 검토합니다. 아래 항목은 현재 완료 범위와 구분한 후속 확장입니다. [범위와 판단 근거](4-coupon_redisHA_kafka/README.md#이번-과제의-범위와-여기서-멈추는-이유)
+
 | 주제 | 현재 | 남은 구현·검증 |
 | --- | --- | --- |
-| Redis HA | primary·replica·Sentinel 3 + `WAIT`. failover 뒤 WAIT가 통과할 때까지 10.5 s 공백, WAIT가 공유 커넥션을 막음 | replica 2대 이상, WAIT 전용 커넥션, 서버 쪽 `min-replicas-to-write`와 비교, Cluster |
+| Redis HA | primary·replica·Sentinel 3 + `WAIT`. 이번 지속 부하에서 주소 전환 3.27초 / 첫 202까지 24.02초. replica 재구성 필요, 공유 커넥션 대기 | replica 2대 이상, 예약 쓰기와 WAIT를 같은 커넥션에 묶는 설계, 서버 쪽 `min-replicas-to-write`와 비교, Cluster |
 | 예약과 발행 사이의 창 | SADD→DECR 사이, DECR→ACK 사이에 죽으면 보상이 돌지 못함 | `users` 집합과 DB 발급 내역을 대조하는 정리 작업 |
 | 실패 메시지 | 적용할 수 없는 이벤트는 로그 후 건너뜀. DB 쓰기 예외는 기본 오류 처리기의 재시도 소진 후 건너뜀 | DLT, 독성 메시지 한도 |
 | 실패 응답 지연 | Kafka 중단 시 503까지 10초 | 타임아웃과 오판 사이의 기준 |
