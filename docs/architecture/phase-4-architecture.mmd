@@ -1,0 +1,35 @@
+flowchart LR
+    Client["Client / k6"]
+    subgraph App["Spring Boot :8080 · 단일 프로세스"]
+        API["Controller → CouponService"]
+        RS["CouponRedisService"]
+        P["CouponKafkaProducer"]
+        C["CouponKafkaConsumer"]
+    end
+    subgraph HA["Redis HA · 양쪽 AOF"]
+        S["Sentinel 3대<br/>:26379 ~ :26381 · quorum 2"]
+        R["현재 primary<br/>초기 :6381"]
+        RR["replica<br/>초기 :6382"]
+    end
+    K["Kafka :9092 · 단일 브로커<br/>coupon-issue · key=couponId"]
+    DB[("MySQL :3306<br/>coupon / issued_coupon")]
+    Client -->|"① POST issue · userId"| API
+    API -->|"② 기간·재고·중복 판정"| RS
+    RS -.->|"연결 시 primary 탐색 / 전환"| S
+    S -.->|"감시 / 장애 시 승격"| R
+    S -.-> RR
+    RS -->|"MGET → SADD → DECR → WAIT"| R
+    R -->|"비동기 복제"| RR
+    RR -.->|"복제 ACK · WAIT 결과에 반영"| R
+    API -->|"③ 예약 성공 시 publish"| P
+    P -->|"이벤트 전송"| K
+    K -->|"브로커 ACK"| P
+    API -->|"④ ACK 확인 후 202"| Client
+    K -->|"⑤ Consumer poll로 수신"| C
+    C -->|"⑥ 중복 조회 → 조건부 UPDATE → INSERT / 커밋"| DB
+    C -->|"⑦ 처리 후 컨테이너가 offset 커밋"| K
+    Client -->|"⑧ GET 발급 상태 · couponId/userId"| API
+    API -->|"⑨ issued_coupon 존재 조회"| DB
+    DB -->|"⑩ ISSUED 또는 NOT_CONFIRMED"| API
+    API -->|"⑪ 200 · 조회 결과"| Client
+    API -.->|"초기화 API에서 쿠폰 조회"| DB

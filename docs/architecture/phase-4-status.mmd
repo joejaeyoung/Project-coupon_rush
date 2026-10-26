@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant C as Client
+    participant API as 발급 / 조회 API
+    participant K as Kafka
+    participant W as Consumer
+    participant DB as MySQL issued_coupon
+    C->>API: POST /api/coupons/1/issue {"userId":42}
+    API->>K: 발급 이벤트 전송 · ACK 대기
+    K-->>API: 브로커 ACK
+    API-->>C: 202 · 접수 (최종 발급 여부 미확정)
+    par 비동기 저장
+        K-->>W: 발급 이벤트
+        W->>DB: 발급 기록 INSERT + 트랜잭션 커밋
+    and 클라이언트의 제한된 횟수 조회
+        loop ISSUED 확인 또는 조회 횟수 소진까지
+            C->>API: GET /api/coupons/1/issues/users/42
+            API->>DB: (coupon_id=1, user_id=42) 존재 조회
+            DB-->>API: 존재 / 없음
+            alt 기록 존재
+                API-->>C: 200 · ISSUED
+            else 기록 없음
+                API-->>C: 200 · NOT_CONFIRMED
+            end
+        end
+    end

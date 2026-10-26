@@ -41,6 +41,8 @@ flowchart LR
     style P fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
 ```
 
+[Mermaid 크게 보기](docs/architecture/phase-4-overview.mmd) · [SVG 이미지로 보기](docs/assets/phase-4-architecture.svg)
+
 **`202`는 Kafka 접수 확인이며 DB 발급 완료 응답은 아닙니다.** 클라이언트는 `GET /api/coupons/{couponId}/issues/users/{userId}`로 MySQL 발급 기록을 확인할 수 있습니다. `ISSUED`는 기록이 있다는 뜻이고 `NOT_CONFIRMED`는 조회 시점에 기록이 없다는 뜻입니다. 처리 중과 최종 실패는 구분하지 못합니다. Consumer의 DB 커밋과 HTTP 응답 순서는 고정되지 않습니다. Kafka ACK만 유실되면 보상 후 `503`을 받아도 DB 발급이 진행될 수 있고, 보상 중 Redis 장애가 나면 예약이 남을 수 있습니다. 현재 Kafka는 단일 브로커입니다.
 
 4번 작업의 **컴포넌트 배치, 초기화·발급·failover 시퀀스, 실제 응답 JSON**은 [전체 흐름 README](4-coupon_redisHA_kafka/README.md#전체-아키텍처)에, 각 단계의 거절·보상·재시도와 남는 한계는 [장애 처리 표](4-coupon_redisHA_kafka/README.md#장애-처리)에 정리했습니다.

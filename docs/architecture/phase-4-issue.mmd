@@ -1,0 +1,42 @@
+sequenceDiagram
+    participant C as Client
+    participant API as Controller / CouponService
+    participant R as Redis primary
+    participant K as Kafka
+    participant CS as Consumer
+    participant DB as MySQL
+
+    C->>API: POST /api/coupons/1/issue · {"userId":42}
+    API->>R: MGET startDate, endDate, stock
+    R-->>API: 기간과 잔여 수량 (선확인)
+    Note over API,R: 미초기화 404 / 기간 외 400 / 재고 0 이하 409로 종료
+    API->>R: SADD users 42
+    R-->>API: 1이면 신규 예약, 0이면 중복 409
+    API->>R: DECR stock (신규 예약만)
+    R-->>API: 차감 후 수량
+    Note over API,R: 음수면 INCR + SREM 보상 후 409
+    API->>R: WAIT 1 1000
+    R-->>API: 앞선 쓰기를 확인한 replica 수
+    alt replica 수 부족
+        API->>R: INCR stock → SREM users 42
+        API-->>C: 보상 성공 후 503 · REPLICATION_TIMEOUT
+    else 복제 확인 성공
+        API->>K: send(key=1, event).join() · acks=all
+        alt 브로커 ACK 수신
+            K-->>API: 전송 Future 성공
+            API-->>C: 202 · 발급 요청 접수
+        else 발행 예외 / 타임아웃
+            API->>R: INCR stock → SREM users 42
+            API-->>C: 보상 성공 후 503 · ISSUE_FAILED
+        end
+    end
+    opt Kafka에 기록된 이벤트 소비 (HTTP 응답과 독립)
+        K-->>CS: poll 결과 · CouponIssueEvent
+        CS->>DB: SELECT 기존 발급 여부
+        Note over CS,DB: 이미 있으면 INFO 로그 후 정상 종료
+        CS->>DB: UPDATE issued_quantity + 1 WHERE issued_quantity < total_quantity
+        DB-->>CS: 변경 행 수 (0이면 WARN 로그 후 정상 종료)
+        CS->>DB: 변경 행 1건이면 issued_coupon INSERT + 트랜잭션 COMMIT
+        DB-->>CS: 커밋 완료
+        CS->>K: 리스너 처리 후 컨테이너의 offset 커밋
+    end

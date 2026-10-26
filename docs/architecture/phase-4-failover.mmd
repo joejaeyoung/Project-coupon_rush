@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant API as Spring / Lettuce
+    participant P as 기존 primary
+    participant S as Sentinel 3대
+    participant R as 기존 replica
+    Note over P: primary 중단
+    S->>P: 장애 감지 (down-after 2000ms 설정)
+    S->>R: 장애 판단·선출 후 primary 승격
+    S-->>API: primary 변경 정보
+    API->>R: 새 primary로 발급 요청
+    R-->>API: replica가 없으면 WAIT 결과 부족
+    Note over API,R: 예약 보상 후 503 · REPLICATION_TIMEOUT
+    Note over P: 기존 노드 재기동
+    S->>P: 새 primary의 replica로 재구성
+    R->>P: 동기화 / 복제
+    API->>R: 다음 발급 요청 · WAIT 1
+    R-->>API: replica 수신 확인
+    Note over API: 이후 Kafka ACK까지 성공하면 202 재개

@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant O as 운영자 / reset-coupon.sh
+    participant API as 초기화 API
+    participant DB as MySQL
+    participant R as Redis primary
+    O->>API: POST /api/coupons/1/stock/init
+    API->>DB: findById(1)
+    DB-->>API: totalQuantity, startDate, endDate
+    API->>R: MSET stock, startDate, endDate
+    R-->>API: 쓰기 완료
+    API-->>O: 200 · 재고가 초기화되었습니다.

@@ -46,6 +46,8 @@ flowchart LR
     API -.->|"초기화 API에서 쿠폰 조회"| DB
 ```
 
+[Mermaid 크게 보기](../docs/architecture/phase-4-architecture.mmd) · [SVG 이미지로 보기](../docs/assets/phase-4-architecture.svg)
+
 | 저장 위치 | 데이터와 의미 |
 | --- | --- |
 | Redis | `coupon:{id}:stock`(예약 가능 수량), `users`(예약 사용자 집합), `startDate`·`endDate`(기간). `users`는 DB 저장 완료 목록이 아닙니다 |
@@ -73,6 +75,8 @@ sequenceDiagram
     R-->>API: 쓰기 완료
     API-->>O: 200 · 재고가 초기화되었습니다.
 ```
+
+[Mermaid 크게 보기](../docs/architecture/phase-4-initialize.mmd) · [SVG 이미지로 보기](../docs/assets/phase-4-initialize.svg)
 
 **초기화 API 자체는 `users`를 삭제하지 않고 `issued_quantity`도 차감하지 않습니다.** DB의 총량을 그대로 Redis에 덮어쓰므로 진행 중인 쿠폰의 복구 API로 사용할 수 없습니다. 해당 API에는 `WAIT`도 없습니다.
 
@@ -123,6 +127,8 @@ sequenceDiagram
     end
 ```
 
+[Mermaid 크게 보기](../docs/architecture/phase-4-issue.mmd) · [SVG 이미지로 보기](../docs/assets/phase-4-issue.svg)
+
 `MGET`은 빠른 탈락을 위한 사전 조회입니다. 동시 요청이 모두 같은 재고를 읽을 수 있으므로 실제 예약은 `SADD` 반환값과 `DECR` 결과로 판정합니다. 선확인을 먼저 하므로 이미 소진된 쿠폰에 대한 중복 요청도 `DUPLICATED` 대신 `EXHAUSTED`가 될 수 있습니다.
 
 DB 트랜잭션과 Kafka offset 커밋은 별개입니다. DB 저장 후 offset 커밋 전에 종료되면 이벤트가 다시 전달될 수 있어, Consumer는 기존 발급 조회와 DB 유니크 제약으로 중복을 방어합니다. offset은 Kafka 자동 커밋 대신 Spring 리스너 컨테이너가 관리하며, 레코드별 수동 ACK나 DB·Kafka 통합 트랜잭션은 설정하지 않았습니다.
@@ -156,6 +162,8 @@ sequenceDiagram
         end
     end
 ```
+
+[Mermaid 크게 보기](../docs/architecture/phase-4-status.mmd) · [SVG 이미지로 보기](../docs/assets/phase-4-status.svg)
 
 발급 조회는 **해당 쿠폰·사용자의 MySQL 발급 기록**을 읽습니다. `ISSUED`는 DB에 기록이 있다는 뜻입니다. `NOT_CONFIRMED`는 조회 시점에 기록이 없다는 뜻이며, 처리 중·최종 거부·이벤트 유실을 구분하지 않습니다. 이 API는 POST별 요청 ID나 이력을 추적하지 않습니다. 같은 쿠폰·사용자의 기존 발급 기록이 있으면 어떤 POST 뒤에 조회해도 `ISSUED`입니다. 조회 실패로 MySQL에 접근할 수 없으면 `503 STORE_UNAVAILABLE`입니다.
 
@@ -254,6 +262,8 @@ sequenceDiagram
     R-->>API: replica 수신 확인
     Note over API: 이후 Kafka ACK까지 성공하면 202 재개
 ```
+
+[Mermaid 크게 보기](../docs/architecture/phase-4-failover.mmd) · [SVG 이미지로 보기](../docs/assets/phase-4-failover.svg)
 
 위 처리는 현재 코드의 경로 설명입니다. 아래 날짜가 붙은 수치는 기존 실험 기록이며, 문서 갱신 과정에서 장애 실험을 다시 실행한 결과는 아닙니다.
 

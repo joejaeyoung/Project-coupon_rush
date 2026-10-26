@@ -1,0 +1,17 @@
+flowchart LR
+    A["Client<br/>발급 요청 · userId"] --> M["Redis MGET<br/>기간 · 재고 선확인"]
+    M -->|"통과"| R["SADD users → DECR stock<br/>WAIT 1 · replica 수신 확인"]
+    R -->|"통과"| P["Producer.send · acks=all<br/>브로커 ACK 대기"]
+    P -->|"ACK"| S["202 접수"]
+    P -.->|"실패 · 타임아웃"| C["INCR · SREM 보상 → 503"]
+    P --> K["Kafka · coupon-issue"]
+    K --> N["Consumer<br/>발급 여부 확인 → 총량 조건부 UPDATE → INSERT"]
+    N -->|"조건부 UPDATE → INSERT"| DB[("MySQL issued_coupon")]
+    DB --> D["DB 커밋 후 offset 커밋"]
+    S -->|"이후 별도 GET"| Q["발급 상태 조회 API"]
+    Q -->|"issued_coupon 존재 조회"| DB
+    DB -->|"존재 / 없음"| Q
+    Q -->|"ISSUED / NOT_CONFIRMED"| A
+    M -->|"소진 · 기간 외"| F["400 · 404 · 409 · 503"]
+    R -->|"중복 · 소진 · 복제 안 됨"| F
+    style P fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
