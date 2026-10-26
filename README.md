@@ -2,20 +2,20 @@
 
 # Coupon Rush
 
-**선착순 쿠폰 발급을 DB 락 → Redis → Redis+Kafka → Kafka ACK 확인·보상의 네 단계로 구현하고, 같은 부하로 비교했습니다.**
+**선착순 쿠폰 발급을 DB 락 → Redis → Redis+Kafka → Kafka ACK 확인·보상의 네 단계로 구현하고, 다섯 가지 처리 경로를 따로 실험했습니다.**
 
 ![Java 17](https://img.shields.io/badge/Java-17-334155?style=flat-square)
 ![Spring Boot 3.4.1](https://img.shields.io/badge/Spring_Boot-3.4.1-6DB33F?style=flat-square)
 ![Redis 7](https://img.shields.io/badge/Redis-7-DC382D?style=flat-square)
 ![Kafka 3.7.1](https://img.shields.io/badge/Kafka-3.7.1-231F20?style=flat-square)
 
-[최신 구현](#최신-구현) · [측정 결과](#측정-결과) · [실행](#실행) · [기존 세 단계](#기존-phase-13) · [남은 과제](#남은-과제)
+[최신 구현](#최신-구현) · [측정 결과](#측정-결과) · [실행](#실행) · [비교 실험](#비교-실험--5-coupon_experiments) · [기존 세 단계](#기존-phase-13) · [남은 과제](#남은-과제)
 
 </div>
 
-DB 비관적 락 → Redis → Redis+Kafka의 세 단계 비교에서 시작한 개인 프로젝트입니다. 2026년 10월에 다섯 경로(Redis 앞단·Kafka 앞단·DB Outbox·Redis Streams)를 독립 실험 모듈로 구현해 장애·순서·분포를 관찰했고([실증 보고서](docs/experiments-2026-10-22.md)), 그 결과를 들고 간 멘토링(2026-10-25)에서 "KV outbox는 복잡해진다, 어차피 있는 Kafka를 써라"는 피드백을 받았습니다. 그래서 4단계는 실험 모듈이 아니라 **Phase 3에 브로커 ACK 확인과 보상만 더한 최소 구성**으로 정리했습니다.
+DB 비관적 락 → Redis → Redis+Kafka의 세 단계 비교에서 시작한 개인 프로젝트입니다. 2026년 10월에 다섯 경로(Redis 앞단·Kafka 앞단·DB Outbox·Redis Streams)를 [독립 실험 모듈](#비교-실험--5-coupon_experiments)로 구현해 장애·순서·분포를 관찰했고([실증 보고서](docs/experiments-2026-10-22.md)), 그 결과를 들고 간 멘토링(2026-10-25)에서 "KV outbox는 복잡해진다, 어차피 있는 Kafka를 써라"는 피드백을 받았습니다. 그래서 4단계는 실험 모듈이 아니라 **Phase 3에 브로커 ACK 확인과 보상만 더한 최소 구성**으로 정리했습니다.
 
-**현재 구현 기준은 `4-coupon_redisHA_kafka/`입니다.** 기존 `1-coupon_db_lock/`·`2-coupon_redis/`·`3-coupon_redis_kafka/`는 비교 기준선으로 보존합니다. 실험 모듈 `4-coupon_experiments/`는 main에서 제거했고, 코드·결과 파일은 커밋 [`dc0e901`](https://github.com/joejaeyoung/Project-coupon_rush/tree/dc0e901/4-coupon_experiments)에 남아 있습니다.
+**현재 구현 기준은 `4-coupon_redisHA_kafka/`입니다.** 기존 `1-coupon_db_lock/`·`2-coupon_redis/`·`3-coupon_redis_kafka/`는 비교 기준선으로 보존합니다. `5-coupon_experiments/`는 4단계 전에 다섯 경로를 비교한 실험 모듈로 남겨 둡니다.
 
 ## 최신 구현
 
@@ -88,6 +88,100 @@ k6 run -e COUPON_ID=1 -e USERS=1000 k6/concurrent-issue.js
 ```
 
 Redis는 6381/6382를 쓰므로 6379를 점유한 다른 컨테이너와 겹치지 않습니다.
+
+## 비교 실험 — 5-coupon_experiments
+
+4단계보다 먼저(2026-10-22) 만든 독립 실험 모듈입니다. 번호는 작업 순서가 아니라 역할 순서이고, **현재 구현은 4번**입니다. 멘토링에 가져간 다섯 질문(처리 순서·원자성·장애 복구·확장·순서 보장)을 다섯 처리 경로로 구현하고 실제 장애·부하로 비교했습니다. 4단계는 여기서 "Kafka 앞단에 직접 발행 + 브로커 ACK 확인"만 골라 Phase 3에 얹은 것입니다.
+
+| 경로 | 예약·전달 방식 | 장애 후 처리 |
+| --- | --- | --- |
+| **SPLIT_REDIS** | 개별 SADD·DECR → Kafka → DB | 미발행 예약은 같은 요청 ID로 재시도 |
+| **LUA_REDIS** | Lua로 중복·재고·요청 ID·순번 판정 → Kafka → DB | Redis 내부 원자성 이후에도 외부 발행 공백은 남음 |
+| **KAFKA_FIRST** | Kafka ACK → Consumer의 Lua 예약 → DB | 로그에 기록된 요청을 Consumer가 다시 처리 |
+| **DB_OUTBOX** | DB 예약·재고·Outbox 동시 커밋 → relay → Kafka | 커밋된 전달 기록으로 자동 재개 |
+| **REDIS_STREAM** | 같은 슬롯의 Lua 예약·XADD → relay → Kafka | 같은 consumer 이름의 PEL부터 복구, Kafka ACK 후 XACK |
+
+모든 경로는 **동기식 MySQL 요청 원장**을 먼저 기록하고, 최종 발급에는 DB 총량 제한·유일 제약을 적용합니다. Kafka 앞단도 DB를 전혀 거치지 않는 구조가 아닙니다. 요청 ID별 결과는 상태 API에서 조회합니다. DB Outbox만 예약 시 DB 재고를 차감하고, 나머지는 최종 발급 트랜잭션에서 DB 재고도 차감합니다.
+
+```mermaid
+flowchart LR
+    A["발급 요청 · requestId"] --> J["MySQL 요청 원장"]
+    J --> R["Redis 예약<br/>SPLIT / LUA"]
+    J --> O["DB 예약 + Outbox<br/>같은 트랜잭션"]
+    J --> S["Lua 예약 + XADD<br/>같은 hash slot"]
+    J -->|"KAFKA_FIRST"| K["Kafka · couponId 키"]
+    R --> K
+    O -->|"relay"| K
+    S -->|"relay · ACK 후 XACK"| K
+    K --> C["Consumer<br/>Kafka-first는 여기서 Lua 예약"]
+    C --> D["DB 발급 · 상태 확정<br/>총량 제한 + 유일 제약"]
+    D --> B["Commit Barrier<br/>미완료 offset을 넘지 않는 commitSync"]
+```
+
+| 기술 키워드 | 구현한 내용 | 코드 |
+| --- | --- | --- |
+| **Lua·Hash Slot** | 중복·재고·요청 ID 원자 예약, `{runId:couponId}` 키 배치, Stream 기록 | [RedisReservations](5-coupon_experiments/spring/src/main/java/com/example/couponlab/RedisReservations.java) |
+| **트랜잭션·Outbox** | 예약·전달 기록 동시 커밋, 유일 제약, 발급·취소의 요청 행 잠금, 종료 상태 재검사 | [LabStore](5-coupon_experiments/spring/src/main/java/com/example/couponlab/LabStore.java) |
+| **재처리·순서** | BLOCKING/RETRY_LATER, 직접 commitSync, 재할당 시 안전한 commit | [KafkaTransport](5-coupon_experiments/spring/src/main/java/com/example/couponlab/KafkaTransport.java), [CommitBarrier](5-coupon_experiments/spring/src/main/java/com/example/couponlab/CommitBarrier.java) |
+| **장애 복구** | Outbox 재발행, Stream PEL 복구, 직접 전송 경로의 동일 ID 재시도 | [LabService](5-coupon_experiments/spring/src/main/java/com/example/couponlab/LabService.java) |
+| **HA·분포 실험** | Kafka 3노드 RF3/minISR2, Redis primary/replica·Sentinel, Cluster 3 master | [Compose](5-coupon_experiments/compose.yml), [실험 인프라](5-coupon_experiments/infra/README.md) |
+
+<details>
+<summary><strong>실험 결과와 재현 방법 보기</strong></summary>
+
+### 실험 결과
+
+다음은 **2026-10-22에 저장한 실행 결과**입니다. 소스·JAR 변경 전 성능 측정과 복구 후 회귀 검증을 나눴습니다. [전체 실증 보고서](docs/experiments-2026-10-22.md)에 환경·시나리오·해석 범위가 있습니다.
+
+| 검증 | 저장된 결과 | 원본 |
+| --- | --- | --- |
+| 복구 후 정상·중복·요청 ID | 20/20 케이스 통과 | [정상 결과](5-coupon_experiments/results/recovery-2026-10-22/correctness/summary.json) |
+| 복구 후 예외·재처리·취소 | 27/27 케이스 통과 | [장애 결과](5-coupon_experiments/results/recovery-2026-10-22/faults/summary.json) |
+| 복구 후 순서·Consumer 재할당 | 4/4 케이스 통과 | [순서 결과](5-coupon_experiments/results/recovery-2026-10-22/ordering/summary.json) |
+| 실제 JVM 종료·재기동 | 다섯 경로의 기대한 복구 결과 확인 | [프로세스 복구](5-coupon_experiments/results/recovery-2026-10-22/process-recovery.json) |
+| 키 분포·파티션·Consumer 비교 | 135/135 조합, 측정 40,500건·warmup 2,700건 | [분포 결과](5-coupon_experiments/results/distribution/summary.json) |
+| 실제 API JVM 1개·2개 비교 | 8/8, 측정 8,000건·warmup 160건 | [API 확장](5-coupon_experiments/results/api-scaling.json) |
+| Redis Cluster 분포 | 18회·Lua 예약 216,000건 대조 | [Cluster 결과](5-coupon_experiments/results/redis-cluster.json) |
+| 실제 Kafka 장애 | 리더 종료·2노드 중단 후 재시도/자동 복구 비교 | [리더 장애](5-coupon_experiments/results/kafka-leader-failover.json), [다섯 경로](5-coupon_experiments/results/kafka-outage-paths.json) |
+| Redis 장애 | Sentinel 자동 승격, 복제 지연 중 승인 쓰기·예약 손실 반례 | [Sentinel](5-coupon_experiments/results/redis-sentinel.json), [예약 손실](5-coupon_experiments/results/coupon-failover.json) |
+
+**PASS는 정상 동작의 검증 또는 의도한 실패의 재현을 뜻합니다.** Redis 승인 쓰기 손실과 완료 순서 역전을 재현한 결과까지 포함하므로, 모든 장애에서 무손실·엄격한 선착순을 보장한다는 뜻은 아닙니다.
+
+기술적으로 확인한 차이는 다음과 같습니다.
+
+- Lua 원자 예약 후에도 Kafka 발행 전에 중단될 수 있습니다. Outbox·Stream의 자동 재개와 동일 ID를 이용한 명시적 재시도를 비교했습니다.
+- Kafka append 순서, API 원장 기록 순서, 최종 발급 완료 순서는 다를 수 있습니다. 안전한 offset commit과 완료 순서 보장은 별도입니다.
+- 여러 쿠폰은 파티션·노드로 분산할 수 있지만, 같은 쿠폰 키는 한 파티션·슬롯에 집중됩니다. 수동 증설만으로 인기 쿠폰이 분할되지는 않았습니다.
+- Sentinel 자동 승격을 확인했습니다. Spring 클라이언트 자동 전환은 검증하지 않았고, Cluster는 replica 없이 분포를 비교했습니다.
+
+**2026-10-23 게시 전 재검증:** Java 테스트 9개·Python 테스트 3개와 `bootJar`가 통과했습니다. 재빌드 JAR SHA-256은 복구 후 기록과 같았습니다. [게시 검증 기록](docs/publication-verification-2026-10-23.md). 장애·부하 실험은 이날 재실행하지 않았습니다.
+
+### 실험 실행
+
+JDK 17, Docker Compose, Python 3가 필요합니다. 모든 실험 포트는 localhost에 바인딩합니다. 같은 checkout과 다른 checkout의 실험도 Compose 프로젝트·포트를 공유하므로 한 번에 하나만 실행합니다.
+
+```bash
+git clone https://github.com/joejaeyoung/Project-coupon_rush.git
+cd Project-coupon_rush/5-coupon_experiments
+python3 infra/lab.py up
+python3 app.py start --build
+python3 scripts/suite.py --scenario correctness --output results/reproduction-correctness
+python3 scripts/suite.py --scenario faults --output results/reproduction-faults
+python3 scripts/suite.py --scenario ordering --output results/reproduction-ordering
+```
+
+인프라를 사용하지 않는 회귀 검증:
+
+```bash
+cd spring
+./gradlew test bootJar --no-daemon
+cd ..
+python3 -m unittest discover -s tests -v
+```
+
+노드 종료·네트워크 분리 실험은 [실험 안내](5-coupon_experiments/README.md)와 [인프라 제어 범위](5-coupon_experiments/infra/README.md)를 읽고 순서대로 실행합니다. 일반 종료는 `python3 app.py stop` 후 `python3 infra/lab.py down`이며, 볼륨은 보존합니다. 기존 결과를 보존하려면 새 출력 경로를 지정합니다.
+
+</details>
 
 ## 기존 Phase 1~3
 
@@ -331,7 +425,8 @@ JUnit은 `CountDownLatch`로 작업 시작을 맞추고, Phase 3은 Awaitility�
 | 경로 | 내용 |
 | --- | --- |
 | [4-coupon_redisHA_kafka](4-coupon_redisHA_kafka/README.md) | 현재 구현. 설계·멘토링 피드백 반영·측정·남은 한계 |
-| [실증 보고서](docs/experiments-2026-10-22.md) | 10월 실험 모듈의 다섯 경로 관측·실패 반례 (코드는 커밋 `dc0e901`) |
+| [5-coupon_experiments](5-coupon_experiments/README.md) | 다섯 경로 비교 실험. API·드라이버·원본 결과·재현 방법 |
+| [실증 보고서](docs/experiments-2026-10-22.md) | 실험 모듈의 구현·관측·실패 반례·버전별 검증 |
 | [게시 검증](docs/publication-verification-2026-10-23.md) | 실험 모듈 게시 당시의 테스트·JAR 해시 확인 (이력) |
 | [멘토링 논의안](docs/mentoring-discussion.md) | 처리 위치·동시성·확장·HA·순서의 질문과 근거 |
 | [9월 측정 기록](docs/benchmark-2026-09-12.md) | 기존 세 단계의 HTTP 벤치마크 |
@@ -339,6 +434,6 @@ JUnit은 `CountDownLatch`로 작업 시작을 맞추고, Phase 3은 Awaitility�
 | [Redis 학습](docs/redis_study.md) · [Kafka 학습](docs/kafka_study.md) · [계획](docs/plan.md) | 학습 예시와 현재 구현의 구분 |
 | [모니터링](docs/monitoring.md) · [브라우저 테스트](load-test.html) | 기존 Phase의 관측·직접 호출 |
 
-Java 17 · Spring Boot 3.4.1 · JPA · MySQL 8 · Redis 7 · Kafka 3.7.1 · Docker Compose · k6 · JUnit 5.
+Java 17 · Spring Boot 3.4.1 · JPA/JDBC · MySQL 8 · Redis 7 · Kafka 3.7.1(1~4단계) / 3.8.1(비교 실험) · Docker Compose · Python · k6 · JUnit 5.
 
 SW마에스트로 멘토링 [과제 명세](ASSIGNMENT.md)에서 시작한 개인 학습·실증 프로젝트입니다.

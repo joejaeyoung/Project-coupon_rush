@@ -3,7 +3,7 @@
 
 > 2026-10-22 보완: 현재 구현과 학습용 예제를 구분하고 전달·순서 보장의 조건을 정정했다. Redis/Kafka 처리 순서, hot partition, 장애 복구와 선착순 기준은 [멘토링 논의안](mentoring-discussion.md)에 정리한다.
 
-> 실제 재현: Kafka 우선 접수·DB Outbox·Redis Stream과 3브로커 환경은 실험 모듈(2026-10-26 main에서 제거, 코드는 [커밋 dc0e901](https://github.com/joejaeyoung/Project-coupon_rush/tree/dc0e901/4-coupon_experiments)), 파티션 분포·증설 시 키 이동·재시도와 리밸런싱의 순서·브로커 장애 결과는 [실증 보고서](experiments-2026-10-22.md)를 참고한다. 이 문서의 기존 Phase 3 단일 브로커 설명과 구분한다. 현재 4단계 [4-coupon_redisHA_kafka](../4-coupon_redisHA_kafka/README.md)는 Lua·Stream 없이 Phase 3에 Kafka ACK 확인과 보상, DB 유니크 제약을 더한 최소 구성이다.
+> 실제 재현: Kafka 우선 접수·DB Outbox·Redis Stream과 3브로커 환경은 [실험 모듈](../5-coupon_experiments/README.md), 파티션 분포·증설 시 키 이동·재시도와 리밸런싱의 순서·브로커 장애 결과는 [실증 보고서](experiments-2026-10-22.md)를 참고한다. 이 문서의 기존 Phase 3 단일 브로커 설명과 구분한다. 현재 4단계 [4-coupon_redisHA_kafka](../4-coupon_redisHA_kafka/README.md)는 Lua·Stream 없이 Phase 3에 Kafka ACK 확인과 보상, DB 유니크 제약을 더한 최소 구성이다.
 
 ---
 

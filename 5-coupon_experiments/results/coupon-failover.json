@@ -1,0 +1,813 @@
+{
+  "name": "coupon_reservation_loss_during_redis_failover",
+  "startedAt": "2026-10-22T10:08:42.141468+00:00",
+  "strategy": "LUA_REDIS",
+  "initialStock": 2,
+  "checks": [
+    {
+      "name": "initial_stock_replicated",
+      "passed": true,
+      "actual": {
+        "service": "redis-replica",
+        "stock": 2,
+        "users": [],
+        "lostRequestSequence": null
+      },
+      "expected": "stock2, no users"
+    },
+    {
+      "name": "lua_reservation_preceded_failure",
+      "passed": true,
+      "actual": {
+        "service": "redis-primary",
+        "stock": 1,
+        "users": [
+          "lost-user"
+        ],
+        "lostRequestSequence": "1"
+      },
+      "expected": "stock1, lost-user recorded, request sequence recorded"
+    },
+    {
+      "name": "sql_tracks_unpublished_reservation",
+      "passed": true,
+      "actual": {
+        "issued": 0,
+        "pending": 1,
+        "request": {
+          "requestId": "lost-reservation",
+          "couponId": 1,
+          "userId": "lost-user",
+          "status": "RESERVED",
+          "reason": null,
+          "partition": null,
+          "offset": null,
+          "reservationSeq": 1,
+          "completionSeq": null,
+          "receivedAt": 1792663724962,
+          "completedAt": null,
+          "reserved": true,
+          "published": false,
+          "fault": "AFTER_RESERVE",
+          "faultConsumed": true,
+          "processingDelayMs": 0,
+          "dbReserved": false
+        }
+      },
+      "expected": "reserved pending request; nothing issued or published"
+    },
+    {
+      "name": "sql_pending_survives_redis_failure",
+      "passed": true,
+      "actual": {
+        "issued": 0,
+        "pending": 1
+      },
+      "expected": "issued0,pending1"
+    },
+    {
+      "name": "retry_issues_once_in_mysql",
+      "passed": true,
+      "actual": {
+        "issued": 1,
+        "ledgerIssued": 1,
+        "dbRemaining": 1
+      },
+      "expected": "one issuance, one remaining"
+    },
+    {
+      "name": "final_mysql_capacity_guard",
+      "passed": true,
+      "actual": {
+        "issued": 2,
+        "rejected": 1,
+        "ledgerIssued": 2,
+        "dbRemaining": 0,
+        "ledgerDuplicateUsers": 0
+      },
+      "expected": "issued2,rejected1,remaining0,no duplicates"
+    },
+    {
+      "name": "excess_redis_reservation_rejected_by_db",
+      "passed": true,
+      "actual": [
+        {
+          "requestId": "additional-2",
+          "couponId": 1,
+          "userId": "additional-user-2",
+          "status": "REJECTED",
+          "reason": "DB_CAPACITY_GUARD",
+          "partition": 0,
+          "offset": 2,
+          "reservationSeq": 2,
+          "completionSeq": null,
+          "receivedAt": 1792663739748,
+          "completedAt": 1792663739763,
+          "reserved": true,
+          "published": true,
+          "fault": null,
+          "faultConsumed": false,
+          "processingDelayMs": 0,
+          "dbReserved": false
+        }
+      ],
+      "expected": "additional-2 rejected by final DB capacity guard"
+    }
+  ],
+  "expectedObservations": [
+    {
+      "name": "promoted_replica_lost_stock_and_dedup",
+      "passed": true,
+      "actual": {
+        "service": "redis-replica",
+        "stock": 2,
+        "users": [],
+        "lostRequestSequence": null
+      },
+      "expected": "stock2, no user or request reservation"
+    },
+    {
+      "name": "retry_does_not_rebuild_lost_redis_reservation",
+      "passed": true,
+      "actual": {
+        "service": "redis-primary",
+        "stock": 2,
+        "users": [],
+        "lostRequestSequence": null
+      },
+      "expected": "Redis still stock2/users0 while MySQL issued1"
+    },
+    {
+      "name": "equal_counts_do_not_prove_membership_consistency",
+      "passed": true,
+      "actual": {
+        "redisUsers": [
+          "additional-user-1",
+          "additional-user-2"
+        ],
+        "issuedUsers": [
+          "additional-user-1",
+          "lost-user"
+        ]
+      },
+      "expected": "same count but different Redis and issued user identities"
+    }
+  ],
+  "http": [
+    {
+      "method": "POST",
+      "path": "/lab/runs",
+      "payload": {
+        "strategy": "LUA_REDIS",
+        "stock": 2,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 1
+      },
+      "http": 201,
+      "body": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+        "runId": "b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+        "strategy": "LUA_REDIS"
+      },
+      "ms": 46.2758750654757
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/b58c042e-3a6a-42ef-b93c-338f4d271f6f/control",
+      "payload": {
+        "paused": true
+      },
+      "http": 200,
+      "body": {
+        "runId": "b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+        "workers": 1,
+        "paused": true
+      },
+      "ms": 3.7194169126451015
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/b58c042e-3a6a-42ef-b93c-338f4d271f6f/requests",
+      "payload": {
+        "requestId": "lost-reservation",
+        "couponId": 1,
+        "userId": "lost-user",
+        "fault": "AFTER_RESERVE"
+      },
+      "http": 503,
+      "body": {
+        "reason": "INJECTED_AFTER_RESERVE",
+        "status": "ERROR"
+      },
+      "ms": 13.713250402361155
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/b58c042e-3a6a-42ef-b93c-338f4d271f6f/control",
+      "payload": {
+        "paused": false
+      },
+      "http": 200,
+      "body": {
+        "runId": "b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+        "workers": 1,
+        "paused": false
+      },
+      "ms": 3.6623328924179077
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/b58c042e-3a6a-42ef-b93c-338f4d271f6f/requests",
+      "payload": {
+        "requestId": "lost-reservation",
+        "couponId": 1,
+        "userId": "lost-user"
+      },
+      "http": 202,
+      "body": {
+        "requestId": "lost-reservation",
+        "couponId": 1,
+        "userId": "lost-user",
+        "status": "PENDING",
+        "reason": null,
+        "partition": 0,
+        "offset": 0,
+        "reservationSeq": 1,
+        "completionSeq": null,
+        "receivedAt": 1792663724962,
+        "completedAt": null,
+        "reserved": true,
+        "published": true,
+        "fault": "AFTER_RESERVE",
+        "faultConsumed": true,
+        "processingDelayMs": 0,
+        "dbReserved": false,
+        "stage": "PENDING"
+      },
+      "ms": 15.58229187503457
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/b58c042e-3a6a-42ef-b93c-338f4d271f6f/requests",
+      "payload": {
+        "requestId": "additional-1",
+        "couponId": 1,
+        "userId": "additional-user-1"
+      },
+      "http": 202,
+      "body": {
+        "requestId": "additional-1",
+        "couponId": 1,
+        "userId": "additional-user-1",
+        "status": "PENDING",
+        "reason": null,
+        "partition": 0,
+        "offset": 1,
+        "reservationSeq": 1,
+        "completionSeq": null,
+        "receivedAt": 1792663739512,
+        "completedAt": null,
+        "reserved": true,
+        "published": true,
+        "fault": null,
+        "faultConsumed": false,
+        "processingDelayMs": 0,
+        "dbReserved": false,
+        "stage": "PENDING"
+      },
+      "ms": 17.026416957378387
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/b58c042e-3a6a-42ef-b93c-338f4d271f6f/requests",
+      "payload": {
+        "requestId": "additional-2",
+        "couponId": 1,
+        "userId": "additional-user-2"
+      },
+      "http": 202,
+      "body": {
+        "requestId": "additional-2",
+        "couponId": 1,
+        "userId": "additional-user-2",
+        "status": "PENDING",
+        "reason": null,
+        "partition": 0,
+        "offset": 2,
+        "reservationSeq": 2,
+        "completionSeq": null,
+        "receivedAt": 1792663739748,
+        "completedAt": null,
+        "reserved": true,
+        "published": true,
+        "fault": null,
+        "faultConsumed": false,
+        "processingDelayMs": 0,
+        "dbReserved": false,
+        "stage": "PENDING"
+      },
+      "ms": 16.35629218071699
+    }
+  ],
+  "passed": true,
+  "scope": [
+    "Real Lua coupon reservation, actual replica network isolation, actual primary SIGKILL, manual replica promotion",
+    "HTTP AFTER_RESERVE is an injected API exception after Redis reservation and its SQL tracking update",
+    "The lost reservation is SQL reserved=true; this Lua strategy does not create a DB Outbox reservation",
+    "MySQL shared final capacity guard limits issuance but does not automatically rebuild Redis membership",
+    "A passed expected observation means a specified inconsistency was reproduced, not that failover is lossless"
+  ],
+  "initialRestore": {
+    "action": "redis-restore",
+    "project": "coupon-lab",
+    "at": "2026-10-22T10:08:42.180474+00:00",
+    "ok": true,
+    "primary": "127.0.0.1:26379",
+    "replica": "127.0.0.1:26380",
+    "replication": {
+      "role": "slave",
+      "master_host": "redis-primary",
+      "master_port": "6379",
+      "master_link_status": "up",
+      "master_last_io_seconds_ago": "2",
+      "master_sync_in_progress": "0",
+      "slave_read_repl_offset": "21643295",
+      "slave_repl_offset": "21643295",
+      "slave_priority": "100",
+      "slave_read_only": "1",
+      "replica_announced": "1",
+      "connected_slaves": "0",
+      "master_failover_state": "no-failover",
+      "master_replid": "eaaeea5ae5c497df5dff889d53e965620d29ae54",
+      "master_replid2": "57122874d0d7296a0de89b6abf1d4d852616466b",
+      "master_repl_offset": "21643295",
+      "second_repl_offset": "453628",
+      "repl_backlog_active": "1",
+      "repl_backlog_size": "1048576",
+      "repl_backlog_first_byte_offset": "20583081",
+      "repl_backlog_histlen": "1060215"
+    },
+    "logs": "results/infra/20261022T100843924534Z-redis-restored.log"
+  },
+  "runId": "b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+  "replicaBeforeIsolation": {
+    "service": "redis-replica",
+    "stock": 2,
+    "users": [],
+    "lostRequestSequence": null
+  },
+  "isolation": {
+    "action": "redis-freeze-replica",
+    "project": "coupon-lab",
+    "at": "2026-10-22T10:08:44.348892+00:00",
+    "ok": true,
+    "replica_network_isolated": true,
+    "before": {
+      "role": "slave",
+      "master_host": "redis-primary",
+      "master_port": "6379",
+      "master_link_status": "up",
+      "master_last_io_seconds_ago": "0",
+      "master_sync_in_progress": "0",
+      "slave_read_repl_offset": "21643372",
+      "slave_repl_offset": "21643372",
+      "slave_priority": "100",
+      "slave_read_only": "1",
+      "replica_announced": "1",
+      "connected_slaves": "0",
+      "master_failover_state": "no-failover",
+      "master_replid": "eaaeea5ae5c497df5dff889d53e965620d29ae54",
+      "master_replid2": "57122874d0d7296a0de89b6abf1d4d852616466b",
+      "master_repl_offset": "21643372",
+      "second_repl_offset": "453628",
+      "repl_backlog_active": "1",
+      "repl_backlog_size": "1048576",
+      "repl_backlog_first_byte_offset": "20583081",
+      "repl_backlog_histlen": "1060292"
+    },
+    "primary_after": {
+      "role": "master",
+      "connected_slaves": "0",
+      "master_failover_state": "no-failover",
+      "master_replid": "eaaeea5ae5c497df5dff889d53e965620d29ae54",
+      "master_replid2": "57122874d0d7296a0de89b6abf1d4d852616466b",
+      "master_repl_offset": "21643372",
+      "second_repl_offset": "453628",
+      "repl_backlog_active": "1",
+      "repl_backlog_size": "1048576",
+      "repl_backlog_first_byte_offset": "20587028",
+      "repl_backlog_histlen": "1056345"
+    },
+    "write_to": "127.0.0.1:26379"
+  },
+  "primaryBeforeKill": {
+    "service": "redis-primary",
+    "stock": 1,
+    "users": [
+      "lost-user"
+    ],
+    "lostRequestSequence": "1"
+  },
+  "snapshotBeforeKill": {
+    "runId": "b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+    "strategy": "LUA_REDIS",
+    "topic": "coupon-lab-b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+    "ordering": "BLOCKING",
+    "paused": true,
+    "workers": 1,
+    "partitions": 3,
+    "received": 1,
+    "accepted": 1,
+    "reserved": 1,
+    "issued": 0,
+    "rejected": 0,
+    "cancelled": 0,
+    "pending": 1,
+    "activeDbReservations": 0,
+    "ledgerIssued": 0,
+    "ledgerDuplicateUsers": 0,
+    "outboxPending": 0,
+    "unpublishedStreamReservations": 0,
+    "streamPel": 0,
+    "streamLag": 0,
+    "streamPending": 0,
+    "consumerErrors": 0,
+    "replays": 0,
+    "relayErrors": 0,
+    "perCoupon": [
+      {
+        "couponId": 1,
+        "total": 2,
+        "dbRemaining": 2,
+        "issued": 0,
+        "ledgerIssued": 0,
+        "redisStock": 1,
+        "redisUsers": 1
+      }
+    ],
+    "requests": [
+      {
+        "requestId": "lost-reservation",
+        "couponId": 1,
+        "userId": "lost-user",
+        "status": "RESERVED",
+        "reason": null,
+        "partition": null,
+        "offset": null,
+        "reservationSeq": 1,
+        "completionSeq": null,
+        "receivedAt": 1792663724962,
+        "completedAt": null,
+        "reserved": true,
+        "published": false,
+        "fault": "AFTER_RESERVE",
+        "faultConsumed": true,
+        "processingDelayMs": 0,
+        "dbReserved": false
+      }
+    ]
+  },
+  "promotion": {
+    "action": "redis-promote",
+    "project": "coupon-lab",
+    "at": "2026-10-22T10:08:45.271415+00:00",
+    "ok": true,
+    "promoted": "127.0.0.1:26380",
+    "promoted_service": "redis-replica",
+    "read_via": "docker compose -p coupon-lab -f compose.yml exec -T redis-replica redis-cli --raw",
+    "replication": {
+      "role": "master",
+      "connected_slaves": "0",
+      "master_failover_state": "no-failover",
+      "master_replid": "4e7ea5f30caecd440c61b51197c9a62f7af714a2",
+      "master_replid2": "eaaeea5ae5c497df5dff889d53e965620d29ae54",
+      "master_repl_offset": "21643372",
+      "second_repl_offset": "21643373",
+      "repl_backlog_active": "1",
+      "repl_backlog_size": "1048576",
+      "repl_backlog_first_byte_offset": "20583081",
+      "repl_backlog_histlen": "1060292"
+    },
+    "logs": "results/infra/20261022T100846078177Z-redis-manual-failover.log"
+  },
+  "promotedRedis": {
+    "service": "redis-replica",
+    "stock": 2,
+    "users": [],
+    "lostRequestSequence": null
+  },
+  "sqlWhilePrimaryDown": {
+    "runId": "b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+    "strategy": "LUA_REDIS",
+    "topic": "coupon-lab-b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+    "ordering": "BLOCKING",
+    "paused": true,
+    "workers": 1,
+    "partitions": 3,
+    "received": 1,
+    "accepted": 1,
+    "reserved": 1,
+    "issued": 0,
+    "rejected": 0,
+    "cancelled": 0,
+    "pending": 1,
+    "activeDbReservations": 0,
+    "ledgerIssued": 0,
+    "ledgerDuplicateUsers": 0,
+    "outboxPending": 0,
+    "unpublishedStreamReservations": 0,
+    "streamPel": 0,
+    "streamLag": 0,
+    "streamPending": 0,
+    "consumerErrors": 0,
+    "replays": 0,
+    "relayErrors": 0,
+    "perCoupon": [
+      {
+        "couponId": 1,
+        "total": 2,
+        "dbRemaining": 2,
+        "issued": 0,
+        "ledgerIssued": 0,
+        "redisStock": null,
+        "redisUsers": null,
+        "redisError": "QueryTimeoutException"
+      }
+    ],
+    "requests": [
+      {
+        "requestId": "lost-reservation",
+        "couponId": 1,
+        "userId": "lost-user",
+        "status": "RESERVED",
+        "reason": null,
+        "partition": null,
+        "offset": null,
+        "reservationSeq": 1,
+        "completionSeq": null,
+        "receivedAt": 1792663724962,
+        "completedAt": null,
+        "reserved": true,
+        "published": false,
+        "fault": "AFTER_RESERVE",
+        "faultConsumed": true,
+        "processingDelayMs": 0,
+        "dbReserved": false
+      }
+    ]
+  },
+  "restoreAfterPromotion": {
+    "action": "redis-restore",
+    "project": "coupon-lab",
+    "at": "2026-10-22T10:08:48.540642+00:00",
+    "ok": true,
+    "primary": "127.0.0.1:26379",
+    "replica": "127.0.0.1:26380",
+    "replication": {
+      "role": "slave",
+      "master_host": "redis-primary",
+      "master_port": "6379",
+      "master_link_status": "up",
+      "master_last_io_seconds_ago": "0",
+      "master_sync_in_progress": "0",
+      "slave_read_repl_offset": "21643386",
+      "slave_repl_offset": "21643386",
+      "slave_priority": "100",
+      "slave_read_only": "1",
+      "replica_announced": "1",
+      "connected_slaves": "0",
+      "master_failover_state": "no-failover",
+      "master_replid": "343c3fdfdff535dbf99bb0abe1b63b3bd640b165",
+      "master_replid2": "4e7ea5f30caecd440c61b51197c9a62f7af714a2",
+      "master_repl_offset": "21643386",
+      "second_repl_offset": "21643387",
+      "repl_backlog_active": "1",
+      "repl_backlog_size": "1048576",
+      "repl_backlog_first_byte_offset": "20583081",
+      "repl_backlog_histlen": "1060306"
+    },
+    "logs": "results/infra/20261022T100858950899Z-redis-restored.log"
+  },
+  "afterExplicitRetry": {
+    "runId": "b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+    "strategy": "LUA_REDIS",
+    "topic": "coupon-lab-b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+    "ordering": "BLOCKING",
+    "paused": false,
+    "workers": 1,
+    "partitions": 3,
+    "received": 1,
+    "accepted": 1,
+    "reserved": 1,
+    "issued": 1,
+    "rejected": 0,
+    "cancelled": 0,
+    "pending": 0,
+    "activeDbReservations": 0,
+    "ledgerIssued": 1,
+    "ledgerDuplicateUsers": 0,
+    "outboxPending": 0,
+    "unpublishedStreamReservations": 0,
+    "streamPel": 0,
+    "streamLag": 0,
+    "streamPending": 0,
+    "consumerErrors": 0,
+    "replays": 0,
+    "relayErrors": 0,
+    "perCoupon": [
+      {
+        "couponId": 1,
+        "total": 2,
+        "dbRemaining": 1,
+        "issued": 1,
+        "ledgerIssued": 1,
+        "redisStock": 2,
+        "redisUsers": 0
+      }
+    ],
+    "requests": [
+      {
+        "requestId": "lost-reservation",
+        "couponId": 1,
+        "userId": "lost-user",
+        "status": "ISSUED",
+        "reason": null,
+        "partition": 0,
+        "offset": 0,
+        "reservationSeq": 1,
+        "completionSeq": 1,
+        "receivedAt": 1792663724962,
+        "completedAt": 1792663739135,
+        "reserved": true,
+        "published": true,
+        "fault": "AFTER_RESERVE",
+        "faultConsumed": true,
+        "processingDelayMs": 0,
+        "dbReserved": false
+      }
+    ]
+  },
+  "redisAfterExplicitRetry": {
+    "service": "redis-primary",
+    "stock": 2,
+    "users": [],
+    "lostRequestSequence": null
+  },
+  "afterCapacityProbe": {
+    "runId": "b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+    "strategy": "LUA_REDIS",
+    "topic": "coupon-lab-b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+    "ordering": "BLOCKING",
+    "paused": false,
+    "workers": 1,
+    "partitions": 3,
+    "received": 3,
+    "accepted": 3,
+    "reserved": 3,
+    "issued": 2,
+    "rejected": 1,
+    "cancelled": 0,
+    "pending": 0,
+    "activeDbReservations": 0,
+    "ledgerIssued": 2,
+    "ledgerDuplicateUsers": 0,
+    "outboxPending": 0,
+    "unpublishedStreamReservations": 0,
+    "streamPel": 0,
+    "streamLag": 0,
+    "streamPending": 0,
+    "consumerErrors": 0,
+    "replays": 0,
+    "relayErrors": 0,
+    "perCoupon": [
+      {
+        "couponId": 1,
+        "total": 2,
+        "dbRemaining": 0,
+        "issued": 2,
+        "ledgerIssued": 2,
+        "redisStock": 0,
+        "redisUsers": 2
+      }
+    ],
+    "requests": [
+      {
+        "requestId": "lost-reservation",
+        "couponId": 1,
+        "userId": "lost-user",
+        "status": "ISSUED",
+        "reason": null,
+        "partition": 0,
+        "offset": 0,
+        "reservationSeq": 1,
+        "completionSeq": 1,
+        "receivedAt": 1792663724962,
+        "completedAt": 1792663739135,
+        "reserved": true,
+        "published": true,
+        "fault": "AFTER_RESERVE",
+        "faultConsumed": true,
+        "processingDelayMs": 0,
+        "dbReserved": false
+      },
+      {
+        "requestId": "additional-1",
+        "couponId": 1,
+        "userId": "additional-user-1",
+        "status": "ISSUED",
+        "reason": null,
+        "partition": 0,
+        "offset": 1,
+        "reservationSeq": 1,
+        "completionSeq": 2,
+        "receivedAt": 1792663739512,
+        "completedAt": 1792663739530,
+        "reserved": true,
+        "published": true,
+        "fault": null,
+        "faultConsumed": false,
+        "processingDelayMs": 0,
+        "dbReserved": false
+      },
+      {
+        "requestId": "additional-2",
+        "couponId": 1,
+        "userId": "additional-user-2",
+        "status": "REJECTED",
+        "reason": "DB_CAPACITY_GUARD",
+        "partition": 0,
+        "offset": 2,
+        "reservationSeq": 2,
+        "completionSeq": null,
+        "receivedAt": 1792663739748,
+        "completedAt": 1792663739763,
+        "reserved": true,
+        "published": true,
+        "fault": null,
+        "faultConsumed": false,
+        "processingDelayMs": 0,
+        "dbReserved": false
+      }
+    ]
+  },
+  "redisAfterCapacityProbe": {
+    "service": "redis-primary",
+    "stock": 0,
+    "users": [
+      "additional-user-1",
+      "additional-user-2"
+    ],
+    "lostRequestSequence": null
+  },
+  "finalIssuedUsers": [
+    "additional-user-1",
+    "lost-user"
+  ],
+  "stopWorkers": {
+    "http": 200,
+    "body": {
+      "runId": "b58c042e-3a6a-42ef-b93c-338f4d271f6f",
+      "workers": 0,
+      "paused": true
+    },
+    "ms": 9.047625120729208
+  },
+  "finalRestore": {
+    "action": "redis-restore",
+    "project": "coupon-lab",
+    "at": "2026-10-22T10:09:00.067399+00:00",
+    "ok": true,
+    "primary": "127.0.0.1:26379",
+    "replica": "127.0.0.1:26380",
+    "replication": {
+      "role": "slave",
+      "master_host": "redis-primary",
+      "master_port": "6379",
+      "master_link_status": "up",
+      "master_last_io_seconds_ago": "1",
+      "master_sync_in_progress": "0",
+      "slave_read_repl_offset": "21644161",
+      "slave_repl_offset": "21644161",
+      "slave_priority": "100",
+      "slave_read_only": "1",
+      "replica_announced": "1",
+      "connected_slaves": "0",
+      "master_failover_state": "no-failover",
+      "master_replid": "343c3fdfdff535dbf99bb0abe1b63b3bd640b165",
+      "master_replid2": "4e7ea5f30caecd440c61b51197c9a62f7af714a2",
+      "master_repl_offset": "21644161",
+      "second_repl_offset": "21643387",
+      "repl_backlog_active": "1",
+      "repl_backlog_size": "1048576",
+      "repl_backlog_first_byte_offset": "20583081",
+      "repl_backlog_histlen": "1061081"
+    },
+    "logs": "results/infra/20261022T100901701704Z-redis-restored.log"
+  },
+  "restoredHostReachable": true,
+  "finishedAt": "2026-10-22T10:09:01.794338+00:00"
+}

@@ -1,0 +1,445 @@
+{
+  "name": "fault-metadata-lookup-before-handler-DB_OUTBOX",
+  "startedAt": "2026-10-22T09:49:14.064836+00:00",
+  "parameters": {
+    "strategy": "DB_OUTBOX",
+    "stock": 10,
+    "coupons": 1,
+    "partitions": 1,
+    "workers": 1,
+    "ordering": "BLOCKING"
+  },
+  "http": [
+    {
+      "method": "POST",
+      "path": "/lab/runs",
+      "payload": {
+        "strategy": "DB_OUTBOX",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 1,
+        "ordering": "BLOCKING"
+      },
+      "startedAt": "2026-10-22T09:49:14.064860+00:00",
+      "status": 201,
+      "response": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-e7848fa6-c499-49b5-9641-7cb8259847fe",
+        "runId": "e7848fa6-c499-49b5-9641-7cb8259847fe",
+        "strategy": "DB_OUTBOX"
+      },
+      "durationMs": 38.460125,
+      "finishedAt": "2026-10-22T09:49:14.103327+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/e7848fa6-c499-49b5-9641-7cb8259847fe/control",
+      "payload": {
+        "paused": true
+      },
+      "startedAt": "2026-10-22T09:49:14.103344+00:00",
+      "status": 200,
+      "response": {
+        "runId": "e7848fa6-c499-49b5-9641-7cb8259847fe",
+        "workers": 1,
+        "paused": true
+      },
+      "durationMs": 2.261375,
+      "finishedAt": "2026-10-22T09:49:14.105610+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/e7848fa6-c499-49b5-9641-7cb8259847fe/requests",
+      "payload": {
+        "requestId": "lookup-fails-first",
+        "userId": "lookup-fails-first",
+        "couponId": 1,
+        "fault": "READ_BEFORE_HANDLER"
+      },
+      "startedAt": "2026-10-22T09:49:14.105624+00:00",
+      "status": 202,
+      "response": {
+        "requestId": "lookup-fails-first",
+        "couponId": 1,
+        "userId": "lookup-fails-first",
+        "status": "PENDING",
+        "reason": null,
+        "partition": null,
+        "offset": null,
+        "reservationSeq": 1,
+        "completionSeq": null,
+        "receivedAt": 1792662554105,
+        "completedAt": null,
+        "reserved": true,
+        "published": false,
+        "fault": "READ_BEFORE_HANDLER",
+        "faultConsumed": false,
+        "processingDelayMs": 0,
+        "dbReserved": true,
+        "stage": "RESERVED"
+      },
+      "durationMs": 10.034791,
+      "finishedAt": "2026-10-22T09:49:14.115663+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/e7848fa6-c499-49b5-9641-7cb8259847fe/requests",
+      "payload": {
+        "requestId": "after-lookup-failure",
+        "userId": "after-lookup-failure",
+        "couponId": 1
+      },
+      "startedAt": "2026-10-22T09:49:14.115677+00:00",
+      "status": 202,
+      "response": {
+        "requestId": "after-lookup-failure",
+        "couponId": 1,
+        "userId": "after-lookup-failure",
+        "status": "PENDING",
+        "reason": null,
+        "partition": null,
+        "offset": null,
+        "reservationSeq": 2,
+        "completionSeq": null,
+        "receivedAt": 1792662554115,
+        "completedAt": null,
+        "reserved": true,
+        "published": false,
+        "fault": null,
+        "faultConsumed": false,
+        "processingDelayMs": 0,
+        "dbReserved": true,
+        "stage": "RESERVED"
+      },
+      "durationMs": 7.606791,
+      "finishedAt": "2026-10-22T09:49:14.123288+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/e7848fa6-c499-49b5-9641-7cb8259847fe/control",
+      "payload": {
+        "paused": false
+      },
+      "startedAt": "2026-10-22T09:49:14.123299+00:00",
+      "status": 200,
+      "response": {
+        "runId": "e7848fa6-c499-49b5-9641-7cb8259847fe",
+        "workers": 1,
+        "paused": false
+      },
+      "durationMs": 2.211,
+      "finishedAt": "2026-10-22T09:49:14.125514+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/e7848fa6-c499-49b5-9641-7cb8259847fe",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:14.125524+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 2,
+        "issued": 0
+      },
+      "durationMs": 4.809542,
+      "finishedAt": "2026-10-22T09:49:14.130339+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/e7848fa6-c499-49b5-9641-7cb8259847fe",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:14.283931+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 2,
+        "issued": 0
+      },
+      "durationMs": 8.904041,
+      "finishedAt": "2026-10-22T09:49:14.292886+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/e7848fa6-c499-49b5-9641-7cb8259847fe",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:14.443661+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 2,
+        "issued": 0
+      },
+      "durationMs": 6.956167,
+      "finishedAt": "2026-10-22T09:49:14.450648+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/e7848fa6-c499-49b5-9641-7cb8259847fe",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:14.601744+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 2,
+        "pending": 0,
+        "issued": 2
+      },
+      "durationMs": 8.75725,
+      "finishedAt": "2026-10-22T09:49:14.610527+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/e7848fa6-c499-49b5-9641-7cb8259847fe/control",
+      "payload": {
+        "paused": true,
+        "workers": 0
+      },
+      "startedAt": "2026-10-22T09:49:14.610646+00:00",
+      "status": 200,
+      "response": {
+        "runId": "e7848fa6-c499-49b5-9641-7cb8259847fe",
+        "workers": 0,
+        "paused": true
+      },
+      "durationMs": 6.403834,
+      "finishedAt": "2026-10-22T09:49:14.617058+00:00"
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "settled",
+      "observedAt": "2026-10-22T09:49:14.610563+00:00",
+      "value": {
+        "runId": "e7848fa6-c499-49b5-9641-7cb8259847fe",
+        "strategy": "DB_OUTBOX",
+        "topic": "coupon-lab-e7848fa6-c499-49b5-9641-7cb8259847fe",
+        "ordering": "BLOCKING",
+        "paused": false,
+        "workers": 1,
+        "partitions": 1,
+        "received": 2,
+        "accepted": 2,
+        "reserved": 2,
+        "issued": 2,
+        "rejected": 0,
+        "cancelled": 0,
+        "pending": 0,
+        "activeDbReservations": 0,
+        "ledgerIssued": 2,
+        "ledgerDuplicateUsers": 0,
+        "outboxPending": 0,
+        "unpublishedStreamReservations": 0,
+        "streamPel": 0,
+        "streamLag": 0,
+        "streamPending": 0,
+        "consumerErrors": 1,
+        "replays": 0,
+        "relayErrors": 0,
+        "perCoupon": [
+          {
+            "couponId": 1,
+            "total": 10,
+            "dbRemaining": 8,
+            "issued": 2,
+            "ledgerIssued": 2,
+            "redisStock": null,
+            "redisUsers": null
+          }
+        ],
+        "requests": [
+          {
+            "requestId": "lookup-fails-first",
+            "couponId": 1,
+            "userId": "lookup-fails-first",
+            "status": "ISSUED",
+            "reason": null,
+            "partition": 0,
+            "offset": 0,
+            "reservationSeq": 1,
+            "completionSeq": 1,
+            "receivedAt": 1792662554105,
+            "completedAt": 1792662554549,
+            "reserved": true,
+            "published": true,
+            "fault": "READ_BEFORE_HANDLER",
+            "faultConsumed": true,
+            "processingDelayMs": 0,
+            "dbReserved": false
+          },
+          {
+            "requestId": "after-lookup-failure",
+            "couponId": 1,
+            "userId": "after-lookup-failure",
+            "status": "ISSUED",
+            "reason": null,
+            "partition": 0,
+            "offset": 1,
+            "reservationSeq": 2,
+            "completionSeq": 2,
+            "receivedAt": 1792662554115,
+            "completedAt": 1792662554563,
+            "reserved": true,
+            "published": true,
+            "fault": null,
+            "faultConsumed": false,
+            "processingDelayMs": 0,
+            "dbReserved": false
+          }
+        ]
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "metadata_lookup_fault_triggered",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "metadata_lookup_failure_observed",
+      "passed": true,
+      "actual": 1,
+      "expected": ">=1"
+    },
+    {
+      "name": "failed_metadata_record_retried_before_next_record",
+      "passed": true,
+      "actual": [
+        1,
+        2
+      ],
+      "expected": "first < second"
+    },
+    {
+      "name": "coupon_snapshot_present",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "coupon_1_no_oversell",
+      "passed": true,
+      "actual": 2,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_db_counter_conservation",
+      "passed": true,
+      "actual": {
+        "dbRemaining": 8,
+        "issued": 2
+      },
+      "expected": 10
+    },
+    {
+      "name": "coupon_1_db_stock_within_bounds",
+      "passed": true,
+      "actual": 8,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_request_state_matches_final_ledger",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "no_duplicate_issued_user_per_coupon",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "request_ids_unique",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "issued_count_matches_requests",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "issued_count_matches_final_database_ledger",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "no_duplicate_users_in_final_database_ledger",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "name": "expected_issued",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "name": "all_requests_terminal",
+      "passed": true,
+      "actual": [],
+      "expected": []
+    }
+  ],
+  "expectedObservations": [],
+  "metrics": {
+    "settledWaitMs": 485.04229122772813,
+    "apiLatencyMs": {
+      "samples": 2,
+      "min": 7.606791,
+      "mean": 8.820791,
+      "p50": 7.606791,
+      "p95": 10.034791,
+      "p99": 10.034791,
+      "max": 10.034791
+    },
+    "httpStatusCounts": {
+      "202": 2
+    },
+    "issuedEndToEndLatencyMs": {
+      "samples": 2,
+      "min": 444.0,
+      "mean": 446.0,
+      "p50": 444.0,
+      "p95": 448.0,
+      "p99": 448.0,
+      "max": 448.0
+    },
+    "allTerminalEndToEndLatencyMs": {
+      "samples": 2,
+      "min": 444.0,
+      "mean": 446.0,
+      "p50": 444.0,
+      "p95": 448.0,
+      "p99": 448.0,
+      "max": 448.0
+    },
+    "partitionRequestCounts": {
+      "0": 2
+    },
+    "issued": 2,
+    "totalRunIssuedIncludingWarmup": 2
+  },
+  "run": {
+    "couponIds": [
+      1
+    ],
+    "topic": "coupon-lab-e7848fa6-c499-49b5-9641-7cb8259847fe",
+    "runId": "e7848fa6-c499-49b5-9641-7cb8259847fe",
+    "strategy": "DB_OUTBOX"
+  },
+  "finishedAt": "2026-10-22T09:49:14.617094+00:00",
+  "passed": true
+}

@@ -1,0 +1,404 @@
+{
+  "name": "fault-after-db-before-offset-commit-KAFKA_FIRST",
+  "startedAt": "2026-10-22T09:49:01.223700+00:00",
+  "parameters": {
+    "strategy": "KAFKA_FIRST",
+    "stock": 10,
+    "coupons": 1,
+    "partitions": 3,
+    "workers": 3,
+    "ordering": "BLOCKING"
+  },
+  "http": [
+    {
+      "method": "POST",
+      "path": "/lab/runs",
+      "payload": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      },
+      "startedAt": "2026-10-22T09:49:01.223714+00:00",
+      "status": 201,
+      "response": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+        "runId": "3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+        "strategy": "KAFKA_FIRST"
+      },
+      "durationMs": 36.779875,
+      "finishedAt": "2026-10-22T09:49:01.260501+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/3b2c4fe6-064c-4573-b85b-ae197deadbc6/requests",
+      "payload": {
+        "requestId": "committed-before-ack",
+        "userId": "committed-before-ack",
+        "couponId": 1,
+        "fault": "AFTER_DB"
+      },
+      "startedAt": "2026-10-22T09:49:01.260526+00:00",
+      "status": 202,
+      "response": {
+        "requestId": "committed-before-ack",
+        "couponId": 1,
+        "userId": "committed-before-ack",
+        "status": "PENDING",
+        "reason": null,
+        "partition": 0,
+        "offset": 0,
+        "reservationSeq": null,
+        "completionSeq": null,
+        "receivedAt": 1792662541260,
+        "completedAt": null,
+        "reserved": false,
+        "published": true,
+        "fault": "AFTER_DB",
+        "faultConsumed": false,
+        "processingDelayMs": 0,
+        "dbReserved": false,
+        "stage": "PENDING"
+      },
+      "durationMs": 1535.946666,
+      "finishedAt": "2026-10-22T09:49:02.796513+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:02.796623+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 6.801458,
+      "finishedAt": "2026-10-22T09:49:02.803435+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:02.955185+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 11.589541,
+      "finishedAt": "2026-10-22T09:49:02.966818+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:03.120028+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 13.908584,
+      "finishedAt": "2026-10-22T09:49:03.133963+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:03.288093+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 8.4005,
+      "finishedAt": "2026-10-22T09:49:03.296516+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:03.448391+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 0,
+        "issued": 1
+      },
+      "durationMs": 7.748875,
+      "finishedAt": "2026-10-22T09:49:03.456180+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+      "payload": null,
+      "startedAt": "2026-10-22T09:49:03.609881+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 0,
+        "issued": 1
+      },
+      "durationMs": 10.260792,
+      "finishedAt": "2026-10-22T09:49:03.620180+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/3b2c4fe6-064c-4573-b85b-ae197deadbc6/control",
+      "payload": {
+        "paused": true,
+        "workers": 0
+      },
+      "startedAt": "2026-10-22T09:49:03.620256+00:00",
+      "status": 200,
+      "response": {
+        "runId": "3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+        "workers": 0,
+        "paused": true
+      },
+      "durationMs": 12.066667,
+      "finishedAt": "2026-10-22T09:49:03.632329+00:00"
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "database_commit_redelivery",
+      "observedAt": "2026-10-22T09:49:03.620196+00:00",
+      "value": {
+        "runId": "3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+        "strategy": "KAFKA_FIRST",
+        "topic": "coupon-lab-3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+        "ordering": "BLOCKING",
+        "paused": false,
+        "workers": 3,
+        "partitions": 3,
+        "received": 1,
+        "accepted": 1,
+        "reserved": 1,
+        "issued": 1,
+        "rejected": 0,
+        "cancelled": 0,
+        "pending": 0,
+        "activeDbReservations": 0,
+        "ledgerIssued": 1,
+        "ledgerDuplicateUsers": 0,
+        "outboxPending": 0,
+        "unpublishedStreamReservations": 0,
+        "streamPel": 0,
+        "streamLag": 0,
+        "streamPending": 0,
+        "consumerErrors": 1,
+        "replays": 1,
+        "relayErrors": 0,
+        "perCoupon": [
+          {
+            "couponId": 1,
+            "total": 10,
+            "dbRemaining": 9,
+            "issued": 1,
+            "ledgerIssued": 1,
+            "redisStock": 9,
+            "redisUsers": 1
+          }
+        ],
+        "requests": [
+          {
+            "requestId": "committed-before-ack",
+            "couponId": 1,
+            "userId": "committed-before-ack",
+            "status": "ISSUED",
+            "reason": null,
+            "partition": 0,
+            "offset": 0,
+            "reservationSeq": 1,
+            "completionSeq": 1,
+            "receivedAt": 1792662541260,
+            "completedAt": 1792662543298,
+            "reserved": true,
+            "published": true,
+            "fault": "AFTER_DB",
+            "faultConsumed": true,
+            "processingDelayMs": 0,
+            "dbReserved": false
+          }
+        ]
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "consumer_fault_observed",
+      "passed": true,
+      "actual": 1,
+      "expected": ">=1"
+    },
+    {
+      "name": "coupon_snapshot_present",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "coupon_1_no_oversell",
+      "passed": true,
+      "actual": 1,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_db_counter_conservation",
+      "passed": true,
+      "actual": {
+        "dbRemaining": 9,
+        "issued": 1
+      },
+      "expected": 10
+    },
+    {
+      "name": "coupon_1_db_stock_within_bounds",
+      "passed": true,
+      "actual": 9,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_request_state_matches_final_ledger",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "coupon_1_redis_stock_within_bounds",
+      "passed": true,
+      "actual": 9,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_redis_users_within_bounds",
+      "passed": true,
+      "actual": 1,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_redis_counter_conservation",
+      "passed": true,
+      "actual": {
+        "redisStock": 9,
+        "redisUsers": 1
+      },
+      "expected": 10
+    },
+    {
+      "name": "no_duplicate_issued_user_per_coupon",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "request_ids_unique",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "issued_count_matches_requests",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "issued_count_matches_final_database_ledger",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "no_duplicate_users_in_final_database_ledger",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "name": "expected_issued",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "all_requests_terminal",
+      "passed": true,
+      "actual": [],
+      "expected": []
+    }
+  ],
+  "expectedObservations": [
+    {
+      "name": "db_commit_before_offset_ack_replayed",
+      "passed": true,
+      "actual": 1,
+      "expected": ">=1"
+    }
+  ],
+  "metrics": {
+    "database_commit_redeliveryWaitMs": 823.5926660709083,
+    "apiLatencyMs": {
+      "samples": 1,
+      "min": 1535.946666,
+      "mean": 1535.946666,
+      "p50": 1535.946666,
+      "p95": 1535.946666,
+      "p99": 1535.946666,
+      "max": 1535.946666
+    },
+    "httpStatusCounts": {
+      "202": 1
+    },
+    "issuedEndToEndLatencyMs": {
+      "samples": 1,
+      "min": 2038.0,
+      "mean": 2038.0,
+      "p50": 2038.0,
+      "p95": 2038.0,
+      "p99": 2038.0,
+      "max": 2038.0
+    },
+    "allTerminalEndToEndLatencyMs": {
+      "samples": 1,
+      "min": 2038.0,
+      "mean": 2038.0,
+      "p50": 2038.0,
+      "p95": 2038.0,
+      "p99": 2038.0,
+      "max": 2038.0
+    },
+    "partitionRequestCounts": {
+      "0": 1
+    },
+    "issued": 1,
+    "totalRunIssuedIncludingWarmup": 1
+  },
+  "run": {
+    "couponIds": [
+      1
+    ],
+    "topic": "coupon-lab-3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+    "runId": "3b2c4fe6-064c-4573-b85b-ae197deadbc6",
+    "strategy": "KAFKA_FIRST"
+  },
+  "finishedAt": "2026-10-22T09:49:03.632342+00:00",
+  "passed": true
+}

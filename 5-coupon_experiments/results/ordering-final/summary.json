@@ -1,0 +1,2422 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-22T10:16:45.222341+00:00",
+  "finishedAt": "2026-10-22T10:16:57.893676+00:00",
+  "environment": {
+    "python": "3.14.4 (v3.14.4:23116f998f6, Apr  7 2026, 09:45:22) [Clang 17.0.0 (clang-1700.6.4.2)]",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "cpuCount": 15,
+    "baseUrl": "http://localhost:28080",
+    "suiteSha256": "571609741c1d688ae79b7e6664da38e5760fff7a02583069dd70290be2d3fba2",
+    "backendJarFilesSha256": {
+      "coupon-lab-0.0.1-SNAPSHOT.jar": "76e2f4b281a27da2caa85d95e1487f1c078bfbb690c4a4e783bcf8ea34142c77"
+    }
+  },
+  "parameters": {
+    "base_url": "http://localhost:28080",
+    "output": "4-coupon_experiments/results/ordering-final",
+    "gzip_cases": false,
+    "scenario": "ordering",
+    "case_filter": null,
+    "strategies": [
+      "SPLIT_REDIS",
+      "LUA_REDIS",
+      "KAFKA_FIRST",
+      "DB_OUTBOX",
+      "REDIS_STREAM"
+    ],
+    "users": 1000,
+    "concurrency": 32,
+    "distribution_requests": 300,
+    "rebalance_requests": 300,
+    "partitions": [
+      1,
+      3,
+      6
+    ],
+    "workers": [
+      1,
+      3,
+      6
+    ],
+    "seed": 20261022,
+    "http_timeout": 30.0,
+    "settle_timeout": 60.0
+  },
+  "cases": [
+    {
+      "name": "ordering-arrival-versus-kafka-append",
+      "file": "001-ordering-arrival-versus-kafka-append.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "first_request_receivedWaitMs": 180.1141668111086,
+        "settledWaitMs": 171.86733335256577,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 958.381791,
+          "mean": 1049.361229,
+          "p50": 958.381791,
+          "p95": 1140.340667,
+          "p99": 1140.340667,
+          "max": 1140.340667
+        },
+        "httpStatusCounts": {
+          "202": 2
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 1081.0,
+          "mean": 1178.0,
+          "p50": 1081.0,
+          "p95": 1275.0,
+          "p99": 1275.0,
+          "max": 1275.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 1081.0,
+          "mean": 1178.0,
+          "p50": 1081.0,
+          "p95": 1275.0,
+          "p99": 1275.0,
+          "max": 1275.0
+        },
+        "partitionRequestCounts": {
+          "0": 2
+        },
+        "issued": 2,
+        "totalRunIssuedIncludingWarmup": 2
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-f6ea1168-dccc-4276-8ca4-25294e2954d0",
+        "runId": "f6ea1168-dccc-4276-8ca4-25294e2954d0",
+        "strategy": "KAFKA_FIRST"
+      },
+      "parameters": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 1,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "ordering-delayed-first-BLOCKING",
+      "file": "002-ordering-delayed-first-blocking.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 1137.6447919756174,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 11.660208,
+          "mean": 184.5496665,
+          "p50": 11.660208,
+          "p95": 357.439125,
+          "p99": 357.439125,
+          "max": 357.439125
+        },
+        "httpStatusCounts": {
+          "202": 2
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 1073.0,
+          "mean": 1245.0,
+          "p50": 1073.0,
+          "p95": 1417.0,
+          "p99": 1417.0,
+          "max": 1417.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 1073.0,
+          "mean": 1245.0,
+          "p50": 1073.0,
+          "p95": 1417.0,
+          "p99": 1417.0,
+          "max": 1417.0
+        },
+        "partitionRequestCounts": {
+          "0": 2
+        },
+        "issued": 2,
+        "totalRunIssuedIncludingWarmup": 2
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-1e70ffec-e832-4382-981b-437f06423e2f",
+        "runId": "1e70ffec-e832-4382-981b-437f06423e2f",
+        "strategy": "KAFKA_FIRST"
+      },
+      "parameters": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      }
+    },
+    {
+      "name": "ordering-delayed-first-RETRY_LATER",
+      "file": "003-ordering-delayed-first-retry_later.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "settledWaitMs": 1152.3254998028278,
+        "apiLatencyMs": {
+          "samples": 2,
+          "min": 19.839958,
+          "mean": 786.004604,
+          "p50": 19.839958,
+          "p95": 1552.16925,
+          "p99": 1552.16925,
+          "max": 1552.16925
+        },
+        "httpStatusCounts": {
+          "202": 2
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 79.0,
+          "mean": 1368.5,
+          "p50": 79.0,
+          "p95": 2658.0,
+          "p99": 2658.0,
+          "max": 2658.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 2,
+          "min": 79.0,
+          "mean": 1368.5,
+          "p50": 79.0,
+          "p95": 2658.0,
+          "p99": 2658.0,
+          "max": 2658.0
+        },
+        "partitionRequestCounts": {
+          "0": 2
+        },
+        "issued": 2,
+        "totalRunIssuedIncludingWarmup": 2
+      },
+      "run": {
+        "couponIds": [
+          1
+        ],
+        "topic": "coupon-lab-5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+        "runId": "5a2aa03c-d039-42ee-aa9c-3da0624d48d5",
+        "strategy": "KAFKA_FIRST"
+      },
+      "parameters": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 1,
+        "workers": 3,
+        "ordering": "RETRY_LATER"
+      }
+    },
+    {
+      "name": "ordering-rebalance-while-processing",
+      "file": "004-ordering-rebalance-while-processing.json",
+      "passed": true,
+      "failedChecks": [],
+      "metrics": {
+        "submissionWallMs": 2177.960208617151,
+        "in_flight_before_rebalanceWaitMs": 237.48433403670788,
+        "settledWaitMs": 4121.510374825448,
+        "apiLatencyMs": {
+          "samples": 300,
+          "min": 22.364958,
+          "mean": 225.76458306666666,
+          "p50": 84.361834,
+          "p95": 1020.7335,
+          "p99": 1589.411583,
+          "max": 1594.000958
+        },
+        "httpStatusCounts": {
+          "202": 300
+        },
+        "issuedEndToEndLatencyMs": {
+          "samples": 300,
+          "min": 1799.0,
+          "mean": 2739.9133333333334,
+          "p50": 2552.0,
+          "p95": 4107.0,
+          "p99": 4260.0,
+          "max": 4307.0
+        },
+        "allTerminalEndToEndLatencyMs": {
+          "samples": 300,
+          "min": 1799.0,
+          "mean": 2739.9133333333334,
+          "p50": 2552.0,
+          "p95": 4107.0,
+          "p99": 4260.0,
+          "max": 4307.0
+        },
+        "partitionRequestCounts": {
+          "2": 100,
+          "0": 100,
+          "1": 100
+        },
+        "issued": 300,
+        "totalRunIssuedIncludingWarmup": 300,
+        "rebalanceOrderEvidence": {
+          "0": [
+            {
+              "requestId": "rebalance-0",
+              "couponId": 1,
+              "offset": 0,
+              "couponCompletionSeq": 1,
+              "completedAt": 1792664213548
+            },
+            {
+              "requestId": "rebalance-6",
+              "couponId": 1,
+              "offset": 1,
+              "couponCompletionSeq": 2,
+              "completedAt": 1792664213582
+            },
+            {
+              "requestId": "rebalance-10",
+              "couponId": 5,
+              "offset": 2,
+              "couponCompletionSeq": 1,
+              "completedAt": 1792664213609
+            },
+            {
+              "requestId": "rebalance-12",
+              "couponId": 1,
+              "offset": 3,
+              "couponCompletionSeq": 3,
+              "completedAt": 1792664213637
+            },
+            {
+              "requestId": "rebalance-16",
+              "couponId": 5,
+              "offset": 4,
+              "couponCompletionSeq": 2,
+              "completedAt": 1792664213664
+            },
+            {
+              "requestId": "rebalance-4",
+              "couponId": 5,
+              "offset": 5,
+              "couponCompletionSeq": 3,
+              "completedAt": 1792664213698
+            },
+            {
+              "requestId": "rebalance-18",
+              "couponId": 1,
+              "offset": 6,
+              "couponCompletionSeq": 4,
+              "completedAt": 1792664213742
+            },
+            {
+              "requestId": "rebalance-22",
+              "couponId": 5,
+              "offset": 7,
+              "couponCompletionSeq": 4,
+              "completedAt": 1792664213839
+            },
+            {
+              "requestId": "rebalance-28",
+              "couponId": 5,
+              "offset": 8,
+              "couponCompletionSeq": 5,
+              "completedAt": 1792664213870
+            },
+            {
+              "requestId": "rebalance-24",
+              "couponId": 1,
+              "offset": 9,
+              "couponCompletionSeq": 5,
+              "completedAt": 1792664213904
+            },
+            {
+              "requestId": "rebalance-30",
+              "couponId": 1,
+              "offset": 10,
+              "couponCompletionSeq": 6,
+              "completedAt": 1792664213931
+            },
+            {
+              "requestId": "rebalance-34",
+              "couponId": 5,
+              "offset": 11,
+              "couponCompletionSeq": 6,
+              "completedAt": 1792664213964
+            },
+            {
+              "requestId": "rebalance-36",
+              "couponId": 1,
+              "offset": 12,
+              "couponCompletionSeq": 7,
+              "completedAt": 1792664214002
+            },
+            {
+              "requestId": "rebalance-40",
+              "couponId": 5,
+              "offset": 13,
+              "couponCompletionSeq": 7,
+              "completedAt": 1792664214029
+            },
+            {
+              "requestId": "rebalance-42",
+              "couponId": 1,
+              "offset": 14,
+              "couponCompletionSeq": 8,
+              "completedAt": 1792664214064
+            },
+            {
+              "requestId": "rebalance-46",
+              "couponId": 5,
+              "offset": 15,
+              "couponCompletionSeq": 8,
+              "completedAt": 1792664214097
+            },
+            {
+              "requestId": "rebalance-48",
+              "couponId": 1,
+              "offset": 16,
+              "couponCompletionSeq": 9,
+              "completedAt": 1792664214124
+            },
+            {
+              "requestId": "rebalance-52",
+              "couponId": 5,
+              "offset": 17,
+              "couponCompletionSeq": 9,
+              "completedAt": 1792664214168
+            },
+            {
+              "requestId": "rebalance-54",
+              "couponId": 1,
+              "offset": 18,
+              "couponCompletionSeq": 10,
+              "completedAt": 1792664214199
+            },
+            {
+              "requestId": "rebalance-58",
+              "couponId": 5,
+              "offset": 19,
+              "couponCompletionSeq": 10,
+              "completedAt": 1792664214227
+            },
+            {
+              "requestId": "rebalance-60",
+              "couponId": 1,
+              "offset": 20,
+              "couponCompletionSeq": 11,
+              "completedAt": 1792664214254
+            },
+            {
+              "requestId": "rebalance-64",
+              "couponId": 5,
+              "offset": 21,
+              "couponCompletionSeq": 11,
+              "completedAt": 1792664214282
+            },
+            {
+              "requestId": "rebalance-66",
+              "couponId": 1,
+              "offset": 22,
+              "couponCompletionSeq": 12,
+              "completedAt": 1792664214316
+            },
+            {
+              "requestId": "rebalance-70",
+              "couponId": 5,
+              "offset": 23,
+              "couponCompletionSeq": 12,
+              "completedAt": 1792664214351
+            },
+            {
+              "requestId": "rebalance-72",
+              "couponId": 1,
+              "offset": 24,
+              "couponCompletionSeq": 13,
+              "completedAt": 1792664214383
+            },
+            {
+              "requestId": "rebalance-78",
+              "couponId": 1,
+              "offset": 25,
+              "couponCompletionSeq": 14,
+              "completedAt": 1792664214413
+            },
+            {
+              "requestId": "rebalance-76",
+              "couponId": 5,
+              "offset": 26,
+              "couponCompletionSeq": 13,
+              "completedAt": 1792664214448
+            },
+            {
+              "requestId": "rebalance-84",
+              "couponId": 1,
+              "offset": 27,
+              "couponCompletionSeq": 15,
+              "completedAt": 1792664214483
+            },
+            {
+              "requestId": "rebalance-82",
+              "couponId": 5,
+              "offset": 28,
+              "couponCompletionSeq": 14,
+              "completedAt": 1792664214511
+            },
+            {
+              "requestId": "rebalance-88",
+              "couponId": 5,
+              "offset": 29,
+              "couponCompletionSeq": 15,
+              "completedAt": 1792664214545
+            },
+            {
+              "requestId": "rebalance-90",
+              "couponId": 1,
+              "offset": 30,
+              "couponCompletionSeq": 16,
+              "completedAt": 1792664214576
+            },
+            {
+              "requestId": "rebalance-94",
+              "couponId": 5,
+              "offset": 31,
+              "couponCompletionSeq": 16,
+              "completedAt": 1792664214631
+            },
+            {
+              "requestId": "rebalance-96",
+              "couponId": 1,
+              "offset": 32,
+              "couponCompletionSeq": 17,
+              "completedAt": 1792664214667
+            },
+            {
+              "requestId": "rebalance-100",
+              "couponId": 5,
+              "offset": 33,
+              "couponCompletionSeq": 17,
+              "completedAt": 1792664214701
+            },
+            {
+              "requestId": "rebalance-102",
+              "couponId": 1,
+              "offset": 34,
+              "couponCompletionSeq": 18,
+              "completedAt": 1792664214733
+            },
+            {
+              "requestId": "rebalance-112",
+              "couponId": 5,
+              "offset": 35,
+              "couponCompletionSeq": 18,
+              "completedAt": 1792664214770
+            },
+            {
+              "requestId": "rebalance-108",
+              "couponId": 1,
+              "offset": 36,
+              "couponCompletionSeq": 19,
+              "completedAt": 1792664214804
+            },
+            {
+              "requestId": "rebalance-124",
+              "couponId": 5,
+              "offset": 37,
+              "couponCompletionSeq": 19,
+              "completedAt": 1792664214834
+            },
+            {
+              "requestId": "rebalance-106",
+              "couponId": 5,
+              "offset": 38,
+              "couponCompletionSeq": 20,
+              "completedAt": 1792664214867
+            },
+            {
+              "requestId": "rebalance-126",
+              "couponId": 1,
+              "offset": 39,
+              "couponCompletionSeq": 20,
+              "completedAt": 1792664214896
+            },
+            {
+              "requestId": "rebalance-114",
+              "couponId": 1,
+              "offset": 40,
+              "couponCompletionSeq": 21,
+              "completedAt": 1792664214920
+            },
+            {
+              "requestId": "rebalance-120",
+              "couponId": 1,
+              "offset": 41,
+              "couponCompletionSeq": 22,
+              "completedAt": 1792664214950
+            },
+            {
+              "requestId": "rebalance-118",
+              "couponId": 5,
+              "offset": 42,
+              "couponCompletionSeq": 21,
+              "completedAt": 1792664214980
+            },
+            {
+              "requestId": "rebalance-130",
+              "couponId": 5,
+              "offset": 43,
+              "couponCompletionSeq": 22,
+              "completedAt": 1792664215011
+            },
+            {
+              "requestId": "rebalance-132",
+              "couponId": 1,
+              "offset": 44,
+              "couponCompletionSeq": 23,
+              "completedAt": 1792664215038
+            },
+            {
+              "requestId": "rebalance-136",
+              "couponId": 5,
+              "offset": 45,
+              "couponCompletionSeq": 23,
+              "completedAt": 1792664215076
+            },
+            {
+              "requestId": "rebalance-138",
+              "couponId": 1,
+              "offset": 46,
+              "couponCompletionSeq": 24,
+              "completedAt": 1792664215108
+            },
+            {
+              "requestId": "rebalance-142",
+              "couponId": 5,
+              "offset": 47,
+              "couponCompletionSeq": 24,
+              "completedAt": 1792664215143
+            },
+            {
+              "requestId": "rebalance-144",
+              "couponId": 1,
+              "offset": 48,
+              "couponCompletionSeq": 25,
+              "completedAt": 1792664215173
+            },
+            {
+              "requestId": "rebalance-148",
+              "couponId": 5,
+              "offset": 49,
+              "couponCompletionSeq": 25,
+              "completedAt": 1792664215203
+            },
+            {
+              "requestId": "rebalance-150",
+              "couponId": 1,
+              "offset": 50,
+              "couponCompletionSeq": 26,
+              "completedAt": 1792664215232
+            },
+            {
+              "requestId": "rebalance-154",
+              "couponId": 5,
+              "offset": 51,
+              "couponCompletionSeq": 26,
+              "completedAt": 1792664215261
+            },
+            {
+              "requestId": "rebalance-156",
+              "couponId": 1,
+              "offset": 52,
+              "couponCompletionSeq": 27,
+              "completedAt": 1792664215288
+            },
+            {
+              "requestId": "rebalance-160",
+              "couponId": 5,
+              "offset": 53,
+              "couponCompletionSeq": 27,
+              "completedAt": 1792664215318
+            },
+            {
+              "requestId": "rebalance-162",
+              "couponId": 1,
+              "offset": 54,
+              "couponCompletionSeq": 28,
+              "completedAt": 1792664215352
+            },
+            {
+              "requestId": "rebalance-168",
+              "couponId": 1,
+              "offset": 55,
+              "couponCompletionSeq": 29,
+              "completedAt": 1792664215384
+            },
+            {
+              "requestId": "rebalance-166",
+              "couponId": 5,
+              "offset": 56,
+              "couponCompletionSeq": 28,
+              "completedAt": 1792664215418
+            },
+            {
+              "requestId": "rebalance-172",
+              "couponId": 5,
+              "offset": 57,
+              "couponCompletionSeq": 29,
+              "completedAt": 1792664215452
+            },
+            {
+              "requestId": "rebalance-178",
+              "couponId": 5,
+              "offset": 58,
+              "couponCompletionSeq": 30,
+              "completedAt": 1792664215478
+            },
+            {
+              "requestId": "rebalance-174",
+              "couponId": 1,
+              "offset": 59,
+              "couponCompletionSeq": 30,
+              "completedAt": 1792664215535
+            },
+            {
+              "requestId": "rebalance-180",
+              "couponId": 1,
+              "offset": 60,
+              "couponCompletionSeq": 31,
+              "completedAt": 1792664215594
+            },
+            {
+              "requestId": "rebalance-184",
+              "couponId": 5,
+              "offset": 61,
+              "couponCompletionSeq": 31,
+              "completedAt": 1792664215628
+            },
+            {
+              "requestId": "rebalance-186",
+              "couponId": 1,
+              "offset": 62,
+              "couponCompletionSeq": 32,
+              "completedAt": 1792664215664
+            },
+            {
+              "requestId": "rebalance-190",
+              "couponId": 5,
+              "offset": 63,
+              "couponCompletionSeq": 32,
+              "completedAt": 1792664215703
+            },
+            {
+              "requestId": "rebalance-192",
+              "couponId": 1,
+              "offset": 64,
+              "couponCompletionSeq": 33,
+              "completedAt": 1792664215741
+            },
+            {
+              "requestId": "rebalance-196",
+              "couponId": 5,
+              "offset": 65,
+              "couponCompletionSeq": 33,
+              "completedAt": 1792664215782
+            },
+            {
+              "requestId": "rebalance-198",
+              "couponId": 1,
+              "offset": 66,
+              "couponCompletionSeq": 34,
+              "completedAt": 1792664215814
+            },
+            {
+              "requestId": "rebalance-202",
+              "couponId": 5,
+              "offset": 67,
+              "couponCompletionSeq": 34,
+              "completedAt": 1792664215839
+            },
+            {
+              "requestId": "rebalance-204",
+              "couponId": 1,
+              "offset": 68,
+              "couponCompletionSeq": 35,
+              "completedAt": 1792664215872
+            },
+            {
+              "requestId": "rebalance-208",
+              "couponId": 5,
+              "offset": 69,
+              "couponCompletionSeq": 35,
+              "completedAt": 1792664215982
+            },
+            {
+              "requestId": "rebalance-210",
+              "couponId": 1,
+              "offset": 70,
+              "couponCompletionSeq": 36,
+              "completedAt": 1792664216055
+            },
+            {
+              "requestId": "rebalance-216",
+              "couponId": 1,
+              "offset": 71,
+              "couponCompletionSeq": 37,
+              "completedAt": 1792664216096
+            },
+            {
+              "requestId": "rebalance-214",
+              "couponId": 5,
+              "offset": 72,
+              "couponCompletionSeq": 36,
+              "completedAt": 1792664216128
+            },
+            {
+              "requestId": "rebalance-220",
+              "couponId": 5,
+              "offset": 73,
+              "couponCompletionSeq": 37,
+              "completedAt": 1792664216160
+            },
+            {
+              "requestId": "rebalance-222",
+              "couponId": 1,
+              "offset": 74,
+              "couponCompletionSeq": 38,
+              "completedAt": 1792664216192
+            },
+            {
+              "requestId": "rebalance-228",
+              "couponId": 1,
+              "offset": 75,
+              "couponCompletionSeq": 39,
+              "completedAt": 1792664216222
+            },
+            {
+              "requestId": "rebalance-226",
+              "couponId": 5,
+              "offset": 76,
+              "couponCompletionSeq": 38,
+              "completedAt": 1792664216249
+            },
+            {
+              "requestId": "rebalance-234",
+              "couponId": 1,
+              "offset": 77,
+              "couponCompletionSeq": 40,
+              "completedAt": 1792664216287
+            },
+            {
+              "requestId": "rebalance-232",
+              "couponId": 5,
+              "offset": 78,
+              "couponCompletionSeq": 39,
+              "completedAt": 1792664216314
+            },
+            {
+              "requestId": "rebalance-240",
+              "couponId": 1,
+              "offset": 79,
+              "couponCompletionSeq": 41,
+              "completedAt": 1792664216348
+            },
+            {
+              "requestId": "rebalance-238",
+              "couponId": 5,
+              "offset": 80,
+              "couponCompletionSeq": 40,
+              "completedAt": 1792664216378
+            },
+            {
+              "requestId": "rebalance-244",
+              "couponId": 5,
+              "offset": 81,
+              "couponCompletionSeq": 41,
+              "completedAt": 1792664216413
+            },
+            {
+              "requestId": "rebalance-246",
+              "couponId": 1,
+              "offset": 82,
+              "couponCompletionSeq": 42,
+              "completedAt": 1792664216445
+            },
+            {
+              "requestId": "rebalance-252",
+              "couponId": 1,
+              "offset": 83,
+              "couponCompletionSeq": 43,
+              "completedAt": 1792664216482
+            },
+            {
+              "requestId": "rebalance-250",
+              "couponId": 5,
+              "offset": 84,
+              "couponCompletionSeq": 42,
+              "completedAt": 1792664216537
+            },
+            {
+              "requestId": "rebalance-258",
+              "couponId": 1,
+              "offset": 85,
+              "couponCompletionSeq": 44,
+              "completedAt": 1792664216574
+            },
+            {
+              "requestId": "rebalance-256",
+              "couponId": 5,
+              "offset": 86,
+              "couponCompletionSeq": 43,
+              "completedAt": 1792664216749
+            },
+            {
+              "requestId": "rebalance-262",
+              "couponId": 5,
+              "offset": 87,
+              "couponCompletionSeq": 44,
+              "completedAt": 1792664216838
+            },
+            {
+              "requestId": "rebalance-264",
+              "couponId": 1,
+              "offset": 88,
+              "couponCompletionSeq": 45,
+              "completedAt": 1792664216904
+            },
+            {
+              "requestId": "rebalance-268",
+              "couponId": 5,
+              "offset": 89,
+              "couponCompletionSeq": 45,
+              "completedAt": 1792664217039
+            },
+            {
+              "requestId": "rebalance-270",
+              "couponId": 1,
+              "offset": 90,
+              "couponCompletionSeq": 46,
+              "completedAt": 1792664217124
+            },
+            {
+              "requestId": "rebalance-276",
+              "couponId": 1,
+              "offset": 91,
+              "couponCompletionSeq": 47,
+              "completedAt": 1792664217169
+            },
+            {
+              "requestId": "rebalance-280",
+              "couponId": 5,
+              "offset": 92,
+              "couponCompletionSeq": 46,
+              "completedAt": 1792664217211
+            },
+            {
+              "requestId": "rebalance-274",
+              "couponId": 5,
+              "offset": 93,
+              "couponCompletionSeq": 47,
+              "completedAt": 1792664217244
+            },
+            {
+              "requestId": "rebalance-282",
+              "couponId": 1,
+              "offset": 94,
+              "couponCompletionSeq": 48,
+              "completedAt": 1792664217272
+            },
+            {
+              "requestId": "rebalance-286",
+              "couponId": 5,
+              "offset": 95,
+              "couponCompletionSeq": 48,
+              "completedAt": 1792664217302
+            },
+            {
+              "requestId": "rebalance-288",
+              "couponId": 1,
+              "offset": 96,
+              "couponCompletionSeq": 49,
+              "completedAt": 1792664217330
+            },
+            {
+              "requestId": "rebalance-292",
+              "couponId": 5,
+              "offset": 97,
+              "couponCompletionSeq": 49,
+              "completedAt": 1792664217365
+            },
+            {
+              "requestId": "rebalance-294",
+              "couponId": 1,
+              "offset": 98,
+              "couponCompletionSeq": 50,
+              "completedAt": 1792664217411
+            },
+            {
+              "requestId": "rebalance-298",
+              "couponId": 5,
+              "offset": 99,
+              "couponCompletionSeq": 50,
+              "completedAt": 1792664217441
+            }
+          ],
+          "1": [
+            {
+              "requestId": "rebalance-15",
+              "couponId": 4,
+              "offset": 0,
+              "couponCompletionSeq": 1,
+              "completedAt": 1792664213838
+            },
+            {
+              "requestId": "rebalance-3",
+              "couponId": 4,
+              "offset": 1,
+              "couponCompletionSeq": 2,
+              "completedAt": 1792664213869
+            },
+            {
+              "requestId": "rebalance-11",
+              "couponId": 6,
+              "offset": 2,
+              "couponCompletionSeq": 1,
+              "completedAt": 1792664213903
+            },
+            {
+              "requestId": "rebalance-5",
+              "couponId": 6,
+              "offset": 3,
+              "couponCompletionSeq": 2,
+              "completedAt": 1792664213930
+            },
+            {
+              "requestId": "rebalance-9",
+              "couponId": 4,
+              "offset": 4,
+              "couponCompletionSeq": 3,
+              "completedAt": 1792664213962
+            },
+            {
+              "requestId": "rebalance-17",
+              "couponId": 6,
+              "offset": 5,
+              "couponCompletionSeq": 3,
+              "completedAt": 1792664213996
+            },
+            {
+              "requestId": "rebalance-21",
+              "couponId": 4,
+              "offset": 6,
+              "couponCompletionSeq": 4,
+              "completedAt": 1792664214028
+            },
+            {
+              "requestId": "rebalance-23",
+              "couponId": 6,
+              "offset": 7,
+              "couponCompletionSeq": 4,
+              "completedAt": 1792664214061
+            },
+            {
+              "requestId": "rebalance-27",
+              "couponId": 4,
+              "offset": 8,
+              "couponCompletionSeq": 5,
+              "completedAt": 1792664214094
+            },
+            {
+              "requestId": "rebalance-29",
+              "couponId": 6,
+              "offset": 9,
+              "couponCompletionSeq": 5,
+              "completedAt": 1792664214123
+            },
+            {
+              "requestId": "rebalance-33",
+              "couponId": 4,
+              "offset": 10,
+              "couponCompletionSeq": 6,
+              "completedAt": 1792664214161
+            },
+            {
+              "requestId": "rebalance-35",
+              "couponId": 6,
+              "offset": 11,
+              "couponCompletionSeq": 6,
+              "completedAt": 1792664214192
+            },
+            {
+              "requestId": "rebalance-41",
+              "couponId": 6,
+              "offset": 12,
+              "couponCompletionSeq": 7,
+              "completedAt": 1792664214220
+            },
+            {
+              "requestId": "rebalance-39",
+              "couponId": 4,
+              "offset": 13,
+              "couponCompletionSeq": 7,
+              "completedAt": 1792664214249
+            },
+            {
+              "requestId": "rebalance-45",
+              "couponId": 4,
+              "offset": 14,
+              "couponCompletionSeq": 8,
+              "completedAt": 1792664214275
+            },
+            {
+              "requestId": "rebalance-47",
+              "couponId": 6,
+              "offset": 15,
+              "couponCompletionSeq": 8,
+              "completedAt": 1792664214307
+            },
+            {
+              "requestId": "rebalance-53",
+              "couponId": 6,
+              "offset": 16,
+              "couponCompletionSeq": 9,
+              "completedAt": 1792664214349
+            },
+            {
+              "requestId": "rebalance-51",
+              "couponId": 4,
+              "offset": 17,
+              "couponCompletionSeq": 9,
+              "completedAt": 1792664214378
+            },
+            {
+              "requestId": "rebalance-57",
+              "couponId": 4,
+              "offset": 18,
+              "couponCompletionSeq": 10,
+              "completedAt": 1792664214404
+            },
+            {
+              "requestId": "rebalance-59",
+              "couponId": 6,
+              "offset": 19,
+              "couponCompletionSeq": 10,
+              "completedAt": 1792664214437
+            },
+            {
+              "requestId": "rebalance-63",
+              "couponId": 4,
+              "offset": 20,
+              "couponCompletionSeq": 11,
+              "completedAt": 1792664214473
+            },
+            {
+              "requestId": "rebalance-65",
+              "couponId": 6,
+              "offset": 21,
+              "couponCompletionSeq": 11,
+              "completedAt": 1792664214504
+            },
+            {
+              "requestId": "rebalance-69",
+              "couponId": 4,
+              "offset": 22,
+              "couponCompletionSeq": 12,
+              "completedAt": 1792664214531
+            },
+            {
+              "requestId": "rebalance-71",
+              "couponId": 6,
+              "offset": 23,
+              "couponCompletionSeq": 12,
+              "completedAt": 1792664214561
+            },
+            {
+              "requestId": "rebalance-75",
+              "couponId": 4,
+              "offset": 24,
+              "couponCompletionSeq": 13,
+              "completedAt": 1792664214590
+            },
+            {
+              "requestId": "rebalance-77",
+              "couponId": 6,
+              "offset": 25,
+              "couponCompletionSeq": 13,
+              "completedAt": 1792664214649
+            },
+            {
+              "requestId": "rebalance-81",
+              "couponId": 4,
+              "offset": 26,
+              "couponCompletionSeq": 14,
+              "completedAt": 1792664214680
+            },
+            {
+              "requestId": "rebalance-83",
+              "couponId": 6,
+              "offset": 27,
+              "couponCompletionSeq": 14,
+              "completedAt": 1792664214711
+            },
+            {
+              "requestId": "rebalance-87",
+              "couponId": 4,
+              "offset": 28,
+              "couponCompletionSeq": 15,
+              "completedAt": 1792664214744
+            },
+            {
+              "requestId": "rebalance-89",
+              "couponId": 6,
+              "offset": 29,
+              "couponCompletionSeq": 15,
+              "completedAt": 1792664214778
+            },
+            {
+              "requestId": "rebalance-93",
+              "couponId": 4,
+              "offset": 30,
+              "couponCompletionSeq": 16,
+              "completedAt": 1792664214806
+            },
+            {
+              "requestId": "rebalance-95",
+              "couponId": 6,
+              "offset": 31,
+              "couponCompletionSeq": 16,
+              "completedAt": 1792664214847
+            },
+            {
+              "requestId": "rebalance-99",
+              "couponId": 4,
+              "offset": 32,
+              "couponCompletionSeq": 17,
+              "completedAt": 1792664214872
+            },
+            {
+              "requestId": "rebalance-101",
+              "couponId": 6,
+              "offset": 33,
+              "couponCompletionSeq": 17,
+              "completedAt": 1792664214897
+            },
+            {
+              "requestId": "rebalance-125",
+              "couponId": 6,
+              "offset": 34,
+              "couponCompletionSeq": 18,
+              "completedAt": 1792664214925
+            },
+            {
+              "requestId": "rebalance-105",
+              "couponId": 4,
+              "offset": 35,
+              "couponCompletionSeq": 18,
+              "completedAt": 1792664214959
+            },
+            {
+              "requestId": "rebalance-117",
+              "couponId": 4,
+              "offset": 36,
+              "couponCompletionSeq": 19,
+              "completedAt": 1792664214988
+            },
+            {
+              "requestId": "rebalance-119",
+              "couponId": 6,
+              "offset": 37,
+              "couponCompletionSeq": 19,
+              "completedAt": 1792664215015
+            },
+            {
+              "requestId": "rebalance-113",
+              "couponId": 6,
+              "offset": 38,
+              "couponCompletionSeq": 20,
+              "completedAt": 1792664215044
+            },
+            {
+              "requestId": "rebalance-111",
+              "couponId": 4,
+              "offset": 39,
+              "couponCompletionSeq": 20,
+              "completedAt": 1792664215078
+            },
+            {
+              "requestId": "rebalance-107",
+              "couponId": 6,
+              "offset": 40,
+              "couponCompletionSeq": 21,
+              "completedAt": 1792664215107
+            },
+            {
+              "requestId": "rebalance-123",
+              "couponId": 4,
+              "offset": 41,
+              "couponCompletionSeq": 21,
+              "completedAt": 1792664215145
+            },
+            {
+              "requestId": "rebalance-129",
+              "couponId": 4,
+              "offset": 42,
+              "couponCompletionSeq": 22,
+              "completedAt": 1792664215174
+            },
+            {
+              "requestId": "rebalance-131",
+              "couponId": 6,
+              "offset": 43,
+              "couponCompletionSeq": 22,
+              "completedAt": 1792664215203
+            },
+            {
+              "requestId": "rebalance-135",
+              "couponId": 4,
+              "offset": 44,
+              "couponCompletionSeq": 23,
+              "completedAt": 1792664215232
+            },
+            {
+              "requestId": "rebalance-137",
+              "couponId": 6,
+              "offset": 45,
+              "couponCompletionSeq": 23,
+              "completedAt": 1792664215259
+            },
+            {
+              "requestId": "rebalance-143",
+              "couponId": 6,
+              "offset": 46,
+              "couponCompletionSeq": 24,
+              "completedAt": 1792664215286
+            },
+            {
+              "requestId": "rebalance-141",
+              "couponId": 4,
+              "offset": 47,
+              "couponCompletionSeq": 24,
+              "completedAt": 1792664215317
+            },
+            {
+              "requestId": "rebalance-147",
+              "couponId": 4,
+              "offset": 48,
+              "couponCompletionSeq": 25,
+              "completedAt": 1792664215350
+            },
+            {
+              "requestId": "rebalance-149",
+              "couponId": 6,
+              "offset": 49,
+              "couponCompletionSeq": 25,
+              "completedAt": 1792664215381
+            },
+            {
+              "requestId": "rebalance-155",
+              "couponId": 6,
+              "offset": 50,
+              "couponCompletionSeq": 26,
+              "completedAt": 1792664215418
+            },
+            {
+              "requestId": "rebalance-153",
+              "couponId": 4,
+              "offset": 51,
+              "couponCompletionSeq": 26,
+              "completedAt": 1792664215447
+            },
+            {
+              "requestId": "rebalance-159",
+              "couponId": 4,
+              "offset": 52,
+              "couponCompletionSeq": 27,
+              "completedAt": 1792664215475
+            },
+            {
+              "requestId": "rebalance-161",
+              "couponId": 6,
+              "offset": 53,
+              "couponCompletionSeq": 27,
+              "completedAt": 1792664215535
+            },
+            {
+              "requestId": "rebalance-165",
+              "couponId": 4,
+              "offset": 54,
+              "couponCompletionSeq": 28,
+              "completedAt": 1792664215596
+            },
+            {
+              "requestId": "rebalance-167",
+              "couponId": 6,
+              "offset": 55,
+              "couponCompletionSeq": 28,
+              "completedAt": 1792664215632
+            },
+            {
+              "requestId": "rebalance-171",
+              "couponId": 4,
+              "offset": 56,
+              "couponCompletionSeq": 29,
+              "completedAt": 1792664215668
+            },
+            {
+              "requestId": "rebalance-173",
+              "couponId": 6,
+              "offset": 57,
+              "couponCompletionSeq": 29,
+              "completedAt": 1792664215706
+            },
+            {
+              "requestId": "rebalance-179",
+              "couponId": 6,
+              "offset": 58,
+              "couponCompletionSeq": 30,
+              "completedAt": 1792664215743
+            },
+            {
+              "requestId": "rebalance-177",
+              "couponId": 4,
+              "offset": 59,
+              "couponCompletionSeq": 30,
+              "completedAt": 1792664215783
+            },
+            {
+              "requestId": "rebalance-183",
+              "couponId": 4,
+              "offset": 60,
+              "couponCompletionSeq": 31,
+              "completedAt": 1792664215815
+            },
+            {
+              "requestId": "rebalance-185",
+              "couponId": 6,
+              "offset": 61,
+              "couponCompletionSeq": 31,
+              "completedAt": 1792664215842
+            },
+            {
+              "requestId": "rebalance-189",
+              "couponId": 4,
+              "offset": 62,
+              "couponCompletionSeq": 32,
+              "completedAt": 1792664215876
+            },
+            {
+              "requestId": "rebalance-191",
+              "couponId": 6,
+              "offset": 63,
+              "couponCompletionSeq": 32,
+              "completedAt": 1792664215980
+            },
+            {
+              "requestId": "rebalance-195",
+              "couponId": 4,
+              "offset": 64,
+              "couponCompletionSeq": 33,
+              "completedAt": 1792664216057
+            },
+            {
+              "requestId": "rebalance-197",
+              "couponId": 6,
+              "offset": 65,
+              "couponCompletionSeq": 33,
+              "completedAt": 1792664216095
+            },
+            {
+              "requestId": "rebalance-201",
+              "couponId": 4,
+              "offset": 66,
+              "couponCompletionSeq": 34,
+              "completedAt": 1792664216126
+            },
+            {
+              "requestId": "rebalance-203",
+              "couponId": 6,
+              "offset": 67,
+              "couponCompletionSeq": 34,
+              "completedAt": 1792664216157
+            },
+            {
+              "requestId": "rebalance-213",
+              "couponId": 4,
+              "offset": 68,
+              "couponCompletionSeq": 35,
+              "completedAt": 1792664216190
+            },
+            {
+              "requestId": "rebalance-207",
+              "couponId": 4,
+              "offset": 69,
+              "couponCompletionSeq": 36,
+              "completedAt": 1792664216218
+            },
+            {
+              "requestId": "rebalance-209",
+              "couponId": 6,
+              "offset": 70,
+              "couponCompletionSeq": 35,
+              "completedAt": 1792664216249
+            },
+            {
+              "requestId": "rebalance-215",
+              "couponId": 6,
+              "offset": 71,
+              "couponCompletionSeq": 36,
+              "completedAt": 1792664216289
+            },
+            {
+              "requestId": "rebalance-219",
+              "couponId": 4,
+              "offset": 72,
+              "couponCompletionSeq": 37,
+              "completedAt": 1792664216320
+            },
+            {
+              "requestId": "rebalance-221",
+              "couponId": 6,
+              "offset": 73,
+              "couponCompletionSeq": 37,
+              "completedAt": 1792664216350
+            },
+            {
+              "requestId": "rebalance-225",
+              "couponId": 4,
+              "offset": 74,
+              "couponCompletionSeq": 38,
+              "completedAt": 1792664216381
+            },
+            {
+              "requestId": "rebalance-227",
+              "couponId": 6,
+              "offset": 75,
+              "couponCompletionSeq": 38,
+              "completedAt": 1792664216414
+            },
+            {
+              "requestId": "rebalance-231",
+              "couponId": 4,
+              "offset": 76,
+              "couponCompletionSeq": 39,
+              "completedAt": 1792664216448
+            },
+            {
+              "requestId": "rebalance-233",
+              "couponId": 6,
+              "offset": 77,
+              "couponCompletionSeq": 39,
+              "completedAt": 1792664216480
+            },
+            {
+              "requestId": "rebalance-237",
+              "couponId": 4,
+              "offset": 78,
+              "couponCompletionSeq": 40,
+              "completedAt": 1792664216537
+            },
+            {
+              "requestId": "rebalance-239",
+              "couponId": 6,
+              "offset": 79,
+              "couponCompletionSeq": 40,
+              "completedAt": 1792664216574
+            },
+            {
+              "requestId": "rebalance-245",
+              "couponId": 6,
+              "offset": 80,
+              "couponCompletionSeq": 41,
+              "completedAt": 1792664216743
+            },
+            {
+              "requestId": "rebalance-243",
+              "couponId": 4,
+              "offset": 81,
+              "couponCompletionSeq": 41,
+              "completedAt": 1792664216838
+            },
+            {
+              "requestId": "rebalance-251",
+              "couponId": 6,
+              "offset": 82,
+              "couponCompletionSeq": 42,
+              "completedAt": 1792664216921
+            },
+            {
+              "requestId": "rebalance-249",
+              "couponId": 4,
+              "offset": 83,
+              "couponCompletionSeq": 42,
+              "completedAt": 1792664217080
+            },
+            {
+              "requestId": "rebalance-255",
+              "couponId": 4,
+              "offset": 84,
+              "couponCompletionSeq": 43,
+              "completedAt": 1792664217140
+            },
+            {
+              "requestId": "rebalance-257",
+              "couponId": 6,
+              "offset": 85,
+              "couponCompletionSeq": 43,
+              "completedAt": 1792664217185
+            },
+            {
+              "requestId": "rebalance-263",
+              "couponId": 6,
+              "offset": 86,
+              "couponCompletionSeq": 44,
+              "completedAt": 1792664217225
+            },
+            {
+              "requestId": "rebalance-261",
+              "couponId": 4,
+              "offset": 87,
+              "couponCompletionSeq": 44,
+              "completedAt": 1792664217259
+            },
+            {
+              "requestId": "rebalance-267",
+              "couponId": 4,
+              "offset": 88,
+              "couponCompletionSeq": 45,
+              "completedAt": 1792664217288
+            },
+            {
+              "requestId": "rebalance-269",
+              "couponId": 6,
+              "offset": 89,
+              "couponCompletionSeq": 45,
+              "completedAt": 1792664217318
+            },
+            {
+              "requestId": "rebalance-273",
+              "couponId": 4,
+              "offset": 90,
+              "couponCompletionSeq": 46,
+              "completedAt": 1792664217350
+            },
+            {
+              "requestId": "rebalance-275",
+              "couponId": 6,
+              "offset": 91,
+              "couponCompletionSeq": 46,
+              "completedAt": 1792664217411
+            },
+            {
+              "requestId": "rebalance-279",
+              "couponId": 4,
+              "offset": 92,
+              "couponCompletionSeq": 47,
+              "completedAt": 1792664217443
+            },
+            {
+              "requestId": "rebalance-281",
+              "couponId": 6,
+              "offset": 93,
+              "couponCompletionSeq": 47,
+              "completedAt": 1792664217483
+            },
+            {
+              "requestId": "rebalance-285",
+              "couponId": 4,
+              "offset": 94,
+              "couponCompletionSeq": 48,
+              "completedAt": 1792664217518
+            },
+            {
+              "requestId": "rebalance-287",
+              "couponId": 6,
+              "offset": 95,
+              "couponCompletionSeq": 48,
+              "completedAt": 1792664217543
+            },
+            {
+              "requestId": "rebalance-293",
+              "couponId": 6,
+              "offset": 96,
+              "couponCompletionSeq": 49,
+              "completedAt": 1792664217575
+            },
+            {
+              "requestId": "rebalance-291",
+              "couponId": 4,
+              "offset": 97,
+              "couponCompletionSeq": 49,
+              "completedAt": 1792664217605
+            },
+            {
+              "requestId": "rebalance-299",
+              "couponId": 6,
+              "offset": 98,
+              "couponCompletionSeq": 50,
+              "completedAt": 1792664217633
+            },
+            {
+              "requestId": "rebalance-297",
+              "couponId": 4,
+              "offset": 99,
+              "couponCompletionSeq": 50,
+              "completedAt": 1792664217669
+            }
+          ],
+          "2": [
+            {
+              "requestId": "rebalance-7",
+              "couponId": 2,
+              "offset": 0,
+              "couponCompletionSeq": 1,
+              "completedAt": 1792664213839
+            },
+            {
+              "requestId": "rebalance-1",
+              "couponId": 2,
+              "offset": 1,
+              "couponCompletionSeq": 2,
+              "completedAt": 1792664213869
+            },
+            {
+              "requestId": "rebalance-8",
+              "couponId": 3,
+              "offset": 2,
+              "couponCompletionSeq": 1,
+              "completedAt": 1792664213903
+            },
+            {
+              "requestId": "rebalance-2",
+              "couponId": 3,
+              "offset": 3,
+              "couponCompletionSeq": 2,
+              "completedAt": 1792664213934
+            },
+            {
+              "requestId": "rebalance-14",
+              "couponId": 3,
+              "offset": 4,
+              "couponCompletionSeq": 3,
+              "completedAt": 1792664213963
+            },
+            {
+              "requestId": "rebalance-20",
+              "couponId": 3,
+              "offset": 5,
+              "couponCompletionSeq": 4,
+              "completedAt": 1792664213998
+            },
+            {
+              "requestId": "rebalance-19",
+              "couponId": 2,
+              "offset": 6,
+              "couponCompletionSeq": 3,
+              "completedAt": 1792664214026
+            },
+            {
+              "requestId": "rebalance-26",
+              "couponId": 3,
+              "offset": 7,
+              "couponCompletionSeq": 5,
+              "completedAt": 1792664214058
+            },
+            {
+              "requestId": "rebalance-31",
+              "couponId": 2,
+              "offset": 8,
+              "couponCompletionSeq": 4,
+              "completedAt": 1792664214095
+            },
+            {
+              "requestId": "rebalance-25",
+              "couponId": 2,
+              "offset": 9,
+              "couponCompletionSeq": 5,
+              "completedAt": 1792664214125
+            },
+            {
+              "requestId": "rebalance-13",
+              "couponId": 2,
+              "offset": 10,
+              "couponCompletionSeq": 6,
+              "completedAt": 1792664214168
+            },
+            {
+              "requestId": "rebalance-32",
+              "couponId": 3,
+              "offset": 11,
+              "couponCompletionSeq": 6,
+              "completedAt": 1792664214202
+            },
+            {
+              "requestId": "rebalance-37",
+              "couponId": 2,
+              "offset": 12,
+              "couponCompletionSeq": 7,
+              "completedAt": 1792664214232
+            },
+            {
+              "requestId": "rebalance-38",
+              "couponId": 3,
+              "offset": 13,
+              "couponCompletionSeq": 7,
+              "completedAt": 1792664214257
+            },
+            {
+              "requestId": "rebalance-43",
+              "couponId": 2,
+              "offset": 14,
+              "couponCompletionSeq": 8,
+              "completedAt": 1792664214284
+            },
+            {
+              "requestId": "rebalance-44",
+              "couponId": 3,
+              "offset": 15,
+              "couponCompletionSeq": 8,
+              "completedAt": 1792664214316
+            },
+            {
+              "requestId": "rebalance-49",
+              "couponId": 2,
+              "offset": 16,
+              "couponCompletionSeq": 9,
+              "completedAt": 1792664214351
+            },
+            {
+              "requestId": "rebalance-50",
+              "couponId": 3,
+              "offset": 17,
+              "couponCompletionSeq": 9,
+              "completedAt": 1792664214383
+            },
+            {
+              "requestId": "rebalance-56",
+              "couponId": 3,
+              "offset": 18,
+              "couponCompletionSeq": 10,
+              "completedAt": 1792664214413
+            },
+            {
+              "requestId": "rebalance-55",
+              "couponId": 2,
+              "offset": 19,
+              "couponCompletionSeq": 10,
+              "completedAt": 1792664214453
+            },
+            {
+              "requestId": "rebalance-61",
+              "couponId": 2,
+              "offset": 20,
+              "couponCompletionSeq": 11,
+              "completedAt": 1792664214488
+            },
+            {
+              "requestId": "rebalance-62",
+              "couponId": 3,
+              "offset": 21,
+              "couponCompletionSeq": 11,
+              "completedAt": 1792664214516
+            },
+            {
+              "requestId": "rebalance-67",
+              "couponId": 2,
+              "offset": 22,
+              "couponCompletionSeq": 12,
+              "completedAt": 1792664214548
+            },
+            {
+              "requestId": "rebalance-68",
+              "couponId": 3,
+              "offset": 23,
+              "couponCompletionSeq": 12,
+              "completedAt": 1792664214576
+            },
+            {
+              "requestId": "rebalance-73",
+              "couponId": 2,
+              "offset": 24,
+              "couponCompletionSeq": 13,
+              "completedAt": 1792664214630
+            },
+            {
+              "requestId": "rebalance-74",
+              "couponId": 3,
+              "offset": 25,
+              "couponCompletionSeq": 13,
+              "completedAt": 1792664214668
+            },
+            {
+              "requestId": "rebalance-79",
+              "couponId": 2,
+              "offset": 26,
+              "couponCompletionSeq": 14,
+              "completedAt": 1792664214703
+            },
+            {
+              "requestId": "rebalance-80",
+              "couponId": 3,
+              "offset": 27,
+              "couponCompletionSeq": 14,
+              "completedAt": 1792664214736
+            },
+            {
+              "requestId": "rebalance-85",
+              "couponId": 2,
+              "offset": 28,
+              "couponCompletionSeq": 15,
+              "completedAt": 1792664214772
+            },
+            {
+              "requestId": "rebalance-86",
+              "couponId": 3,
+              "offset": 29,
+              "couponCompletionSeq": 15,
+              "completedAt": 1792664214804
+            },
+            {
+              "requestId": "rebalance-91",
+              "couponId": 2,
+              "offset": 30,
+              "couponCompletionSeq": 16,
+              "completedAt": 1792664214846
+            },
+            {
+              "requestId": "rebalance-92",
+              "couponId": 3,
+              "offset": 31,
+              "couponCompletionSeq": 16,
+              "completedAt": 1792664214872
+            },
+            {
+              "requestId": "rebalance-97",
+              "couponId": 2,
+              "offset": 32,
+              "couponCompletionSeq": 17,
+              "completedAt": 1792664214898
+            },
+            {
+              "requestId": "rebalance-98",
+              "couponId": 3,
+              "offset": 33,
+              "couponCompletionSeq": 17,
+              "completedAt": 1792664214928
+            },
+            {
+              "requestId": "rebalance-128",
+              "couponId": 3,
+              "offset": 34,
+              "couponCompletionSeq": 18,
+              "completedAt": 1792664214960
+            },
+            {
+              "requestId": "rebalance-115",
+              "couponId": 2,
+              "offset": 35,
+              "couponCompletionSeq": 18,
+              "completedAt": 1792664214987
+            },
+            {
+              "requestId": "rebalance-116",
+              "couponId": 3,
+              "offset": 36,
+              "couponCompletionSeq": 19,
+              "completedAt": 1792664215013
+            },
+            {
+              "requestId": "rebalance-109",
+              "couponId": 2,
+              "offset": 37,
+              "couponCompletionSeq": 19,
+              "completedAt": 1792664215044
+            },
+            {
+              "requestId": "rebalance-110",
+              "couponId": 3,
+              "offset": 38,
+              "couponCompletionSeq": 20,
+              "completedAt": 1792664215077
+            },
+            {
+              "requestId": "rebalance-121",
+              "couponId": 2,
+              "offset": 39,
+              "couponCompletionSeq": 20,
+              "completedAt": 1792664215106
+            },
+            {
+              "requestId": "rebalance-103",
+              "couponId": 2,
+              "offset": 40,
+              "couponCompletionSeq": 21,
+              "completedAt": 1792664215138
+            },
+            {
+              "requestId": "rebalance-104",
+              "couponId": 3,
+              "offset": 41,
+              "couponCompletionSeq": 21,
+              "completedAt": 1792664215167
+            },
+            {
+              "requestId": "rebalance-127",
+              "couponId": 2,
+              "offset": 42,
+              "couponCompletionSeq": 22,
+              "completedAt": 1792664215194
+            },
+            {
+              "requestId": "rebalance-122",
+              "couponId": 3,
+              "offset": 43,
+              "couponCompletionSeq": 22,
+              "completedAt": 1792664215220
+            },
+            {
+              "requestId": "rebalance-134",
+              "couponId": 3,
+              "offset": 44,
+              "couponCompletionSeq": 23,
+              "completedAt": 1792664215252
+            },
+            {
+              "requestId": "rebalance-133",
+              "couponId": 2,
+              "offset": 45,
+              "couponCompletionSeq": 23,
+              "completedAt": 1792664215279
+            },
+            {
+              "requestId": "rebalance-139",
+              "couponId": 2,
+              "offset": 46,
+              "couponCompletionSeq": 24,
+              "completedAt": 1792664215308
+            },
+            {
+              "requestId": "rebalance-140",
+              "couponId": 3,
+              "offset": 47,
+              "couponCompletionSeq": 24,
+              "completedAt": 1792664215343
+            },
+            {
+              "requestId": "rebalance-145",
+              "couponId": 2,
+              "offset": 48,
+              "couponCompletionSeq": 25,
+              "completedAt": 1792664215375
+            },
+            {
+              "requestId": "rebalance-146",
+              "couponId": 3,
+              "offset": 49,
+              "couponCompletionSeq": 25,
+              "completedAt": 1792664215408
+            },
+            {
+              "requestId": "rebalance-151",
+              "couponId": 2,
+              "offset": 50,
+              "couponCompletionSeq": 26,
+              "completedAt": 1792664215445
+            },
+            {
+              "requestId": "rebalance-152",
+              "couponId": 3,
+              "offset": 51,
+              "couponCompletionSeq": 26,
+              "completedAt": 1792664215472
+            },
+            {
+              "requestId": "rebalance-157",
+              "couponId": 2,
+              "offset": 52,
+              "couponCompletionSeq": 27,
+              "completedAt": 1792664215534
+            },
+            {
+              "requestId": "rebalance-158",
+              "couponId": 3,
+              "offset": 53,
+              "couponCompletionSeq": 27,
+              "completedAt": 1792664215596
+            },
+            {
+              "requestId": "rebalance-163",
+              "couponId": 2,
+              "offset": 54,
+              "couponCompletionSeq": 28,
+              "completedAt": 1792664215629
+            },
+            {
+              "requestId": "rebalance-164",
+              "couponId": 3,
+              "offset": 55,
+              "couponCompletionSeq": 28,
+              "completedAt": 1792664215668
+            },
+            {
+              "requestId": "rebalance-169",
+              "couponId": 2,
+              "offset": 56,
+              "couponCompletionSeq": 29,
+              "completedAt": 1792664215706
+            },
+            {
+              "requestId": "rebalance-170",
+              "couponId": 3,
+              "offset": 57,
+              "couponCompletionSeq": 29,
+              "completedAt": 1792664215748
+            },
+            {
+              "requestId": "rebalance-175",
+              "couponId": 2,
+              "offset": 58,
+              "couponCompletionSeq": 30,
+              "completedAt": 1792664215787
+            },
+            {
+              "requestId": "rebalance-176",
+              "couponId": 3,
+              "offset": 59,
+              "couponCompletionSeq": 30,
+              "completedAt": 1792664215816
+            },
+            {
+              "requestId": "rebalance-181",
+              "couponId": 2,
+              "offset": 60,
+              "couponCompletionSeq": 31,
+              "completedAt": 1792664215840
+            },
+            {
+              "requestId": "rebalance-182",
+              "couponId": 3,
+              "offset": 61,
+              "couponCompletionSeq": 31,
+              "completedAt": 1792664215872
+            },
+            {
+              "requestId": "rebalance-187",
+              "couponId": 2,
+              "offset": 62,
+              "couponCompletionSeq": 32,
+              "completedAt": 1792664215990
+            },
+            {
+              "requestId": "rebalance-188",
+              "couponId": 3,
+              "offset": 63,
+              "couponCompletionSeq": 32,
+              "completedAt": 1792664216055
+            },
+            {
+              "requestId": "rebalance-194",
+              "couponId": 3,
+              "offset": 64,
+              "couponCompletionSeq": 33,
+              "completedAt": 1792664216082
+            },
+            {
+              "requestId": "rebalance-193",
+              "couponId": 2,
+              "offset": 65,
+              "couponCompletionSeq": 33,
+              "completedAt": 1792664216124
+            },
+            {
+              "requestId": "rebalance-199",
+              "couponId": 2,
+              "offset": 66,
+              "couponCompletionSeq": 34,
+              "completedAt": 1792664216155
+            },
+            {
+              "requestId": "rebalance-200",
+              "couponId": 3,
+              "offset": 67,
+              "couponCompletionSeq": 34,
+              "completedAt": 1792664216184
+            },
+            {
+              "requestId": "rebalance-205",
+              "couponId": 2,
+              "offset": 68,
+              "couponCompletionSeq": 35,
+              "completedAt": 1792664216216
+            },
+            {
+              "requestId": "rebalance-206",
+              "couponId": 3,
+              "offset": 69,
+              "couponCompletionSeq": 35,
+              "completedAt": 1792664216243
+            },
+            {
+              "requestId": "rebalance-212",
+              "couponId": 3,
+              "offset": 70,
+              "couponCompletionSeq": 36,
+              "completedAt": 1792664216277
+            },
+            {
+              "requestId": "rebalance-211",
+              "couponId": 2,
+              "offset": 71,
+              "couponCompletionSeq": 36,
+              "completedAt": 1792664216306
+            },
+            {
+              "requestId": "rebalance-217",
+              "couponId": 2,
+              "offset": 72,
+              "couponCompletionSeq": 37,
+              "completedAt": 1792664216334
+            },
+            {
+              "requestId": "rebalance-218",
+              "couponId": 3,
+              "offset": 73,
+              "couponCompletionSeq": 37,
+              "completedAt": 1792664216370
+            },
+            {
+              "requestId": "rebalance-224",
+              "couponId": 3,
+              "offset": 74,
+              "couponCompletionSeq": 38,
+              "completedAt": 1792664216412
+            },
+            {
+              "requestId": "rebalance-223",
+              "couponId": 2,
+              "offset": 75,
+              "couponCompletionSeq": 38,
+              "completedAt": 1792664216442
+            },
+            {
+              "requestId": "rebalance-229",
+              "couponId": 2,
+              "offset": 76,
+              "couponCompletionSeq": 39,
+              "completedAt": 1792664216476
+            },
+            {
+              "requestId": "rebalance-230",
+              "couponId": 3,
+              "offset": 77,
+              "couponCompletionSeq": 39,
+              "completedAt": 1792664216528
+            },
+            {
+              "requestId": "rebalance-235",
+              "couponId": 2,
+              "offset": 78,
+              "couponCompletionSeq": 40,
+              "completedAt": 1792664216574
+            },
+            {
+              "requestId": "rebalance-236",
+              "couponId": 3,
+              "offset": 79,
+              "couponCompletionSeq": 40,
+              "completedAt": 1792664216748
+            },
+            {
+              "requestId": "rebalance-242",
+              "couponId": 3,
+              "offset": 80,
+              "couponCompletionSeq": 41,
+              "completedAt": 1792664216846
+            },
+            {
+              "requestId": "rebalance-241",
+              "couponId": 2,
+              "offset": 81,
+              "couponCompletionSeq": 41,
+              "completedAt": 1792664216920
+            },
+            {
+              "requestId": "rebalance-247",
+              "couponId": 2,
+              "offset": 82,
+              "couponCompletionSeq": 42,
+              "completedAt": 1792664217085
+            },
+            {
+              "requestId": "rebalance-248",
+              "couponId": 3,
+              "offset": 83,
+              "couponCompletionSeq": 42,
+              "completedAt": 1792664217150
+            },
+            {
+              "requestId": "rebalance-253",
+              "couponId": 2,
+              "offset": 84,
+              "couponCompletionSeq": 43,
+              "completedAt": 1792664217200
+            },
+            {
+              "requestId": "rebalance-254",
+              "couponId": 3,
+              "offset": 85,
+              "couponCompletionSeq": 43,
+              "completedAt": 1792664217233
+            },
+            {
+              "requestId": "rebalance-259",
+              "couponId": 2,
+              "offset": 86,
+              "couponCompletionSeq": 44,
+              "completedAt": 1792664217261
+            },
+            {
+              "requestId": "rebalance-260",
+              "couponId": 3,
+              "offset": 87,
+              "couponCompletionSeq": 44,
+              "completedAt": 1792664217289
+            },
+            {
+              "requestId": "rebalance-265",
+              "couponId": 2,
+              "offset": 88,
+              "couponCompletionSeq": 45,
+              "completedAt": 1792664217321
+            },
+            {
+              "requestId": "rebalance-266",
+              "couponId": 3,
+              "offset": 89,
+              "couponCompletionSeq": 45,
+              "completedAt": 1792664217355
+            },
+            {
+              "requestId": "rebalance-272",
+              "couponId": 3,
+              "offset": 90,
+              "couponCompletionSeq": 46,
+              "completedAt": 1792664217411
+            },
+            {
+              "requestId": "rebalance-271",
+              "couponId": 2,
+              "offset": 91,
+              "couponCompletionSeq": 46,
+              "completedAt": 1792664217444
+            },
+            {
+              "requestId": "rebalance-277",
+              "couponId": 2,
+              "offset": 92,
+              "couponCompletionSeq": 47,
+              "completedAt": 1792664217483
+            },
+            {
+              "requestId": "rebalance-278",
+              "couponId": 3,
+              "offset": 93,
+              "couponCompletionSeq": 47,
+              "completedAt": 1792664217521
+            },
+            {
+              "requestId": "rebalance-283",
+              "couponId": 2,
+              "offset": 94,
+              "couponCompletionSeq": 48,
+              "completedAt": 1792664217551
+            },
+            {
+              "requestId": "rebalance-284",
+              "couponId": 3,
+              "offset": 95,
+              "couponCompletionSeq": 48,
+              "completedAt": 1792664217581
+            },
+            {
+              "requestId": "rebalance-289",
+              "couponId": 2,
+              "offset": 96,
+              "couponCompletionSeq": 49,
+              "completedAt": 1792664217609
+            },
+            {
+              "requestId": "rebalance-290",
+              "couponId": 3,
+              "offset": 97,
+              "couponCompletionSeq": 49,
+              "completedAt": 1792664217643
+            },
+            {
+              "requestId": "rebalance-296",
+              "couponId": 3,
+              "offset": 98,
+              "couponCompletionSeq": 50,
+              "completedAt": 1792664217677
+            },
+            {
+              "requestId": "rebalance-295",
+              "couponId": 2,
+              "offset": 99,
+              "couponCompletionSeq": 50,
+              "completedAt": 1792664217710
+            }
+          ]
+        }
+      },
+      "run": {
+        "couponIds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "topic": "coupon-lab-c320dc80-8a24-4f69-b74d-c5b14c1209fc",
+        "runId": "c320dc80-8a24-4f69-b74d-c5b14c1209fc",
+        "strategy": "KAFKA_FIRST"
+      },
+      "parameters": {
+        "strategy": "KAFKA_FIRST",
+        "stock": 300,
+        "coupons": 6,
+        "partitions": 3,
+        "workers": 1,
+        "ordering": "BLOCKING"
+      }
+    }
+  ],
+  "measurementNotes": [
+    "Actual HTTP traffic to Spring, Kafka, Redis and MySQL; no simulated service responses.",
+    "All strategies share the lab's database unique constraint and conditional stock decrement as a final safety guard. These results do not prove the original examples safe.",
+    "API duration uses perf_counter_ns on the load generator and includes network and client work; one persistent HTTP connection per worker thread.",
+    "Final issuance duration is server completedAt minus receivedAt for ISSUED requests; API rejection time is not treated as issuance time.",
+    "Server receivedAt is the request-log insertion timestamp in the lab, not a globally ordered TCP/API gateway arrival timestamp; publishDelayMs demonstrates divergence from Kafka append order.",
+    "Percentiles use nearest rank ceil(q*N)-1 without interpolation; absent observations are null, never zero.",
+    "Localhost load, finite samples and one process are not production throughput or HA guarantees; no latency performance thresholds are asserted.",
+    "Fault hooks are explicitly named and enabled only in the isolated lab. Broker/Redis process failures are separate infrastructure experiments.",
+    "Consumers and relay are paused, and workers are stopped after each case. Topics and durable data are retained for inspection until infrastructure cleanup.",
+    "Each distribution case warms the new consumer group with 20 requests, one per coupon; measured latencies and partition counts exclude those requests.",
+    "Distribution case order is shuffled with the recorded seed to reduce systematic time-order bias; each combination is sampled once, with no statistical significance claim."
+  ],
+  "passedCases": 4,
+  "failedCases": 0
+}

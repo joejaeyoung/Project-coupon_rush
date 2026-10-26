@@ -1,0 +1,478 @@
+{
+  "name": "fault-after-send-and-redelivery-SPLIT_REDIS",
+  "startedAt": "2026-10-22T09:43:10.998837+00:00",
+  "parameters": {
+    "strategy": "SPLIT_REDIS",
+    "stock": 10,
+    "coupons": 1,
+    "partitions": 3,
+    "workers": 3,
+    "ordering": "BLOCKING"
+  },
+  "http": [
+    {
+      "method": "POST",
+      "path": "/lab/runs",
+      "payload": {
+        "strategy": "SPLIT_REDIS",
+        "stock": 10,
+        "coupons": 1,
+        "partitions": 3,
+        "workers": 3,
+        "ordering": "BLOCKING"
+      },
+      "startedAt": "2026-10-22T09:43:10.998846+00:00",
+      "status": 201,
+      "response": {
+        "strategy": "SPLIT_REDIS",
+        "runId": "d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+        "topic": "coupon-lab-d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+        "couponIds": [
+          1
+        ]
+      },
+      "durationMs": 37.039833,
+      "finishedAt": "2026-10-22T09:43:11.035891+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/d03a1497-4606-4c55-a317-b57ccf0d6b7f/requests",
+      "payload": {
+        "requestId": "unknown-outcome",
+        "userId": "unknown-outcome",
+        "couponId": 1,
+        "fault": "AFTER_SEND"
+      },
+      "startedAt": "2026-10-22T09:43:11.035908+00:00",
+      "status": 503,
+      "response": {
+        "status": "ERROR",
+        "reason": "INJECTED_AFTER_SEND"
+      },
+      "durationMs": 1647.210375,
+      "finishedAt": "2026-10-22T09:43:12.683138+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:12.683157+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 5.138417,
+      "finishedAt": "2026-10-22T09:43:12.688300+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:12.843357+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 9.892375,
+      "finishedAt": "2026-10-22T09:43:12.853276+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:13.004363+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 1,
+        "issued": 0
+      },
+      "durationMs": 8.441375,
+      "finishedAt": "2026-10-22T09:43:13.012822+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:13.165657+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 0,
+        "issued": 1
+      },
+      "durationMs": 7.982,
+      "finishedAt": "2026-10-22T09:43:13.173657+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/d03a1497-4606-4c55-a317-b57ccf0d6b7f/requests",
+      "payload": {
+        "requestId": "unknown-outcome",
+        "userId": "unknown-outcome",
+        "couponId": 1
+      },
+      "startedAt": "2026-10-22T09:43:13.173685+00:00",
+      "status": 200,
+      "response": {
+        "requestId": "unknown-outcome",
+        "couponId": 1,
+        "userId": "unknown-outcome",
+        "status": "ISSUED",
+        "reason": null,
+        "partition": 0,
+        "offset": 0,
+        "reservationSeq": 1,
+        "completionSeq": 1,
+        "receivedAt": 1792662191036,
+        "completedAt": 1792662193067,
+        "reserved": true,
+        "published": false,
+        "fault": "AFTER_SEND",
+        "faultConsumed": true,
+        "processingDelayMs": 0,
+        "dbReserved": false
+      },
+      "durationMs": 3.095916,
+      "finishedAt": "2026-10-22T09:43:13.176785+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/d03a1497-4606-4c55-a317-b57ccf0d6b7f/replay",
+      "payload": {
+        "requestId": "unknown-outcome"
+      },
+      "startedAt": "2026-10-22T09:43:13.176804+00:00",
+      "status": 202,
+      "response": {
+        "requestId": "unknown-outcome",
+        "status": "PENDING"
+      },
+      "durationMs": 10.80625,
+      "finishedAt": "2026-10-22T09:43:13.187616+00:00"
+    },
+    {
+      "method": "GET",
+      "path": "/lab/runs/d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+      "payload": null,
+      "startedAt": "2026-10-22T09:43:13.187644+00:00",
+      "status": 200,
+      "response": {
+        "snapshotPoll": true,
+        "received": 1,
+        "pending": 0,
+        "issued": 1
+      },
+      "durationMs": 7.084416,
+      "finishedAt": "2026-10-22T09:43:13.194749+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/lab/runs/d03a1497-4606-4c55-a317-b57ccf0d6b7f/control",
+      "payload": {
+        "paused": true,
+        "workers": 0
+      },
+      "startedAt": "2026-10-22T09:43:13.194804+00:00",
+      "status": 200,
+      "response": {
+        "workers": 0,
+        "runId": "d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+        "paused": true
+      },
+      "durationMs": 10.024334,
+      "finishedAt": "2026-10-22T09:43:13.204833+00:00"
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "settled",
+      "observedAt": "2026-10-22T09:43:13.173676+00:00",
+      "value": {
+        "runId": "d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+        "strategy": "SPLIT_REDIS",
+        "topic": "coupon-lab-d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+        "ordering": "BLOCKING",
+        "paused": false,
+        "workers": 3,
+        "partitions": 3,
+        "received": 1,
+        "accepted": 1,
+        "reserved": 1,
+        "issued": 1,
+        "rejected": 0,
+        "cancelled": 0,
+        "pending": 0,
+        "activeDbReservations": 0,
+        "ledgerIssued": 1,
+        "ledgerDuplicateUsers": 0,
+        "outboxPending": 0,
+        "streamPending": 0,
+        "consumerErrors": 0,
+        "replays": 0,
+        "relayErrors": 0,
+        "perCoupon": [
+          {
+            "couponId": 1,
+            "total": 10,
+            "dbRemaining": 9,
+            "issued": 1,
+            "ledgerIssued": 1,
+            "redisStock": 9,
+            "redisUsers": 1
+          }
+        ],
+        "requests": [
+          {
+            "requestId": "unknown-outcome",
+            "couponId": 1,
+            "userId": "unknown-outcome",
+            "status": "ISSUED",
+            "reason": null,
+            "partition": 0,
+            "offset": 0,
+            "reservationSeq": 1,
+            "completionSeq": 1,
+            "receivedAt": 1792662191036,
+            "completedAt": 1792662193067,
+            "reserved": true,
+            "published": false,
+            "fault": "AFTER_SEND",
+            "faultConsumed": true,
+            "processingDelayMs": 0,
+            "dbReserved": false
+          }
+        ]
+      }
+    },
+    {
+      "label": "duplicate_delivery_handled",
+      "observedAt": "2026-10-22T09:43:13.194762+00:00",
+      "value": {
+        "runId": "d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+        "strategy": "SPLIT_REDIS",
+        "topic": "coupon-lab-d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+        "ordering": "BLOCKING",
+        "paused": false,
+        "workers": 3,
+        "partitions": 3,
+        "received": 1,
+        "accepted": 1,
+        "reserved": 1,
+        "issued": 1,
+        "rejected": 0,
+        "cancelled": 0,
+        "pending": 0,
+        "activeDbReservations": 0,
+        "ledgerIssued": 1,
+        "ledgerDuplicateUsers": 0,
+        "outboxPending": 0,
+        "streamPending": 0,
+        "consumerErrors": 0,
+        "replays": 1,
+        "relayErrors": 0,
+        "perCoupon": [
+          {
+            "couponId": 1,
+            "total": 10,
+            "dbRemaining": 9,
+            "issued": 1,
+            "ledgerIssued": 1,
+            "redisStock": 9,
+            "redisUsers": 1
+          }
+        ],
+        "requests": [
+          {
+            "requestId": "unknown-outcome",
+            "couponId": 1,
+            "userId": "unknown-outcome",
+            "status": "ISSUED",
+            "reason": null,
+            "partition": 0,
+            "offset": 1,
+            "reservationSeq": 1,
+            "completionSeq": 1,
+            "receivedAt": 1792662191036,
+            "completedAt": 1792662193067,
+            "reserved": true,
+            "published": true,
+            "fault": "AFTER_SEND",
+            "faultConsumed": true,
+            "processingDelayMs": 0,
+            "dbReserved": false
+          }
+        ]
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "client_retry_returns_existing_result",
+      "passed": true,
+      "actual": 200,
+      "expected": 200
+    },
+    {
+      "name": "after_send_fault_was_triggered",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "coupon_snapshot_present",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "coupon_1_no_oversell",
+      "passed": true,
+      "actual": 1,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_db_counter_conservation",
+      "passed": true,
+      "actual": {
+        "dbRemaining": 9,
+        "issued": 1
+      },
+      "expected": 10
+    },
+    {
+      "name": "coupon_1_db_stock_within_bounds",
+      "passed": true,
+      "actual": 9,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_request_state_matches_final_ledger",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "coupon_1_redis_stock_within_bounds",
+      "passed": true,
+      "actual": 9,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_redis_users_within_bounds",
+      "passed": true,
+      "actual": 1,
+      "expected": "0..10"
+    },
+    {
+      "name": "coupon_1_redis_counter_conservation",
+      "passed": true,
+      "actual": {
+        "redisStock": 9,
+        "redisUsers": 1
+      },
+      "expected": 10
+    },
+    {
+      "name": "no_duplicate_issued_user_per_coupon",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "request_ids_unique",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "issued_count_matches_requests",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "issued_count_matches_final_database_ledger",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "no_duplicate_users_in_final_database_ledger",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "name": "expected_issued",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "all_requests_terminal",
+      "passed": true,
+      "actual": [],
+      "expected": []
+    }
+  ],
+  "expectedObservations": [],
+  "metrics": {
+    "settledWaitMs": 490.52087496966124,
+    "duplicate_delivery_handledWaitMs": 7.1257916279137135,
+    "apiLatencyMs": {
+      "samples": 2,
+      "min": 3.095916,
+      "mean": 825.1531455,
+      "p50": 3.095916,
+      "p95": 1647.210375,
+      "p99": 1647.210375,
+      "max": 1647.210375
+    },
+    "httpStatusCounts": {
+      "503": 1,
+      "200": 1
+    },
+    "issuedEndToEndLatencyMs": {
+      "samples": 1,
+      "min": 2031.0,
+      "mean": 2031.0,
+      "p50": 2031.0,
+      "p95": 2031.0,
+      "p99": 2031.0,
+      "max": 2031.0
+    },
+    "allTerminalEndToEndLatencyMs": {
+      "samples": 1,
+      "min": 2031.0,
+      "mean": 2031.0,
+      "p50": 2031.0,
+      "p95": 2031.0,
+      "p99": 2031.0,
+      "max": 2031.0
+    },
+    "partitionRequestCounts": {
+      "0": 1
+    },
+    "issued": 1,
+    "totalRunIssuedIncludingWarmup": 1
+  },
+  "run": {
+    "strategy": "SPLIT_REDIS",
+    "runId": "d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+    "topic": "coupon-lab-d03a1497-4606-4c55-a317-b57ccf0d6b7f",
+    "couponIds": [
+      1
+    ]
+  },
+  "finishedAt": "2026-10-22T09:43:13.204844+00:00",
+  "passed": true
+}
